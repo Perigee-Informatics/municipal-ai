@@ -6,4 +6,4 @@ Static Nepali training site hosted under `public/workshop/`. Files arrive over s
 - [x] Set root route title to "AI तालिम सन्धिखर्क"
 - [x] Create `public/workshop/index.html` (byte-for-byte from user)
 - [x] Place `public/workshop/data/*.js` (21 files, checksums verified)
-- [ ] Receive and place any `public/workshop/files/*` download assets — waiting on user
+- [x] Place `public/workshop/files/*` (4 download files, checksums verified)
