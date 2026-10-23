@@ -1,54 +1,894 @@
-<!doctype html>
-<html lang="ne">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>AI ज्ञान परीक्षा</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;700;800&family=Rozha+One&display=swap">
 <style>
-:root {
-  --bg: #EEF1F4; --surface: #FFFFFF; --ink: #142440; --muted: #556275; --line: #D6DDE6;
-  --accent: #B3123A; --navy: #1C3A66;
-  --f-body: 'Mukta', 'Nirmala UI', 'Kohinoor Devanagari', 'Noto Sans Devanagari', system-ui, sans-serif;
-  --f-display: 'Rozha One', 'Mukta', 'Noto Serif Devanagari', Georgia, serif;
-  --r: 10px;
+:root{
+  --bg:#F5F3EE;--surface:#FFFFFF;--ink:#1B2320;--muted:#5D6A65;--line:#DAD6CB;
+  --accent:#1F5C4A;--accent-ink:#FFFFFF;--soft:#E7EFEA;--gold:#B7862B;--ok:#2E7D4F;--bad:#B3392F;--warn:#9A6B12;
+  color-scheme:light;
 }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --bg: #0D1420; --surface: #152033; --ink: #E3E9F2; --muted: #9AA8BB; --line: #26344B;
-  --accent: #F2708C; --navy: #93B4E6;
-  color-scheme: dark } }
-:root[data-theme="dark"] {
-  --bg: #0D1420; --surface: #152033; --ink: #E3E9F2; --muted: #9AA8BB; --line: #26344B;
-  --accent: #F2708C; --navy: #93B4E6;
-  color-scheme: dark }
-
-* { box-sizing: border-box }
-html, body { height: 100% }
-body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 16.5px; line-height: 1.6; }
-a { color: var(--navy) }
-:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 4px }
-
-.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--surface); border-bottom: 1px solid var(--line);
-  display: flex; align-items: center; gap: 12px; padding: 10px 16px; }
-.brand { display: flex; align-items: baseline; gap: 10px; min-width: 0; text-decoration: none; color: var(--ink) }
-.brand b { font-family: var(--f-display); font-weight: 400; font-size: 22px; color: var(--accent); white-space: nowrap }
-.brand span { font-size: 14px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
-
-.wrap { max-width: 760px; margin: 0 auto; padding: 40px 20px 80px }
-.wrap h1 { font-family: var(--f-display); font-weight: 400; font-size: 34px; margin: 0 0 12px }
-.wrap p { margin: 0 0 14px }
-@media (max-width: 640px) { .brand span { display: none } .wrap h1 { font-size: 28px } }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#101513;--surface:#18201D;--ink:#EEF2EF;--muted:#A3B0AA;--line:#2C3833;
+    --accent:#6FBF9D;--accent-ink:#0F1A15;--soft:#1E2B26;--gold:#D9A94E;--ok:#6FBF8E;--bad:#E8786C;--warn:#E7B45C;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101513;--surface:#18201D;--ink:#EEF2EF;--muted:#A3B0AA;--line:#2C3833;
+  --accent:#6FBF9D;--accent-ink:#0F1A15;--soft:#1E2B26;--gold:#D9A94E;--ok:#6FBF8E;--bad:#E8786C;--warn:#E7B45C;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Mukta","Noto Sans Devanagari",system-ui,sans-serif;font-size:17px;line-height:1.55}
+.wrap{max-width:980px;margin:0 auto;padding-block:20px 48px;padding-inline:16px}
+h1,h2,h3{margin:0;text-wrap:balance}
+h1{font-size:30px;font-weight:800;letter-spacing:.2px}
+h2{font-size:22px;font-weight:700;margin-bottom:12px}
+h3{font-size:18px;font-weight:700}
+.sub{color:var(--muted);margin:4px 0 0}
+.top{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;margin-top:16px}
+.muted{color:var(--muted)}
+.small{font-size:14px}
+button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:9px 16px;min-height:44px}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+button.on{background:var(--soft);border-color:var(--accent);font-weight:700}
+button:disabled{opacity:.45;cursor:not-allowed}
+input[type=password],input[type=text],select{width:100%;font:inherit;padding:11px 13px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);min-height:44px}
+label{display:block;font-weight:700;margin-bottom:6px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.progress{height:6px;background:var(--soft);border-radius:99px;overflow:hidden;margin:12px 0 4px}
+.progress>i{display:block;height:100%;background:var(--accent)}
+.opt{display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;margin-top:10px;padding:14px 16px}
+.opt .L{flex:0 0 30px;height:30px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;font-weight:700;font-size:15px}
+.opt.on .L{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.qnav{display:grid;grid-template-columns:repeat(auto-fill,minmax(40px,1fr));gap:6px;margin-top:14px}
+.qnav button{min-height:40px;padding:4px;font-size:14px}
+.qnav button.done{border-color:var(--accent)}
+.qnav button.cur{outline:2px solid var(--gold)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.kpi{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--surface)}
+.kpi b{display:block;font-size:28px;font-variant-numeric:tabular-nums}
+.chip{display:inline-block;padding:2px 10px;border-radius:99px;font-size:13px;font-weight:700;border:1px solid currentColor}
+.c-ok{color:var(--ok)}.c-bad{color:var(--bad)}.c-warn{color:var(--warn)}
+.tbl-wrap{overflow-x:auto;margin-top:10px;border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{padding:9px 11px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;font-size:15px}
+th{background:var(--soft);font-size:13px}
+.mx{width:34px;text-align:center;font-weight:700}
+.mx.ok{color:var(--ok)}.mx.bad{color:var(--bad)}
+.rev{border-left:4px solid var(--line);padding:12px 14px;margin-top:12px;border-radius:0 10px 10px 0;background:var(--surface)}
+.rev.ok{border-left-color:var(--ok)}.rev.bad{border-left-color:var(--bad)}
+.rev .ans{margin:6px 0 0}
+.note{font-size:14px;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media (max-width:820px){.grid3{grid-template-columns:1fr}}
+@media (max-width:720px){.grid2{grid-template-columns:1fr}}
+.hide{display:none!important}
+.msg{margin-top:8px;font-size:15px}
+.bar{height:10px;border-radius:99px;background:var(--soft);overflow:hidden}
+.field{margin-top:14px}
 </style>
-</head>
-<body>
-<header class="top">
-  <a class="brand" href="../index.html"><b>AI तालिम</b><span>सन्धिखर्क नगरपालिका · २०८३ असोज २४ र २५</span></a>
-</header>
-<main class="wrap">
-  <h1>AI ज्ञान परीक्षा</h1>
-  <p>परीक्षा चाँडै उपलब्ध हुनेछ।</p>
-</main>
-</body>
-</html>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>AI ज्ञान परीक्षा</h1>
+      <p class="sub">सन्धिखर्क नगरपालिका · दिन १ (सत्र १–५) र दिन २ (सत्र ६) मा आधारित · पूर्व-तालिम र पश्च-तालिम (प्रत्येक ३० प्रश्न)</p>
+    </div>
+    <nav class="tabs" aria-label="मुख्य मेनु">
+      <button id="tabExam" class="on" data-action="tab" data-tab="exam">सहभागी परीक्षा</button>
+      <button id="tabDash" data-action="tab" data-tab="dash">प्रशिक्षक डासबोर्ड</button>
+    </nav>
+  </header>
+
+  <main id="exam"><div id="app"></div></main>
+
+  <main id="dash" class="hide">
+    <section class="card" id="gate">
+      <h2>प्रशिक्षक पहुँच</h2>
+      <p class="muted small">यो डासबोर्ड प्रशिक्षकका लागि हो। सहभागीहरूले परीक्षा बुझाएपछि परिणाम यहाँ स्वतः देखिन्छ।</p>
+      <label for="pass">पासकोड</label>
+      <div class="row">
+        <input id="pass" type="password" autocomplete="off" style="max-width:300px">
+        <button class="primary" data-action="unlock">खोल्नुहोस्</button>
+      </div>
+      <p id="gateMsg" class="msg c-bad hide">पासकोड मिलेन।</p>
+    </section>
+    <div id="dashBody" class="hide"></div>
+  </main>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------- Assessment content ---------- */
+/* a = index of the correct option (0=A, 1=B, 2=C, 3=D). s = session index (0–5). */
+var SESSIONS = [
+  {id:0,label:"दिन १ · सत्र १ — AI परिचय"},
+  {id:1,label:"दिन १ · सत्र २ — उत्पादकता उपकरण"},
+  {id:2,label:"दिन १ · सत्र ३ — प्रम्प्ट लेखन"},
+  {id:3,label:"दिन १ · सत्र ४ — पत्र र प्रतिवेदन"},
+  {id:4,label:"दिन १ · सत्र ५ — अनुवाद र सारांश"},
+  {id:5,label:"दिन २ · सत्र ६ — तथ्याङ्क विश्लेषण"}
+];
+
+/* पूर्व-तालिम परीक्षा: ३० प्रश्न, सत्रअनुसार समूहबद्ध (प्रत्येक सत्रमा ५) */
+var PRE = [
+ /* सत्र १ */
+ {s:0,q:"जेनेरेटिभ AI (Generative AI) को मुख्य विशेषता कुन हो?",o:["नयाँ पाठ, चित्र वा आवाज सिर्जना गर्नु","स्प्याम इमेल छुट्याउनु","सामान्य हिसाब गर्ने क्यालकुलेटर चलाउनु","मोबाइलको ब्याट्री बचाउनु"],a:0,e:"जेनेरेटिभ AI ले सिकेको ढाँचाबाट नयाँ पाठ, चित्र, आवाज वा भिडियो सिर्जना गर्छ। स्प्याम छुट्याउने काम मेसिन लर्निङको उदाहरण हो।"},
+ {s:0,q:"ChatGPT जस्ता भाषा मोडलले उत्तर कसरी तयार गर्छन्?",o:["डाटाबेसबाट तयार उत्तर हुबहु खोजेर","विज्ञले हरेक उत्तर पहिल्यै लेखेर राखेका हुन्छन्","इन्टरनेटबाट वाक्य हुबहु कपी गरेर","अर्को शब्द कुन आउने सम्भावना बढी छ भनी अनुमान गर्दै एक एक शब्द जोडेर"],a:3,e:"LLM ले अर्को शब्दको सम्भावना अनुमान गरी एक एक शब्द जोड्छ। त्यसैले उत्तर सम्भावित हुन्छ, प्रमाणित हुँदैन।"},
+ {s:0,q:"AI ले गलत तर विश्वसनीय सुनिने उत्तर दिने घटनालाई के भनिन्छ?",o:["Encryption (गोप्य सङ्केतीकरण)","Hallucination (काल्पनिक उत्तर)","Digitization (कागजात डिजिटल बनाउने)","Automation (हात नलगाई काम चल्ने)"],a:1,e:"सुन्दा ठिक लाग्ने तर वास्तवमा गलत उत्तरलाई Hallucination (काल्पनिक उत्तर) भनिन्छ। त्यसैले प्रत्येक तथ्य जाँच्नु जरुरी छ।"},
+ {s:0,q:"कृत्रिम बौद्धिकता (AI) भनेको के हो?",o:["मानिसको हात नलगाई कुनै काम हुन नसक्ने भन्ने विश्वास","मेसिनले मानिसजस्तै सिक्ने, ढाँचा पहिचान गर्ने र निर्णय गर्न सक्ने प्रविधि","इन्टरनेटको गति बढाउने उपकरण","डिजिटल हस्ताक्षर गर्ने प्रणाली"],a:1,e:"AI भनेको मेसिनले सिक्ने, ढाँचा पहिचान गर्ने र निर्णय गर्ने प्रविधि हो। इन्टरनेट गति वा डिजिटल हस्ताक्षर यसका उदाहरण होइनन्।"},
+ {s:0,q:"AI का उत्तर र निर्णयमा पूर्वाग्रह (bias) कहिले देखिन सक्छ?",o:["AI ले सधैं सही उत्तर दिन्छ","AI को गति मात्र बढ्छ","तालिम डाटामा असन्तुलन वा पूर्वाग्रह भएमा अन्यायपूर्ण वा असन्तुलित परिणाम देखिन सक्छ","AI ले इन्टरनेट बन्द गर्छ"],a:2,e:"तालिम डाटा असन्तुलित भए AI का उत्तरमा कुनै समूहप्रति अन्याय हुन सक्छ। त्यसैले परिणाम मानिसले जाँच्नुपर्छ।"},
+ /* सत्र २ */
+ {s:1,q:"ChatGPT को प्रकाशक (Publisher) कुन कम्पनी हो?",o:["Google LLC","Anthropic","OpenAI","Microsoft Corporation"],a:2,e:"ChatGPT को प्रकाशक OpenAI हो। Gemini को Google LLC, Claude को Anthropic र Copilot को Microsoft Corporation हो।"},
+ {s:1,q:"मोबाइलमा AI एप इन्स्टल गर्नुअघि नक्कली एप पहिचान गर्ने सबैभन्दा भरपर्दो तरिका कुन हो?",o:["प्रकाशक (Publisher) को नाम जाँच्नु","एपको रेटिङ मात्र हेर्नु","इन्स्टल गरेपछि मात्र हेर्नु","आइकन सुन्दर छ कि छैन हेर्नु"],a:0,e:"ChatGPT को प्रकाशक OpenAI, Gemini को Google LLC, Claude को Anthropic र Copilot को Microsoft Corporation हो। प्रकाशक मिल्दैन भने एप इन्स्टल नगर्नुहोस्।"},
+ {s:1,q:"AI उपकरण निःशुल्क र सशुल्क (paid) संस्करणमा के फरक हुन सक्छ?",o:["सशुल्क संस्करणमा सुविधा, गति वा प्रयोग सीमा फरक हुन सक्छ","निःशुल्क संस्करण सधैं गलत उत्तर दिन्छ","सशुल्क संस्करणले मात्र नेपाली बुझ्छ","दुवैमा कुनै फरक हुँदैन"],a:0,e:"सशुल्क संस्करणमा प्रायः थप सुविधा वा बढी प्रयोग सीमा हुन्छ। तर नेपाली बुझ्ने वा सही उत्तर दिने क्षमता सधैं फरक हुँदैन।"},
+ {s:1,q:"AI उपकरणलाई कार्यालयको काममा प्रयोग गर्दा कुन कुरा विचार गर्नुपर्छ?",o:["सबै सामग्री सार्वजनिक सामाजिक सञ्जालमा राख्ने","संस्थाको नीति र गोपनीयता नियम पालना गर्ने","कर्मचारीको व्यक्तिगत पासवर्ड साझा गर्ने","AI ले दिएको सबै उत्तर बिना जाँच स्वीकार गर्ने"],a:1,e:"कार्यालयको नीति र गोपनीयता नियम पालना गर्नु पहिलो शर्त हो। सार्वजनिक राख्नु, पासवर्ड साझा गर्नु वा बिना जाँच उत्तर लिनु जोखिमपूर्ण छ।"},
+ {s:1,q:"AI एपले थप सुविधा माग्दा (जस्तै क्यामेरा, सम्पर्क सूची) के गर्ने?",o:["सबै अनुमति तुरुन्तै दिने","सबै सुविधा बन्द गरेर एप प्रयोग नगर्ने","इन्टरनेटबाट डाउनलोड गरेर साझा गर्ने","अनुमति किन चाहिएको हो बुझेर मात्र दिने"],a:3,e:"अनावश्यक अनुमति दिनु गोपनीयताको जोखिम हो। अनुमति किन चाहिएको हो बुझेर मात्र दिनुहोस्।"},
+ /* सत्र ३ */
+ {s:2,q:"प्रम्प्टको पाँच तत्व (भू.का.स.ढा.सी.) मा \"सीमा\" ले के जनाउँछ?",o:["AI लाई दिइने भूमिका","लम्बाइ, भाषा र नगर्नुपर्ने कुरा तोक्नु","उत्तर कुन ढाँचामा चाहिने","पृष्ठभूमि, तथ्य र मिति"],a:1,e:"सीमा (Limits) ले उत्तरको लम्बाइ, भाषा र AI ले नगर्नुपर्ने कुरा तोक्छ। भूमिका, पृष्ठभूमि र ढाँचा अन्य तत्व हुन्।"},
+ {s:2,q:"तलका मध्ये कुन प्रम्प्ट सबैभन्दा बलियो छ?",o:["पत्र लेखिदेऊ।","सूचना बनाऊ।","यो डाटा हेर।","तपाईं नगरपालिकाका अनुभवी प्रशासकीय अधिकृत हुनुहुन्छ। असोज महिनाको प्रगति विवरण कात्तिक ५ गतेभित्र पठाउन सबै वडालाई औपचारिक पत्र लेखिदिनुहोस्। पत्र १५० शब्दभित्र होस्।"],a:3,e:"बलियो प्रम्प्टमा भूमिका, काम, सन्दर्भ, ढाँचा र सीमा सबै छन्। अरू तीन प्रम्प्टमा धेरै कुरा अस्पष्ट छन्।"},
+ {s:2,q:"प्रम्प्टमा \"भूमिका\" तत्वले के जनाउँछ?",o:["उत्तर कति लामो हुने","AI लाई कुन विज्ञ वा पदको भूमिकामा काम गर्न भन्ने","कुन ढाँचामा तालिका बनाउने","कुन सूचना नदिने"],a:1,e:"भूमिकाले AI लाई कुन विज्ञको दृष्टिकोणबाट जवाफ दिने हो भनी तोक्छ, जस्तै \"तपाईं अनुभवी लेखापाल हुनुहुन्छ।\""},
+ {s:2,q:"प्रम्प्टलाई परिष्कृत (refine) गर्नुको उद्देश्य के हो?",o:["उत्तर चाहिएको उद्देश्यसँग मिलाउन पहिलो उत्तर अपुग भएमा थप निर्देशन दिनु","AI लाई फेरि नसोध्नु","प्रम्प्ट छोटो बनाएर बिर्सिनु","सबै प्रम्प्ट एउटै बनाउनु"],a:0,e:"पहिलो उत्तर अपुग भए थप सूचना वा सीमा दिएर सुधार्दै जानु राम्रो अभ्यास हो।"},
+ {s:2,q:"AI लाई उदाहरण (example) सहितको प्रम्प्ट दिँदा के फाइदा हुन्छ?",o:["AI को गति घट्छ","उत्तर अनिवार्य रूपमा छोटो हुन्छ","ढाँचा र शैलीबारे AI लाई स्पष्ट सङ्केत मिल्छ","प्रम्प्ट गोप्य रहन्छ"],a:2,e:"उदाहरणले चाहिने ढाँचा र शैली स्पष्ट बनाउँछ, जसले उत्तर उद्देश्यअनुसार मिल्छ।"},
+ /* सत्र ४ */
+ {s:3,q:"सरकारी पत्रको मस्यौदा AI ले तयार गरेपछि सबैभन्दा पहिले के जाँच्नुपर्छ?",o:["फन्ट र रङ","कागजको साइज","तथ्य, मिति, नाम र पद मिलेका छन् कि छैनन्","पेजको संख्या"],a:2,e:"AI ले गलत मिति, नाम वा पद लेख्न सक्छ। त्यसैले तथ्य र विवरण पहिले जाँच्नु पर्छ, त्यसपछि ढाँचा मिलाउने।"},
+ {s:3,q:"AI ले थपेको ऐन, दफा वा अङ्क पत्रमा देखिए के गर्ने?",o:["ठीकै छ, यथावत् राख्ने","हटाउने वा मूल स्रोतबाट जाँचेर मात्र राख्ने","थप दफा पनि थप्ने","बिना जाँच दस्तखत गरेर पठाउने"],a:1,e:"AI ले काल्पनिक दफा वा अङ्क बनाउन सक्छ। मूल स्रोतबाट जाँच नगरी राख्नु हुँदैन।"},
+ {s:3,q:"सरकारी कागजातमा AI प्रयोग गर्दा अन्तिम जिम्मेवारी कसको हुन्छ?",o:["AI उपकरण बनाउने कम्पनीको","कागजात तयार गर्ने र जाँच गरी स्वीकृत गर्ने कर्मचारी/अधिकारीको","इन्टरनेट सेवा प्रदायकको","अपलोड गरिएको फाइलको"],a:1,e:"AI ले मस्यौदा सहयोग गर्छ, तर तथ्य जाँच र स्वीकृतिको जिम्मेवारी सम्बन्धित कर्मचारी वा अधिकारीको हो।"},
+ {s:3,q:"सरकारी पत्रमा AI ले उल्लेख गरेको मिति वा पत्र सङ्ख्या कसरी जाँच्ने?",o:["AI लाई फेरि सोधेर","मूल अभिलेख वा आधिकारिक स्रोतसँग मिलाएर","मिति जस्ताको तस्तै राखेर","सहकर्मीलाई सोधेर मात्र"],a:1,e:"मिति र पत्र सङ्ख्या मूल अभिलेखसँग मिलाएर मात्र प्रयोग गर्नुहोस्। AI को पुष्टि पर्याप्त प्रमाण होइन।"},
+ {s:3,q:"AI ले तयार गरेको प्रतिवेदनमा तथ्याङ्कको स्रोत नभए के गर्ने?",o:["स्रोत नखोजी प्रकाशित गर्ने","AI लाई स्रोत काल्पनिक बनाउन लगाउने","प्रतिवेदनको शीर्षक मात्र फेर्ने","तथ्याङ्कको मूल स्रोत खोजेर पुष्टि गर्ने वा हटाउने"],a:3,e:"स्रोत नभएको तथ्याङ्क विश्वसनीय हुँदैन। मूल स्रोत खोजेर पुष्टि गर्नुहोस् वा हटाउनुहोस्।"},
+ /* सत्र ५ */
+ {s:4,q:"अङ्ग्रेजी परिपत्रको नेपाली अनुवादमा प्राविधिक शब्दको लागि के गर्ने राम्रो हुन्छ?",o:["नेपाली रूपपछि कोष्ठमा अङ्ग्रेजी शब्द राख्ने","अङ्ग्रेजी मात्र राख्ने","त्यो शब्द नै हटाउने","अनुवाद नै नगर्ने"],a:0,e:"जस्तै: गुनासो सुनुवाइ अधिकारी (Grievance Hearing Officer)। यसले पाठकलाई दुवै शब्द बुझ्न सघाउँछ।"},
+ {s:4,q:"गोप्य वा व्यक्तिगत कागजात AI मा अपलोड गर्नुअघि के गर्ने?",o:["फाइल कसैलाई नदिने","फाइलको नाम ठूलो अक्षरमा लेख्ने","व्यक्तिगत पहिचान हटाउने वा सार्वजनिक कागजात मात्र प्रयोग गर्ने","फाइलको नाम परिवर्तन गर्ने"],a:2,e:"नागरिकको व्यक्तिगत विवरण, गोप्य पत्र वा कर्मचारीको व्यक्तिगत फाइल अपलोड नगर्नुहोस्। पहिचान हटाइएका वा सार्वजनिक कागजात मात्र प्रयोग गर्नुहोस्।"},
+ {s:4,q:"अनुवादको गुणस्तर जाँच्ने सबैभन्दा राम्रो तरिका कुन हो?",o:["अनुवादित पाठलाई फेरि AI बाट मात्र जाँच्ने","अनुवाद छोटो भयो कि भनी गन्ने","मूल पाठ र अनुवाद दुवै भाषा जान्ने व्यक्तिले पुनरावलोकन गर्ने","फन्ट मिलाउने"],a:2,e:"AI ले अर्थ फेरिने गल्ती गर्न सक्छ। मूल पाठ र अनुवाद दुवै जान्ने व्यक्तिको पुनरावलोकन सबैभन्दा भरपर्दो हो।"},
+ {s:4,q:"सारांश बनाउँदा मुख्य बुँदा छुटेको छ कि भनी के गर्ने?",o:["सारांश र मूल पाठका मुख्य बुँदा मिलाएर जाँच्ने","सारांशको लम्बाइ मात्र हेर्ने","पाठकलाई थाहा नभएको भनेर छोड्ने","AI लाई फेरि अङ्ग्रेजीमा लेख्न लगाउने"],a:0,e:"मूल पाठका मुख्य बुँदा सारांशमा छन् कि छैनन् भनी तुलना गर्नुहोस्।"},
+ {s:4,q:"गोप्य प्रतिवेदनको सारांश AI बाट बनाउनुअघि के गर्नु उचित हुन्छ?",o:["नाम, ठेगाना र संवेदनशील विवरण हटाएर मात्र प्रयोग गर्ने","पूरै फाइल सार्वजनिक ट्यागसहित अपलोड गर्ने","पासवर्ड सहित पठाउने","प्रतिवेदन नै नपढ्ने"],a:0,e:"संवेदनशील विवरण हटाएर मात्र प्रयोग गर्नु गोपनीयता रक्षा गर्ने सही तरिका हो।"},
+ /* सत्र ६ */
+ {s:5,q:"Excel फाइल AI मा अपलोड गरेपछि पहिले कुन प्रम्प्ट दिनु उचित हुन्छ?",o:["चार्ट बनाऊ","निष्कर्ष लेख","सिधै सूत्र देऊ","फाइलमा कतिवटा पाना छन् र प्रत्येक पानामा के तथ्याङ्क छ, बुझाउनुहोस्"],a:3,e:"पहिले फाइल बुझ्न लगाउनुपर्छ। त्यसपछि मात्र सफाइ, विश्लेषण र चार्ट माग्नुहोस्। बुझ्नुअघि गरिएको विश्लेषण गलत हुन सक्छ।"},
+ {s:5,q:"AI ले निकालेको हिसाब प्रतिवेदनमा राख्नुअघि कसरी जाँच्ने?",o:["AI लाई फेरि सोध्ने मात्र","Excel वा क्याल्कुलेटरबाट आफैं जाँच्ने","सामाजिक सञ्जालमा सोधेर","रङ हेरेर"],a:1,e:"AI ले पङ्क्ति छुटाउन, गलत महल जोड्न वा प्रतिशत उल्टो निकाल्न सक्छ। हरेक अङ्क आफैं जाँच्नुहोस्।"},
+ {s:5,q:"Excel मा सूत्र =SUM(B5:B16) ले के गर्छ?",o:["B5 देखि B16 सम्मको जोड निकाल्छ","B5 देखि B16 सम्मको औसत निकाल्छ","प्रतिशत परिवर्तन निकाल्छ","क्रम (Rank) निकाल्छ"],a:0,e:"SUM ले दिइएको दायरामा भएका सबै सङ्ख्याको जोड निकाल्छ। AVERAGE ले औसत, RANK ले क्रम निकाल्छ।"},
+ {s:5,q:"Excel मा =AVERAGE(B2:B10) ले के गर्छ?",o:["B2 देखि B10 सम्मको औसत निकाल्छ","B2 देखि B10 सम्मको जोड निकाल्छ","सबैभन्दा ठूलो मान निकाल्छ","पङ्क्ति सङ्ख्या गन्छ"],a:0,e:"AVERAGE ले दायरामा भएका सङ्ख्याको औसत निकाल्छ। जोडका लागि SUM प्रयोग हुन्छ।"},
+ {s:5,q:"AI ले बनाएको चार्ट वा तालिकाको अङ्क जाँच्न सबैभन्दा प्रभावकारी तरिका कुन हो?",o:["चार्टको रङ हेर्ने","AI लाई फेरि उत्तर दिन भन्ने","मूल डाटाबाट एउटा दुई नमूना गणना गरेर मिलाउने","शीर्षक मात्र पढ्ने"],a:2,e:"मूल डाटाबाट केही मान आफैं गणना गरेर चार्टसँग मिलाउँदा त्रुटि सजिलै पत्ता लाग्छ।"}
+];
+
+/* पश्च-तालिम परीक्षा: ३० प्रश्न, सत्रअनुसार समूहबद्ध (प्रत्येक सत्रमा ५) */
+var POST = [
+ /* सत्र १ */
+ {s:0,q:"राष्ट्रिय कृत्रिम बौद्धिकता नीति कुन वर्ष मन्त्रिपरिषद्बाट स्वीकृत भयो?",o:["२०७४","२०७५","२०८१","२०८२"],a:3,e:"राष्ट्रिय कृत्रिम बौद्धिकता नीति, २०८२ लाई मन्त्रिपरिषद्ले वि.सं. २०८२ साउन २६ गते स्वीकृत गरेको हो।"},
+ {s:0,q:"मेसिन लर्निङ र जेनेरेटिभ AI बीचको मुख्य फरक के हो?",o:["मेसिन लर्निङले सधैं चित्र मात्र बनाउँछ","जेनेरेटिभ AI ले सिकेको ढाँचाबाट नयाँ सामग्री बनाउँछ, जबकि मेसिन लर्निङले डाटाबाट ढाँचा पहिचान गरी भविष्यवाणी वा वर्गीकरण गर्छ","दुवै एउटै हुन्, कुनै फरक छैन","जेनेरेटिभ AI ले डाटा सधैं मेटाउँछ"],a:1,e:"मेसिन लर्निङले डाटाबाट ढाँचा सिकेर वर्गीकरण वा भविष्यवाणी गर्छ। जेनेरेटिभ AI ले त्यही सिकाइको आधारमा नयाँ पाठ, चित्र वा आवाज सिर्जना गर्छ।"},
+ {s:0,q:"नागरिक सेवामा AI को एउटा व्यावहारिक उदाहरण कुन हो?",o:["नागरिक सेवाका सामान्य प्रश्नको जवाफ छिटो दिने च्याटबोट","कर्मचारीको तलब सिधै कटाउने प्रणाली मात्र","सडक मर्मत गर्ने भारी मेसिन","इन्टरनेट बन्द गर्ने उपकरण"],a:0,e:"नागरिक सेवामा AI ले सामान्य प्रश्नको उत्तर छिटो दिन र कामको भार घटाउन सघाउँछ। तर संवेदनशील निर्णय मानिसको जिम्मेवारी हो।"},
+ {s:0,q:"AI मोडलको ज्ञान कुन हदसम्म मात्र अद्यावधिक हुन्छ?",o:["सबै वर्तमान समाचार तत्काल जानकारीमा हुन्छ","AI मा कुनै सीमा हुँदैन","केवल विज्ञानको विषय मात्र जानिन्छ","ताजा घटना र नयाँ नीति बारे प्रस्तुत तथ्यको मिति सम्मको मात्र सीमा हुन्छ"],a:3,e:"AI मोडलको ज्ञान तालिम डाटाको मितिसम्म सीमित हुन्छ। नयाँ सूचना वा ताजा नीतिका लागि ताजा स्रोत जाँच्नुपर्छ।"},
+ {s:0,q:"राष्ट्रिय AI नीति जस्ता नीतिको मुख्य उद्देश्य कुन हो?",o:["सबै AI एप बन्द गर्नु","AI को जिम्मेवार, सुरक्षित र समावेशी प्रयोगको मार्गदर्शन गर्नु","विदेशी कम्पनीलाई मात्र लाभ दिनु","इन्टरनेट शुल्क बढाउनु"],a:1,e:"AI नीतिले विकास, सुरक्षा, नैतिकता र समावेशिताको मार्गदर्शन गर्छ।"},
+ /* सत्र २ */
+ {s:1,q:"Microsoft Copilot प्रयोग गर्न सामान्यतः कुन खाता चाहिन्छ?",o:["Gmail खाता मात्र","Microsoft खाता (Hotmail वा Outlook)","Yahoo खाता","Apple ID मात्र"],a:1,e:"Copilot मा Sign in गर्न Microsoft खाता चाहिन्छ। खाता नभए नयाँ खोल्न सकिन्छ।"},
+ {s:1,q:"दिइएको तालिका अनुसार, कुन काम AI को सहायताले घण्टौंको कामलाई ३०–४५ मिनेटमा सार्न सक्छ?",o:["सामाजिक सञ्जाल पोस्ट लेख्ने (३० मिनेट)","अङ्ग्रेजी कागजातको अनुवाद (१ घण्टा)","पर्चा छाप्ने व्यवस्था (१ दिन)","तथ्याङ्क विश्लेषण (जोड, प्रतिशत, चार्ट)"],a:3,e:"सत्र २ को तालिकामा तथ्याङ्क विश्लेषणको घण्टौंको काम ३०–४५ मिनेटमा हुने अनुमान दिइएको छ। अनुमान भए पनि AI को उत्तर जाँच्ने समय छुट्याउनुपर्छ।"},
+ {s:1,q:"AI उपकरणमा खाता खोल्दा सबैभन्दा सुरक्षित अभ्यास कुन हो?",o:["सबै खातामा एउटै पासवर्ड प्रयोग गर्ने","दुई-चरण प्रमाणीकरण (Two-step verification) सक्रिय गर्ने","पासवर्ड कागजमा लेखेर सार्वजनिक ठाउँमा राख्ने","हरेक सूचनामा बिना पढी स्वीकृति दिने"],a:1,e:"दुई-चरण प्रमाणीकरणले पासवर्ड चोरिए पनि खाता सुरक्षित राख्छ। पासवर्ड दोहोर्‍याउनु, सार्वजनिक राख्नु वा बिना पढी स्वीकृति दिनु जोखिमपूर्ण हो।"},
+ {s:1,q:"AI सहायक प्रयोग गर्दा समय बचाउने सबैभन्दा राम्रो तरिका कुन हो?",o:["दैनिक दोहोरिने ढाँचाका पत्र, सूची वा सारांशको मस्यौदा बनाउन","प्रत्येक काम पूरै AI लाई छोड्ने","कामको गुणस्तर जाँच नगर्ने","सबै बैठक रद्द गर्ने"],a:0,e:"दोहोरिने मस्यौदा AI बाट बनाएर मानिसले सम्पादन गर्दा समय बचत हुन्छ।"},
+ {s:1,q:"AI उपकरणको आउटपुट सम्पादन (edit) गर्नुको फाइदा के हो?",o:["AI को उत्तर फेरि कहिल्यै नपढ्ने","मूल पाठ मेटाउने","स्थानीय सन्दर्भ र आधिकारिकता मिलाएर अन्तिम सामग्री सुधार्न सकिन्छ","समय खेर फाल्ने"],a:2,e:"स्थानीय तथ्य, नियम र भाषाशैली मिलाएर मात्र सामग्री आधिकारिक बनाउन सकिन्छ।"},
+ /* सत्र ३ */
+ {s:2,q:"प्रम्प्टमा \"पृष्ठभूमि\" र \"सीमा\" जस्ता तत्व किन दिनुपर्छ?",o:["AI लाई छिटो सुत्न लगाउन","प्रम्प्ट लामो बनाउन मात्र","उत्तर सधैं अङ्ग्रेजीमा आउन","AI लाई विषय र नियम बुझाएर सान्दर्भिक, सुसङ्गत उत्तर पाउन"],a:3,e:"विषयको पृष्ठभूमि र सीमा दिँदा AI ले अनुमान कम गर्छ र उत्तर उद्देश्यअनुसार बढी उपयोगी हुन्छ।"},
+ {s:2,q:"प्रम्प्टमा \"ढाँचा\" तत्वले के तोक्छ?",o:["AI लाई दिइने भूमिका","पृष्ठभूमि र सन्दर्भ","उत्तर कुन ढाँचामा चाहिने (जस्तै तालिका, बुँदा वा पत्र)","नगर्नुपर्ने कुरा"],a:2,e:"ढाँचाले उत्तर तालिका, बुँदा, पत्र वा अनुच्छेद जस्तो कुन रूपमा चाहिने हो भन्ने तोक्छ। भूमिका, सन्दर्भ र सीमा अन्य तत्व हुन्।"},
+ {s:2,q:"राम्रो प्रम्प्टमा सन्दर्भ (पृष्ठभूमि) किन आवश्यक हुन्छ?",o:["AI लाई विषयको पृष्ठभूमि दिएर सान्दर्भिक र सुसङ्गत उत्तर पाउन","AI लाई छिटो सुत्न लगाउन","प्रम्प्ट लामो बनाउनका लागि मात्र","उत्तर सधैं अङ्ग्रेजीमा आउनका लागि"],a:0,e:"विषयबारे जानकारी दिँदा AI ले अनुमान कम गर्छ र उत्तर उद्देश्यअनुसार बढी उपयोगी हुन्छ।"},
+ {s:2,q:"प्रम्प्टमा कार्यालयको विषय, पाठक र उद्देश्य उल्लेख गर्नु किन उपयोगी हुन्छ?",o:["केवल तपाईंको मनपर्ने रङ","कार्यालयको विषय, पाठक र उद्देश्य","पासवर्ड सहित खाता विवरण","धेरै अनावश्यक शब्द"],a:1,e:"यी विवरणले AI लाई कुन सन्दर्भमा, कसका लागि र किन लेख्ने हो भनी स्पष्ट बनाउँछन्।"},
+ {s:2,q:"प्रम्प्टमा शब्द सीमा (जस्तै १५० शब्द) तोक्नुको फाइदा के हो?",o:["AI ले छिटो सुत्छ","उत्तर अनिवार्य रूपमा अङ्ग्रेजीमा हुन्छ","उत्तरको लम्बाइ अनुमानित र प्रयोगयोग्य हुन्छ","प्रम्प्ट पूरै छोटिन्छ"],a:2,e:"शब्द सीमाले उत्तर पत्र, सूचना वा सारांशको लागि उपयुक्त लम्बाइमा आउँछ।"},
+ /* सत्र ४ */
+ {s:3,q:"सरकारी पत्रको मस्यौदा सम्पादन गर्दा AI लाई सबैभन्दा उपयोगी कुन काम दिन सकिन्छ?",o:["पत्रको भाषा सरल र औपचारिक बनाउन","आफ्नो नाममा दस्तखत गर्न","पत्र नपठाई सिधै फाइलिङ गर्न","आधिकारिक स्रोत बिना नयाँ ऐन बनाउन"],a:0,e:"AI ले भाषा र ढाँचा सुधार्न सक्छ। तर दस्तखत, फाइलिङ वा कानुनी व्यवस्था बनाउने काम मानिसको अधिकार र जिम्मेवारी हो।"},
+ {s:3,q:"AI ले तयार गरेको प्रतिवेदनमा तालिका वा गणना छ भने पहिले के जाँच्ने?",o:["रङ र फन्ट","गणना मूल तथ्याङ्कसँग मिल्छ कि मिल्दैन","पृष्ठ सङ्ख्या मात्र","फाइलको नाम"],a:1,e:"गणना मूल तथ्याङ्कसँग मिल्छ कि मिल्दैन भनी जाँच्नु पहिलो काम हो।"},
+ {s:3,q:"प्रतिवेदनमा नागरिकको व्यक्तिगत विवरण आवश्यक पर्दा AI लाई कसरी दिने?",o:["वास्तविक नाम र नम्बर सिधै दिने","फोटोसहित अपलोड गर्ने","खाली ठाउँ वा सङ्केत [नाम] प्रयोग गर्ने","सामाजिक सञ्जालमा राखेर"],a:2,e:"व्यक्तिगत विवरण नदिई सङ्केत वा खाली ठाउँ प्रयोग गर्नु गोपनीयताको सही अभ्यास हो।"},
+ {s:3,q:"नागरिकको फोन नम्बर वा नागरिकता नम्बर AI लाई किन नदिने?",o:["AI ले नेपाली बुझ्दैन","नम्बर धेरै लामो हुन्छ","प्रम्प्टको ढाँचा बिग्रन्छ","गोपनीयता जोखिममा पर्छ"],a:3,e:"व्यक्तिगत तथ्याङ्कको गोपनीयता जोखिममा पर्न सक्छ। त्यसैले त्यस्तो ठाउँमा [नाम] जस्तो खाली राख्नुहोस्।"},
+ {s:3,q:"AI ले थपेको अनुच्छेद उचित छ कि छैन भनी कसरी निर्णय गर्ने?",o:["AI ले लेखेकोले स्वतः ठीक","लामो भएकोले ठीक","छोटो भएकोले ठीक","मूल उद्देश्य, नियम र तथ्यसँग मिलाएर मानवले पुनरावलोकन गरेर"],a:3,e:"AI का थपिएका अनुच्छेद पनि मूल उद्देश्य, नियम र तथ्यसँग मिलाएर मानिसले जाँच्नुपर्छ।"},
+ /* सत्र ५ */
+ {s:4,q:"सारांश लेख्दा सबैभन्दा महत्त्वपूर्ण कुरा के हो?",o:["मूल पाठको मुख्य सन्देश र निष्कर्ष सुरक्षित राख्नु","पाठको सबै वाक्य हुबहु कपी गर्नु","सबैभन्दा लामो उदाहरण मात्र राख्नु","अनावश्यक शीर्षक थप्नु"],a:0,e:"सारांशले मूल पाठको मुख्य सन्देश र निष्कर्ष सङ्क्षेपमा दिनुपर्छ।"},
+ {s:4,q:"लामो प्रतिवेदनको सारांश माग्दा प्रम्प्टमा के उल्लेख गर्नु उपयोगी हुन्छ?",o:["सारांश कुन पाठकका लागि हो र कति शब्दभित्र हो","केवल \"सारांश बनाऊ\" भन्नु","पृष्ठ नम्बर मात्र","AI उपकरणको नाम"],a:0,e:"पाठक र शब्द सीमा तोक्दा सारांशको ढाँचा र गहिराइ उद्देश्यअनुसार मिल्छ।"},
+ {s:4,q:"AI बाट आएको अनुवाद वा सारांश पठाउनुअघि सबैभन्दा उचित कदम कुन हो?",o:["जाँच नगरी छिटो पठाउने","केवल शीर्षक हेर्ने","अर्को AI लाई मात्र सोधेर पुष्टि गर्ने","मूल स्रोतसँग मिलाएर मानवले पुनरावलोकन गर्ने"],a:3,e:"AI ले गल्ती गर्न सक्छ। अर्को AI को उत्तर पनि प्रमाण होइन। मूल स्रोतसँग मिलाएर मानिसले जाँच्नु नै सुरक्षित तरिका हो।"},
+ {s:4,q:"अनुवादमा मूल अर्थ नबिग्रियोस् भनी के जाँच्नुपर्छ?",o:["अक्षर सङ्ख्या मात्र","फन्ट र साइज","मूल पाठ र अनुवादको अर्थ मेल खान्छ कि खाँदैन","पानाको रङ"],a:2,e:"अनुवाद छिटो हुन सक्छ तर अर्थ फेरिन सक्छ। मूल पाठसँग मिलाएर मानवले पुनरावलोकन गर्नुपर्छ।"},
+ {s:4,q:"अनुवादमा सांस्कृतिक वा कानुनी शब्दको अर्थ फेरिएको भए कसरी सच्याउने?",o:["अनुवाद नै हटाउने","AI लाई फेरि अङ्ग्रेजीमा मात्र लेख्न भन्ने","मूल स्रोत र सम्बन्धित विज्ञको सल्लाहसँग मिलाएर सच्याउने","जस्ताको तस्तै राख्ने"],a:2,e:"कानुनी र सांस्कृतिक शब्दको अर्थ सही गर्न मूल स्रोत र सम्बन्धित विज्ञको सल्लाह चाहिन्छ।"},
+ /* सत्र ६ */
+ {s:5,q:"तथ्याङ्क गोप्य भएमा Excel सूत्र माग्ने सही तरिका कुन हो?",o:["फाइल अपलोड गर्ने","व्यक्तिगत विवरणसहित तालिका पठाउने","तथ्याङ्क नदिई तालिकाको संरचना मात्र बताउने","पासवर्डसहित पठाउने"],a:2,e:"तालिकाको संरचना (कुन महलमा के छ) र चाहिने परिणाम मात्र बताउनुहोस्। तथ्याङ्क नदिँदा गोपनीयता सुरक्षित रहन्छ।"},
+ {s:5,q:"AI ले बनाएको तथ्याङ्क तालिकामा कुनै पङ्क्ति छुटेको छ कि भनी कसरी जाँच्ने?",o:["AI लाई सोधेर मात्र","रङ हेरेर","मूल फाइलको पङ्क्ति सङ्ख्या र योग मिलाएर","सञ्जालमा सोधेर"],a:2,e:"मूल फाइलका पङ्क्ति सङ्ख्या र जोडसँग तुलना गर्दा छुटेका वा गलत पङ्क्ति सजिलै पत्ता लाग्छन्।"},
+ {s:5,q:"Excel मा =COUNTIF(C2:C50,\"सक्रिय\") ले के गर्छ?",o:["C2 देखि C50 मा 'सक्रिय' शब्द भएका कक्ष गन्छ","C2 देखि C50 सम्मको जोड निकाल्छ","C2 देखि C50 मा खाली कक्ष हटाउँछ","रङ परिवर्तन गर्छ"],a:0,e:"COUNTIF ले दिइएको सर्त पूरा गर्ने कक्षहरू गन्छ।"},
+ {s:5,q:"AI ले तथ्याङ्कबाट बनाएको प्रतिशत जाँच्न कुन तरिका सबैभन्दा सरल छ?",o:["प्रतिशतको फन्ट हेर्ने","AI लाई केवल फेरि सोध्ने","प्रतिशत चिह्न हटाउने","भाग (÷) र गुणा (×) गरेर आफैंले हिसाब मिलाउने"],a:3,e:"प्रतिशत आफैंले भाग र गुणा गरेर जाँच्दा त्रुटि सजिलै पत्ता लाग्छ।"},
+ {s:5,q:"Excel तालिकाको गोप्य स्तम्भ (जस्तै नाम) AI मा पठाउनुअघि के गर्ने?",o:["फाइल पासवर्डविना पठाउने","स्तम्भ हटाउने वा सङ्केत (ID) मा बदल्ने","सबै स्तम्भ रङ्गीन बनाउने","नाम ठूलो अक्षरमा लेख्ने"],a:1,e:"व्यक्तिगत पहिचान हटाएर सङ्केत प्रयोग गर्नु गोपनीयता सुरक्षित राख्ने तरिका हो।"}
+];
+
+var TRAINER = "sandhikharka-2083"; // प्रशिक्षकको पासकोड (यो बदल्न सकिन्छ)
+var RESULTS = "assessment_results";
+var SB_URL = "https://htcfpqfqkskchdwjnoqo.supabase.co";
+var SB_KEY = "sb_publishable_-eezpn3nkJBKeNZ2lyINsg_g-pdsuLc";
+var TESTS = [
+  {v:"pre",  l:"पूर्व-तालिम परीक्षा (Pre-training, ३० प्रश्न)"},
+  {v:"post", l:"पश्च-तालिम परीक्षा (Post-training, ३० प्रश्न)"}
+];
+function bankOf(t){return t==="post"?POST:PRE;}
+function testLabel(t){return t==="post"?"पश्च-तालिम":"पूर्व-तालिम";}
+
+/* ---------- Respondent profile ---------- */
+var GENDERS = [
+  {v:"Male",   l:"पुरुष (Male)"},
+  {v:"Female", l:"महिला (Female)"},
+  {v:"Others", l:"अन्य (Others)"}
+];
+var AGES = [
+  {v:"Below 20",     l:"२० वर्षभन्दा कम (Below 20)"},
+  {v:"20-30",        l:"२०–३० (20-30)"},
+  {v:"30-40",        l:"३०–४० (30-40)"},
+  {v:"40-50",        l:"४०–५० (40-50)"},
+  {v:"50 and above", l:"५० वर्षभन्दा माथि (50 above)"}
+];
+var EDUS = [
+  {v:"High School",       l:"हाई स्कुल (High School)"},
+  {v:"Undergraduate",     l:"स्नातक (Undergraduate)"},
+  {v:"Masters and Above", l:"स्नातकोत्तर र माथि (Masters and Above)"}
+];
+function labelOf(list,v){for(var i=0;i<list.length;i++){if(list[i].v===v)return list[i].l;}return "—";}
+function idxOf(list,v){for(var i=0;i<list.length;i++){if(list[i].v===v)return i;}return -1;}
+var GENDER_VALS=GENDERS.map(function(x){return x.v;});
+var AGE_VALS=AGES.map(function(x){return x.v;});
+var EDU_VALS=EDUS.map(function(x){return x.v;});
+var TEST_VALS=["pre","post"];
+
+/* ---------- helpers ---------- */
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function $(id){return document.getElementById(id);}
+function L(i){return "ABCD".charAt(i);}
+function pctOf(n,total){return total?Math.round(n/total*100):0;}
+function gradeOf(p){
+  if(p>=90) return "A+";
+  if(p>=80) return "A";
+  if(p>=70) return "B+";
+  if(p>=60) return "B";
+  if(p>=50) return "C";
+  return "D";
+}
+function gradeLabel(g){return {"A+":"९०%+","A":"८०%+","B+":"७०%+","B":"६०%+","C":"५०%+","D":"<५०%"}[g];}
+function scoreOf(ans,bank){var n=0;for(var i=0;i<bank.length;i++){if(ans[i]===bank[i].a)n++;}return n;}
+function validRecord(r){
+  if(!r || TEST_VALS.indexOf(r.test)<0) return false;
+  if(typeof r.code!=="string" || !r.code) return false;
+  var B=bankOf(r.test);
+  return Array.isArray(r.answers) && r.answers.length===B.length
+    && GENDER_VALS.indexOf(r.gender)>=0 && AGE_VALS.indexOf(r.ageGroup)>=0 && EDU_VALS.indexOf(r.education)>=0;
+}
+function meanOf(a){return a.length?a.reduce(function(x,y){return x+y;},0)/a.length:null;}
+function idxFor(B,sid){var o=[];B.forEach(function(q,i){if(q.s===sid)o.push(i);});return o;}
+function shareOf(ans,B,idxs){
+  if(!idxs.length) return null;
+  var c=0;idxs.forEach(function(k){if(ans[k]===B[k].a)c++;});
+  return c/idxs.length*100;
+}
+
+/* Storage: Lovable Supabase table, via its REST API. */
+function sbHeaders(extra){
+  return Object.assign({apikey:SB_KEY,Authorization:"Bearer "+SB_KEY,"Content-Type":"application/json"},extra||{});
+}
+function toRow(b){
+  return {test:b.test,code:b.code,gender:b.gender,age_group:b.ageGroup,education:b.education,
+          answers:b.answers,score:b.score,max_score:b.max,seconds:b.seconds,submitted_at:b.submittedAt};
+}
+function fromRow(r){
+  return {test:r.test,code:r.code,gender:r.gender,ageGroup:r.age_group,education:r.education,
+          answers:r.answers,score:r.score,max:r.max_score,seconds:r.seconds,submittedAt:r.submitted_at};
+}
+
+/* ---------- participant exam ---------- */
+var st={};
+function resetExam(){
+  st={phase:"start",test:"",bank:null,code:"",gender:"",ageGroup:"",education:"",answers:[],cur:0,startedAt:0,submitArm:false,result:null,save:"idle"};
+}
+resetExam();
+
+function renderApp(){
+  var app=$("app");
+  if(st.phase==="start") app.innerHTML=viewStart();
+  else if(st.phase==="quiz") app.innerHTML=viewQuiz();
+  else app.innerHTML=viewResult();
+}
+
+function selectHtml(id,label,list,current){
+  var opts='<option value="">— छान्नुहोस् —</option>';
+  list.forEach(function(x){
+    opts+='<option value="'+esc(x.v)+'"'+(current===x.v?' selected':'')+'>'+esc(x.l)+'</option>';
+  });
+  return '<div class="field"><label for="'+id+'">'+esc(label)+'</label><select id="'+id+'">'+opts+'</select></div>';
+}
+
+function viewStart(){
+  return '<section class="card">'
+   +'<h2>परीक्षामा स्वागत छ</h2>'
+   +'<p>यो परीक्षामा ३० वटा बहुविकल्पीय प्रश्न छन्। प्रत्येक प्रश्नमा एउटा मात्र सही उत्तर हुन्छ। सबै प्रश्नको उत्तर दिएपछि मात्र जम्मा गर्न सकिन्छ।</p>'
+   +'<p class="muted small">तालिमअघि <strong>पूर्व-तालिम</strong> र तालिमपछि <strong>पश्च-तालिम</strong> परीक्षा दिइन्छ। तपाईंलाई दिइएको परीक्षा छान्नुहोस्।</p>'
+   +'<p class="muted small">जम्मा गरेपछि परिणाम प्रशिक्षकको डासबोर्डमा स्वतः देखिन्छ। परिणाम सकिएपछि प्रत्येक प्रश्नको सही उत्तर र किन सही हो भन्ने व्याख्या पनि हेर्न सक्नुहुन्छ।</p>'
+   +'<p class="muted small">सुरु गर्नुअघि तलका विवरण भर्नुहोस्। यी विवरण गोप्य राखिन्छन् र समूहगत विश्लेषणका लागि मात्र प्रयोग हुन्छन्।</p>'
+   +selectHtml("tst","परीक्षाको प्रकार (Test Type)",TESTS,st.test)
+   +'<div class="field"><label for="code">सहभागी कोड (Participant Code)</label><input id="code" type="text" maxlength="20" autocomplete="off" value="'+esc(st.code)+'" placeholder="जस्तै: A-101"><p class="note" style="margin-top:6px">यो कोड तपाईंले रोज्नुहोस् (रोल नम्बर वा सङ्केत)। पूर्व र पश्च-तालिम दुवैमा <strong>उही कोड</strong> प्रयोग गर्नुहोस्। नाम नलेख्नुहोस्।</p></div>'
+   +selectHtml("gen","लिङ्ग (Gender)",GENDERS,st.gender)
+   +selectHtml("age","उमेर समूह (Age Group)",AGES,st.ageGroup)
+   +selectHtml("edu","शैक्षिक तह (Education Level)",EDUS,st.education)
+   +'<p id="profErr" class="msg c-bad hide">कृपया सबै विवरण भर्नुहोस् र सहभागी कोड लेख्नुहोस्।</p>'
+   +'<div class="row" style="margin-top:16px"><button class="primary" data-action="begin">परीक्षा सुरु गर्नुहोस्</button></div>'
+   +'</section>';
+}
+
+function viewQuiz(){
+  var B=st.bank, N=B.length;
+  var answered=st.answers.filter(function(a){return a>=0;}).length;
+  var q=B[st.cur];
+  var opts="";
+  for(var i=0;i<4;i++){
+    var on=st.answers[st.cur]===i;
+    opts+='<button class="opt'+(on?' on':'')+'" data-action="pick" data-i="'+i+'" aria-pressed="'+on+'">'
+      +'<span class="L">'+L(i)+'</span><span>'+esc(q.o[i])+'</span></button>';
+  }
+  var nav="";
+  for(var k=0;k<N;k++){
+    var cls=(st.answers[k]>=0?" done":"")+(k===st.cur?" cur":"");
+    nav+='<button class="'+cls.trim()+'" data-action="goto" data-k="'+k+'" aria-label="प्रश्न '+(k+1)+'">'+(k+1)+'</button>';
+  }
+  var allDone=answered===N;
+  var submitBlock = allDone
+    ? (st.submitArm
+        ? '<div class="row"><span class="small">पक्का जम्मा गर्नुहुन्छ? जम्मा गरेपछि उत्तर बदल्न सकिँदैन।</span><button class="primary" data-action="submit">हो, जम्मा गर्नुहोस्</button><button data-action="disarm">रद्द</button></div>'
+        : '<button class="primary" data-action="arm">सबै उत्तर जम्मा गर्नुहोस्</button>')
+    : '<p class="note">सबै '+N+' प्रश्नको उत्तर दिएपछि जम्मा गर्न सकिन्छ। बाँकी: '+(N-answered)+'</p>';
+  return '<section class="card">'
+   +'<div class="row" style="justify-content:space-between"><span class="small muted">'+esc(labelOf(TESTS,st.test))+' · उत्तर दिएको '+answered+'/'+N+'</span><span class="small muted">कोड: '+esc(st.code)+'</span></div>'
+   +'<div class="progress" aria-hidden="true"><i style="width:'+Math.round(answered/N*100)+'%"></i></div>'
+   +'<p class="small muted" style="margin-top:14px">प्रश्न '+(st.cur+1)+' / '+N+' · '+esc(SESSIONS[q.s].label)+'</p>'
+   +'<h2 style="margin-top:6px">'+esc(q.q)+'</h2>'
+   +opts
+   +'<div class="row" style="justify-content:space-between;margin-top:16px">'
+   +'<button data-action="prev" '+(st.cur===0?'disabled':'')+'>← अघिल्लो</button>'
+   +'<button data-action="next" '+(st.cur===N-1?'disabled':'')+'>अर्को →</button>'
+   +'</div>'
+   +'<div class="qnav" aria-label="प्रश्न नेभिगेसन">'+nav+'</div>'
+   +'<div style="margin-top:18px">'+submitBlock+'</div>'
+   +'</section>';
+}
+
+function saveNotice(){
+  if(st.save==="saving") return '<p class="msg muted">परिणाम प्रशिक्षकको डासबोर्डमा पठाउँदै…</p>';
+  if(st.save==="saved") return '<p class="msg c-ok">✔ तपाईंको परिणाम सुरक्षित भयो। प्रशिक्षकको डासबोर्डमा देखिन्छ।</p>';
+  if(st.save==="nodb") return '<p class="msg c-bad">परिणाम सुरक्षित गर्न सकिएन। यो पृष्ठ साइन इन भएर खोल्नुहोस्।</p>'
+    +'<p class="small muted">त्रुटि कोड: '+esc(st.errCode)+'</p>'
+    +'<div class="row"><button data-action="retry">फेरि प्रयास गर्नुहोस्</button></div>';
+  if(st.save==="error") return '<p class="msg c-bad">परिणाम सुरक्षित गर्दा समस्या भयो। प्रशिक्षकलाई यो कोड देखाउनुहोस्।</p>'
+    +'<p class="small muted">त्रुटि कोड: '+esc(st.errCode)+'</p>'
+    +'<div class="row"><button data-action="retry">फेरि प्रयास गर्नुहोस्</button></div>';
+  return "";
+}
+
+function viewResult(){
+  var r=st.result, B=st.bank, N=B.length;
+  var p=pctOf(r.score,N);
+  var rev="";
+  for(var i=0;i<N;i++){
+    var q=B[i];
+    var mine=r.answers[i];
+    var ok=mine===q.a;
+    rev+='<article class="rev '+(ok?'ok':'bad')+'">'
+      +'<div class="row" style="justify-content:space-between"><strong>प्रश्न '+(i+1)+'</strong><span class="chip '+(ok?'c-ok':'c-bad')+'">'+(ok?'सही ✔':'गलत ✘')+'</span></div>'
+      +'<p style="margin:6px 0 0;font-weight:700">'+esc(q.q)+'</p>'
+      +'<p class="ans small">तपाईंको उत्तर: '+(mine>=0?esc(L(mine)+'. '+q.o[mine]):'दिइएको छैन')+'</p>'
+      +'<p class="ans small"><strong>सही उत्तर: '+esc(L(q.a)+'. '+q.o[q.a])+'</strong></p>'
+      +'<p class="small" style="margin:6px 0 0"><span class="muted">किन सही:</span> '+esc(q.e)+'</p>'
+      +'</article>';
+  }
+  return '<section class="card">'
+   +'<h2>तपाईंको परिणाम · '+esc(labelOf(TESTS,st.test))+'</h2>'
+   +'<div class="kpis">'
+   +'<div class="kpi"><span class="muted small">अङ्क</span><b>'+r.score+' / '+N+'</b></div>'
+   +'<div class="kpi"><span class="muted small">प्रतिशत</span><b>'+p+'%</b></div>'
+   +'<div class="kpi"><span class="muted small">ग्रेड</span><b>'+gradeOf(p)+'</b></div>'
+   +'<div class="kpi"><span class="muted small">विवरण</span><b style="font-size:15px;font-weight:700">'+esc(st.code)+'<br>'+esc(labelOf(GENDERS,st.gender))+'<br>'+esc(labelOf(AGES,st.ageGroup))+'<br>'+esc(labelOf(EDUS,st.education))+'</b></div>'
+   +'</div>'
+   +'<p class="small muted" style="margin-top:12px">'+(p>=50?'उत्तीर्ण (५०% वा माथि)।':'५०% भन्दा कम। तालिमका सामग्री फेरि पढ्नुहोस्।')+'</p>'
+   +saveNotice()
+   +'<h3 style="margin-top:22px">प्रश्नगत समीक्षा</h3>'
+   +rev
+   +'<div class="row" style="margin-top:18px"><button class="primary" data-action="restart">नयाँ सहभागी सुरु गर्नुहोस्</button></div>'
+   +'</section>';
+}
+
+function beginExam(){
+  var t=$("tst"), c=$("code"), g=$("gen"), a=$("age"), e=$("edu");
+  var tv=t?t.value:"", cv=c?c.value.trim().slice(0,20):"", gv=g?g.value:"", av=a?a.value:"", ev=e?e.value:"";
+  if(!tv||!cv||!gv||!av||!ev){
+    $("profErr").classList.remove("hide");
+    var miss=!tv?t:(!cv?c:(!gv?g:(!av?a:e)));
+    if(miss) miss.focus();
+    return;
+  }
+  st.test=tv; st.bank=bankOf(tv);
+  st.code=cv;
+  st.gender=gv; st.ageGroup=av; st.education=ev;
+  st.answers=new Array(st.bank.length).fill(-1);
+  st.cur=0;st.startedAt=Date.now();st.phase="quiz";st.submitArm=false;
+  renderApp();
+  window.scrollTo(0,0);
+}
+
+async function submitExam(){
+  var seconds=Math.round((Date.now()-st.startedAt)/1000);
+  var score=scoreOf(st.answers,st.bank);
+  var body={v:4,test:st.test,code:st.code.toUpperCase(),gender:st.gender,ageGroup:st.ageGroup,education:st.education,submittedAt:new Date().toISOString(),seconds:seconds,answers:st.answers.slice(),score:score,max:st.bank.length};
+  st.result={answers:body.answers,score:score};
+  st.phase="result";
+  st.save="saving";
+  renderApp();
+  window.scrollTo(0,0);
+  st.body=body;
+  await saveResult();
+}
+
+async function saveResult(){
+  st.save="saving";
+  renderApp();
+  try{
+    var res=await fetch(SB_URL+"/rest/v1/"+RESULTS,{method:"POST",headers:sbHeaders({Prefer:"return=minimal"}),body:JSON.stringify(toRow(st.body))});
+    if(!res.ok){ throw {code:"HTTP "+res.status}; }
+    st.save="saved";
+  }catch(err){
+    st.save="error";
+    st.errCode=(err && err.code) ? err.code : ((err && err.message) ? err.message : "unknown");
+  }
+  renderApp();
+}
+
+/* ---------- statistics ---------- */
+function ranks(arr){
+  var idx=arr.map(function(v,i){return [v,i];}).sort(function(a,b){return a[0]-b[0];});
+  var r=new Array(arr.length);
+  var i=0;
+  while(i<idx.length){
+    var j=i;
+    while(j+1<idx.length && idx[j+1][0]===idx[i][0]) j++;
+    var avg=(i+j)/2+1;
+    for(var k=i;k<=j;k++) r[idx[k][1]]=avg;
+    i=j+1;
+  }
+  return r;
+}
+function pearson(x,y){
+  var n=x.length;
+  if(n<3) return null;
+  var mx=0,my=0;
+  for(var i=0;i<n;i++){mx+=x[i];my+=y[i];}
+  mx/=n;my/=n;
+  var num=0,dx=0,dy=0;
+  for(var j=0;j<n;j++){
+    num+=(x[j]-mx)*(y[j]-my);
+    dx+=(x[j]-mx)*(x[j]-mx);
+    dy+=(y[j]-my)*(y[j]-my);
+  }
+  if(dx===0||dy===0) return null;
+  return num/Math.sqrt(dx*dy);
+}
+function spearman(x,y){return pearson(ranks(x),ranks(y));}
+/* eta-squared: share of score variation explained by group membership (0 to 1) */
+function etaSquared(groups){
+  var all=[];groups.forEach(function(g){g.forEach(function(v){all.push(v);});});
+  var n=all.length;
+  if(n<3) return null;
+  var gm=all.reduce(function(a,b){return a+b;},0)/n;
+  var sst=0;all.forEach(function(v){sst+=(v-gm)*(v-gm);});
+  if(sst===0) return null;
+  var ssb=0;
+  groups.forEach(function(g){
+    if(!g.length) return;
+    var m=g.reduce(function(a,b){return a+b;},0)/g.length;
+    ssb+=g.length*(m-gm)*(m-gm);
+  });
+  return ssb/sst;
+}
+function strengthWord(v){
+  if(v===null) return "पर्याप्त डाटा छैन";
+  var a=Math.abs(v);
+  if(a<0.1) return "नगण्य";
+  if(a<0.3) return "कमजोर";
+  if(a<0.5) return "मध्यम";
+  return "बलियो";
+}
+function etaWord(v){
+  if(v===null) return "पर्याप्त डाटा छैन";
+  if(v<0.01) return "नगण्य";
+  if(v<0.06) return "कमजोर";
+  if(v<0.14) return "मध्यम";
+  return "बलियो";
+}
+function dirWord(v){
+  if(v===null||Math.abs(v)<0.1) return "—";
+  return v>0?"सकारात्मक (माथि जाँदा अङ्क बढ्ने)":"नकारात्मक (माथि जाँदा अङ्क घट्ने)";
+}
+function fmt(v,d){return v===null?"—":v.toFixed(d);}
+
+/* ---------- dashboard (live) ---------- */
+var trainerUnlocked=false;
+var records=[];
+var loaded=false;
+var liveErr="";
+var subscribed=false;
+var dashFilter="all";
+
+function unlock(){
+  var v=$("pass").value;
+  if(v!==TRAINER){ $("gateMsg").classList.remove("hide"); return; }
+  trainerUnlocked=true;
+  $("gate").classList.add("hide");
+  $("dashBody").classList.remove("hide");
+  startLive();
+}
+
+async function loadRows(){
+  var res=await fetch(SB_URL+"/rest/v1/"+RESULTS+"?select=*&order=submitted_at.asc",{headers:sbHeaders()});
+  if(!res.ok){ throw {code:"HTTP "+res.status}; }
+  var rows=await res.json();
+  records=rows.map(fromRow).filter(validRecord).map(function(r){
+    var B=bankOf(r.test);
+    var sc=scoreOf(r.answers,B);
+    return {test:r.test,code:r.code,gender:r.gender,ageGroup:r.ageGroup,education:r.education,submittedAt:r.submittedAt||"",seconds:r.seconds||0,answers:r.answers,score:sc,pct:pctOf(sc,B.length)};
+  }).sort(function(a,b){return b.pct-a.pct || String(a.submittedAt).localeCompare(String(b.submittedAt));});
+  loaded=true;
+  liveErr="";
+  renderDash();
+}
+
+async function startLive(){
+  if(subscribed) return;
+  subscribed=true;
+  $("dashBody").innerHTML='<section class="card"><p class="muted">परिणामहरू लोड हुँदैछ…</p></section>';
+  try{ await loadRows(); }catch(e){ liveErr=(e&&e.code)?e.code:"unknown"; renderDash(); }
+  setInterval(function(){ loadRows().catch(function(e){ liveErr=(e&&e.code)?e.code:"unknown"; renderDash(); }); }, 20000);
+}
+
+function barRow(label,val,max,tone,showVal){
+  var w=max>0?Math.round(val/max*100):0;
+  return '<div style="margin-top:10px"><div class="row" style="justify-content:space-between"><span>'+esc(label)+'</span><strong style="font-variant-numeric:tabular-nums">'+esc(showVal)+'</strong></div><div class="bar"><i style="display:block;height:100%;width:'+w+'%;background:'+tone+';border-radius:99px"></i></div></div>';
+}
+
+/* Per-factor summary: groups of pct scores */
+function groupScores(recs,field,valsList){
+  return valsList.map(function(v){
+    var items=recs.filter(function(r){return r[field]===v;});
+    var pcts=items.map(function(r){return r.pct;});
+    var avg=pcts.length?pcts.reduce(function(a,b){return a+b;},0)/pcts.length:null;
+    var pass=items.filter(function(r){return r.pct>=50;}).length;
+    return {v:v,n:items.length,avg:avg,pass:pass,pcts:pcts};
+  });
+}
+
+/* ---------- learning achievement (pre vs post, paired by participant code) ---------- */
+function pairedRows(){
+  var sorted=records.slice().sort(function(a,b){return String(a.submittedAt).localeCompare(String(b.submittedAt));});
+  var pre={},post={};
+  sorted.forEach(function(r){
+    var k=r.code;
+    if(r.test==="pre"){ if(!pre[k]) pre[k]=r; }
+    else if(!post[k]) post[k]=r;
+  });
+  return Object.keys(pre).filter(function(k){return !!post[k];}).map(function(k){return {code:k,pre:pre[k],post:post[k]};});
+}
+
+function learningSection(){
+  var head='<section class="card"><h2>सिकाइ उपलब्धि (पूर्व बनाम पश्च)</h2>';
+  var P=pairedRows(), k=P.length;
+  if(k===0){
+    return head+'<p class="muted">सिकाइ उपलब्धि मापन गर्न एउटै सहभागी कोडले पूर्व र पश्च दुवै परीक्षा दिएका सहभागी चाहिन्छन्। अहिलेसम्म त्यस्ता जोडी भेटिएका छैनन्।</p></section>';
+  }
+  var pre=P.map(function(p){return p.pre.pct;});
+  var post=P.map(function(p){return p.post.pct;});
+  var gains=P.map(function(p,i){return post[i]-pre[i];});
+  var ngs=[];
+  P.forEach(function(p,i){ if(pre[i]<100) ngs.push((post[i]-pre[i])/(100-pre[i])); });
+  var preM=meanOf(pre), postM=meanOf(post), gM=meanOf(gains), ngM=meanOf(ngs);
+  var sd=k>1?Math.sqrt(gains.reduce(function(a,g){return a+(g-gM)*(g-gM);},0)/(k-1)):0;
+  var tStat=sd>0?gM/(sd/Math.sqrt(k)):null;
+  var up=gains.filter(function(g){return g>0;}).length;
+  var same=gains.filter(function(g){return g===0;}).length;
+  var down=gains.filter(function(g){return g<0;}).length;
+  var high=ngs.filter(function(x){return x>=0.7;}).length;
+  var mid=ngs.filter(function(x){return x>=0.3&&x<0.7;}).length;
+  var low=ngs.filter(function(x){return x<0.3;}).length;
+  var nN=ngs.length;
+
+  var sigTxt = tStat===null ? "पर्याप्त भिन्नता छैन।"
+    : (Math.abs(tStat)>=2 ? "सुधार सांख्यिकीय रूपमा सार्थक देखिन्छ (t ≈ "+tStat.toFixed(2)+")।"
+                          : "सुधार सानो वा अनिश्चित देखिन्छ (t ≈ "+tStat.toFixed(2)+")।");
+
+  var out=head
+    +'<p class="note">जोडी भनेको पूर्व र पश्च दुवैमा एउटै सहभागी कोड भएका सहभागी हुन्। सुधार = पश्च % − पूर्व %। सामान्यीकृत सिकाइ (g) = (पश्च − पूर्व) ÷ (१०० − पूर्व), जसले सम्भावित सुधारको कति भाग हासिल भयो भनी देखाउँछ।</p>'
+    +'<div class="kpis">'
+    +'<div class="kpi"><span class="muted small">जोडी सहभागी</span><b>'+k+'</b></div>'
+    +'<div class="kpi"><span class="muted small">पूर्व औसत</span><b>'+Math.round(preM)+'%</b></div>'
+    +'<div class="kpi"><span class="muted small">पश्च औसत</span><b>'+Math.round(postM)+'%</b></div>'
+    +'<div class="kpi"><span class="muted small">औसत सुधार</span><b>'+(gM>=0?'+':'')+gM.toFixed(1)+' pp</b></div>'
+    +'<div class="kpi"><span class="muted small">सामान्यीकृत सिकाइ (g)</span><b>'+(ngM===null?'—':ngM.toFixed(2))+'</b></div>'
+    +'</div>'
+    +'<p class="small muted" style="margin-top:12px">'+esc(sigTxt)+' उत्तर सुधार्नेको सङ्ख्या: '+up+', स्थिर: '+same+', घटेको: '+down+'।</p>'
+    +'<h3 style="margin-top:18px">सिकाइ स्तर (सामान्यीकृत सिकाइ g)</h3>'
+    +'<div class="tbl-wrap"><table><thead><tr><th>स्तर</th><th>दायरा</th><th>सहभागी</th><th>%</th></tr></thead><tbody>'
+    +'<tr><td><span class="chip c-ok">उच्च</span></td><td>g ≥ 0.70</td><td>'+high+'</td><td>'+(nN?Math.round(high/nN*100):0)+'%</td></tr>'
+    +'<tr><td><span class="chip c-warn">मध्यम</span></td><td>0.30 – 0.69</td><td>'+mid+'</td><td>'+(nN?Math.round(mid/nN*100):0)+'%</td></tr>'
+    +'<tr><td><span class="chip c-bad">न्यून</span></td><td>g < 0.30</td><td>'+low+'</td><td>'+(nN?Math.round(low/nN*100):0)+'%</td></tr>'
+    +'</tbody></table></div>'
+    +'<p class="note" style="margin-top:6px">पूर्व परीक्षामा १००% अङ्क ल्याउनेको g गणना गरिँदैन।</p>';
+
+  /* session-wise achievement (paired) */
+  var PRE_B=PRE, POST_B=POST;
+  var srows=SESSIONS.map(function(s){
+    var pi=idxFor(PRE_B,s.id), qi=idxFor(POST_B,s.id);
+    var pv=P.map(function(p){return shareOf(p.pre.answers,PRE_B,pi);}).filter(function(x){return x!==null;});
+    var qv=P.map(function(p){return shareOf(p.post.answers,POST_B,qi);}).filter(function(x){return x!==null;});
+    var pm=meanOf(pv), qm=meanOf(qv);
+    var d=(pm===null||qm===null)?null:qm-pm;
+    var tone=d===null?'var(--muted)':(d>=0?'var(--ok)':'var(--bad)');
+    return '<tr><td>'+esc(s.label)+'</td><td>'+(pm===null?'—':Math.round(pm)+'%')+'</td><td>'+(qm===null?'—':Math.round(qm)+'%')+'</td><td style="color:'+tone+';font-weight:700">'+(d===null?'—':(d>=0?'+':'')+d.toFixed(1)+' pp')+'</td></tr>';
+  }).join("");
+  out+='<h3 style="margin-top:18px">सत्रगत सिकाइ उपलब्धि</h3>'
+    +'<p class="note">प्रत्येक विषयमा पूर्व र पश्च परीक्षाका सही उत्तरको औसत प्रतिशत। सकारात्मक सुधार भएको विषयमा सिकाइ भएको देखिन्छ।</p>'
+    +'<div class="tbl-wrap"><table><thead><tr><th>सत्र / विषय</th><th>पूर्व</th><th>पश्च</th><th>सुधार</th></tr></thead><tbody>'+srows+'</tbody></table></div>';
+
+  /* group-wise gain */
+  function gainRows(field,list,vals){
+    return vals.map(function(v){
+      var g=P.filter(function(p){return p.pre[field]===v;});
+      var n=g.length;
+      if(!n) return '<tr><td>'+esc(labelOf(list,v))+'</td><td>0</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>';
+      var pa=meanOf(g.map(function(p){return p.pre.pct;}));
+      var qa=meanOf(g.map(function(p){return p.post.pct;}));
+      var ga=meanOf(g.filter(function(p){return p.pre.pct<100;}).map(function(p){return (p.post.pct-p.pre.pct)/(100-p.pre.pct);}));
+      var gn=qa-pa;
+      return '<tr><td>'+esc(labelOf(list,v))+'</td><td>'+n+'</td><td>'+Math.round(pa)+'%</td><td>'+Math.round(qa)+'%</td><td>'+(gn>=0?'+':'')+gn.toFixed(1)+' pp</td><td>'+(ga===null?'—':ga.toFixed(2))+'</td></tr>';
+    }).join("");
+  }
+  var gtable=function(title,field,list,vals){
+    return '<div><h3 style="margin-top:18px">'+esc(title)+'</h3><div class="tbl-wrap"><table><thead><tr><th>समूह</th><th>n</th><th>पूर्व</th><th>पश्च</th><th>सुधार</th><th>g</th></tr></thead><tbody>'+gainRows(field,list,vals)+'</tbody></table></div></div>';
+  };
+  out+='<h3 style="margin-top:22px">जनसांख्यिकी अनुसार सिकाइ</h3>'
+    +'<div class="grid3">'
+    +gtable("लिङ्ग","gender",GENDERS,GENDER_VALS)
+    +gtable("उमेर समूह","ageGroup",AGES,AGE_VALS)
+    +gtable("शैक्षिक तह","education",EDUS,EDU_VALS)
+    +'</div>';
+
+  /* correlation of gain with age, schooling, gender, and pre score */
+  var ageIdx=P.map(function(p){return idxOf(AGES,p.pre.ageGroup);});
+  var eduIdx=P.map(function(p){return idxOf(EDUS,p.pre.education);});
+  var rAge=spearman(ageIdx,gains), rEdu=spearman(eduIdx,gains), rPre=spearman(pre,gains);
+  var etaG=etaSquared(GENDER_VALS.map(function(v){return P.filter(function(p){return p.pre.gender===v;}).map(function(p){return p.post.pct-p.pre.pct;});}));
+  out+='<h3 style="margin-top:22px">सिकाइ सुधार र जनसांख्यिकीबीचको सम्बन्ध</h3>'
+    +'<div class="tbl-wrap"><table><thead><tr><th>चर</th><th>नाप</th><th>मान</th><th>बल</th><th>दिशा</th></tr></thead><tbody>'
+    +'<tr><td>उमेर समूह</td><td>Spearman r</td><td>'+fmt(rAge,2)+'</td><td>'+strengthWord(rAge)+'</td><td>'+dirWord(rAge)+'</td></tr>'
+    +'<tr><td>शैक्षिक तह</td><td>Spearman r</td><td>'+fmt(rEdu,2)+'</td><td>'+strengthWord(rEdu)+'</td><td>'+dirWord(rEdu)+'</td></tr>'
+    +'<tr><td>लिङ्ग</td><td>η²</td><td>'+fmt(etaG,3)+'</td><td>'+etaWord(etaG)+'</td><td>समूह औसतमा आधारित</td></tr>'
+    +'<tr><td>पूर्व परीक्षाको अङ्क</td><td>Spearman r</td><td>'+fmt(rPre,2)+'</td><td>'+strengthWord(rPre)+'</td><td>'+dirWord(rPre)+'</td></tr>'
+    +'</tbody></table></div>'
+    +'<p class="note" style="margin-top:6px">पूर्व अङ्क र सुधारबीचको नकारात्मक सम्बन्धले सामान्यतः कम अङ्क ल्याउनेले बढी सुधार देखाउने सङ्केत गर्छ। यसलाई कारण होइन, सम्बन्धका रूपमा मात्र लिनुहोस्।</p>';
+
+  /* participant-level achievement */
+  out+='<h3 style="margin-top:22px">सहभागीगत सिकाइ</h3>'
+    +'<div class="tbl-wrap"><table><thead><tr><th>सहभागी कोड</th><th>लिङ्ग</th><th>उमेर</th><th>शैक्षिक तह</th><th>पूर्व %</th><th>पश्च %</th><th>सुधार</th><th>g</th><th>स्थिति</th></tr></thead><tbody>';
+  P.slice().sort(function(a,b){return (b.post.pct-b.pre.pct)-(a.post.pct-a.pre.pct);}).forEach(function(p){
+    var gg=p.pre.pct<100?(p.post.pct-p.pre.pct)/(100-p.pre.pct):null;
+    var d=p.post.pct-p.pre.pct;
+    var st2=d>0?'<span class="chip c-ok">सुधार</span>':(d===0?'<span class="chip c-warn">स्थिर</span>':'<span class="chip c-bad">घट्यो</span>');
+    out+='<tr><td><strong>'+esc(p.code)+'</strong></td><td>'+esc(labelOf(GENDERS,p.pre.gender))+'</td><td>'+esc(labelOf(AGES,p.pre.ageGroup))+'</td><td>'+esc(labelOf(EDUS,p.pre.education))+'</td><td>'+p.pre.pct+'%</td><td>'+p.post.pct+'%</td><td>'+(d>=0?'+':'')+d+' pp</td><td>'+(gg===null?'—':gg.toFixed(2))+'</td><td>'+st2+'</td></tr>';
+  });
+  out+='</tbody></table></div>';
+
+  if(k<30) out+='<p class="msg c-warn">जोडी सहभागी ३० भन्दा कम भएकाले यी नतिजालाई प्रारम्भिक सङ्केतका रूपमा मात्र लिनुहोस्।</p>';
+  return out+'</section>';
+}
+
+function renderDash(){
+  if(!trainerUnlocked) return;
+  var box=$("dashBody");
+  var n=records.length;
+  var fbtns=[["all","दुवै परीक्षा"],["pre","पूर्व-तालिम"],["post","पश्च-तालिम"]].map(function(f){
+    return '<button class="'+(dashFilter===f[0]?'on':'')+'" data-action="filter" data-f="'+f[0]+'">'+f[1]+'</button>';
+  }).join("");
+  var body="";
+  if(liveErr){
+    body+='<section class="card"><p class="c-bad">डाटा जडानमा समस्या: '+esc(liveErr)+'। पृष्ठ पुन: खोल्नुहोस्।</p></section>';
+  }
+  if(!loaded && n===0){
+    box.innerHTML=body+'<section class="card"><p class="muted">परिणामहरू लोड हुँदैछ…</p></section>';
+    return;
+  }
+  if(n===0){
+    box.innerHTML=body+'<section class="card"><p>अहिलेसम्म कुनै परिणाम छैन। सहभागीहरूले परीक्षा जम्मा गरेपछि यहाँ देखिन्छ।</p></section>';
+    return;
+  }
+
+  /* overview: both tests side by side */
+  var ovRows=TEST_VALS.map(function(t){
+    var rs=records.filter(function(r){return r.test===t;});
+    var m=rs.length;
+    var av=m?Math.round(rs.reduce(function(a,r){return a+r.pct;},0)/m):null;
+    var ps=rs.filter(function(r){return r.pct>=50;}).length;
+    return '<tr><td><strong>'+esc(testLabel(t))+'</strong></td><td>'+m+'</td><td>'+(av===null?'—':av+'%')+'</td><td>'+(m?ps+' / '+m+' ('+Math.round(ps/m*100)+'%)':'—')+'</td></tr>';
+  }).join("");
+  body+='<section class="card"><div class="row" style="justify-content:space-between"><h2>सारांश</h2><div class="row">'+fbtns+'</div></div>'
+    +'<div class="kpis">'
+    +'<div class="kpi"><span class="muted small">कुल परीक्षा दिने</span><b>'+n+'</b></div>'
+    +'<div class="kpi"><span class="muted small">पूर्व-तालिम</span><b>'+records.filter(function(r){return r.test==="pre";}).length+'</b></div>'
+    +'<div class="kpi"><span class="muted small">पश्च-तालिम</span><b>'+records.filter(function(r){return r.test==="post";}).length+'</b></div>'
+    +'</div>'
+    +'<div class="tbl-wrap"><table><thead><tr><th>परीक्षा</th><th>सहभागी</th><th>औसत अङ्क</th><th>उत्तीर्ण</th></tr></thead><tbody>'+ovRows+'</tbody></table></div>'
+    +'</section>';
+
+  /* learning achievement (always shown when pairs exist) */
+  body+=learningSection();
+
+  if(dashFilter==="all"){
+    body+='<section class="card"><p class="muted">प्रश्नगत र सहभागी विश्लेषण हेर्न माथिको बटनबाट पूर्व-तालिम वा पश्च-तालिम छान्नुहोस्। प्रश्नहरू परीक्षाअनुसार फरक छन्, त्यसैले दुवै परीक्षा एकसाथ विश्लेषण गरिँदैन।</p></section>';
+    box.innerHTML=body;
+    return;
+  }
+
+  var B=bankOf(dashFilter), N=B.length;
+  var recs=records.filter(function(r){return r.test===dashFilter;});
+  var m=recs.length;
+  if(m===0){
+    box.innerHTML=body+'<section class="card"><p>यो परीक्षामा अहिलेसम्म कुनै परिणाम छैन।</p></section>';
+    return;
+  }
+
+  var avg=Math.round(recs.reduce(function(a,r){return a+r.pct;},0)/m);
+  var pass=recs.filter(function(r){return r.pct>=50;}).length;
+  var hiP=recs[0].pct, loP=recs[m-1].pct;
+
+  /* question stats */
+  var qstats=[];
+  for(var i=0;i<N;i++){
+    var corr=0,opt=[0,0,0,0];
+    recs.forEach(function(r){var a=r.answers[i];if(a===B[i].a)corr++;if(a>=0)opt[a]++;});
+    var wrongTop=-1,wrongN=-1;
+    for(var j=0;j<4;j++){if(j!==B[i].a&&opt[j]>wrongN){wrongN=opt[j];wrongTop=j;}}
+    qstats.push({i:i,pct:Math.round(corr/m*100),wrong:wrongTop,wrongN:wrongN<0?0:wrongN});
+  }
+  var sessAvg=SESSIONS.map(function(s){
+    var idx=idxFor(B,s.id);
+    if(!idx.length) return {label:s.label,pct:0};
+    var tot=0;recs.forEach(function(r){idx.forEach(function(k){if(r.answers[k]===B[k].a)tot++;});});
+    return {label:s.label,pct:Math.round(tot/(idx.length*m)*100)};
+  });
+  var gl=["A+","A","B+","B","C","D"];
+  var gcount={};gl.forEach(function(g){gcount[g]=0;});
+  recs.forEach(function(r){gcount[gradeOf(r.pct)]++;});
+
+  /* correlation with demographics */
+  var ageIdx=recs.map(function(r){return idxOf(AGES,r.ageGroup);});
+  var eduIdx=recs.map(function(r){return idxOf(EDUS,r.education);});
+  var pcts=recs.map(function(r){return r.pct;});
+  var rhoAge=spearman(ageIdx,pcts);
+  var rhoEdu=spearman(eduIdx,pcts);
+  var etaGender=etaSquared(GENDER_VALS.map(function(v){return recs.filter(function(r){return r.gender===v;}).map(function(r){return r.pct;});}));
+  var etaAge=etaSquared(AGE_VALS.map(function(v){return recs.filter(function(r){return r.ageGroup===v;}).map(function(r){return r.pct;});}));
+  var etaEdu=etaSquared(EDU_VALS.map(function(v){return recs.filter(function(r){return r.education===v;}).map(function(r){return r.pct;});}));
+
+  var smallN = m<30;
+
+  body+='<section class="card"><div class="row" style="justify-content:space-between"><h2>'+esc(testLabel(dashFilter))+' परीक्षा · विस्तृत</h2><span class="small muted">लाइभ · '+m+' सहभागी</span></div><div class="kpis">'
+    +'<div class="kpi"><span class="muted small">सहभागी</span><b>'+m+'</b></div>'
+    +'<div class="kpi"><span class="muted small">औसत अङ्क</span><b>'+avg+'%</b></div>'
+    +'<div class="kpi"><span class="muted small">उत्तीर्ण (≥५०%)</span><b>'+pass+' / '+m+'</b></div>'
+    +'<div class="kpi"><span class="muted small">उच्च / न्यून</span><b style="font-size:20px">'+hiP+'% · '+loP+'%</b></div>'
+    +'</div></section>';
+
+  /* correlation table */
+  body+='<section class="card"><h2>जनसांख्यिकी र अङ्कबीचको सम्बन्ध</h2>'
+    +'<p class="note">उमेर र शैक्षिक तह क्रमबद्ध विवरण भएकाले Spearman सहसम्बन्ध (r, −१ देखि +१) निकालिएको छ। लिङ्गमा क्रम छैन, त्यसैले समूहबीचको भिन्नता η² (०–१) ले नापिएको छ। यी सम्बन्ध हुन्, कारण होइनन्।</p>'
+    +'<div class="tbl-wrap"><table><thead><tr><th>चर</th><th>नाप</th><th>मान</th><th>बल</th><th>दिशा</th></tr></thead><tbody>'
+    +'<tr><td>उमेर समूह</td><td>Spearman r</td><td>'+fmt(rhoAge,2)+'</td><td>'+strengthWord(rhoAge)+'</td><td>'+dirWord(rhoAge)+'</td></tr>'
+    +'<tr><td>शैक्षिक तह</td><td>Spearman r</td><td>'+fmt(rhoEdu,2)+'</td><td>'+strengthWord(rhoEdu)+'</td><td>'+dirWord(rhoEdu)+'</td></tr>'
+    +'<tr><td>लिङ्ग</td><td>η² (समूहगत भिन्नता)</td><td>'+fmt(etaGender,3)+'</td><td>'+etaWord(etaGender)+'</td><td>समूह औसतमा आधारित</td></tr>'
+    +'<tr><td>उमेर समूह (समूहगत)</td><td>η²</td><td>'+fmt(etaAge,3)+'</td><td>'+etaWord(etaAge)+'</td><td>—</td></tr>'
+    +'<tr><td>शैक्षिक तह (समूहगत)</td><td>η²</td><td>'+fmt(etaEdu,3)+'</td><td>'+etaWord(etaEdu)+'</td><td>—</td></tr>'
+    +'</tbody></table></div>'
+    +(smallN?'<p class="msg c-warn">सहभागी ३० भन्दा कम भएकाले यी सम्बन्धलाई प्रारम्भिक सङ्केतका रूपमा मात्र लिनुहोस्।</p>':'')
+    +'</section>';
+
+  /* per-factor group cards */
+  function factorCard(title,field,list,vals){
+    var g=groupScores(recs,field,vals);
+    var s='<section class="card"><h2>'+esc(title)+'</h2>';
+    g.forEach(function(x){
+      var lab=labelOf(list,x.v);
+      var av=x.avg===null?"—":Math.round(x.avg)+"%";
+      var passTxt=x.n?Math.round(x.pass/x.n*100)+"% उत्तीर्ण":"";
+      s+=barRow(lab+" (n="+x.n+")",x.avg===null?0:x.avg,100,"var(--accent)",av+" · "+passTxt);
+    });
+    return s+'</section>';
+  }
+  body+='<div class="grid3">'
+    +factorCard("लिङ्ग अनुसार औसत अङ्क","gender",GENDERS,GENDER_VALS)
+    +factorCard("उमेर समूह अनुसार औसत अङ्क","ageGroup",AGES,AGE_VALS)
+    +factorCard("शैक्षिक तह अनुसार औसत अङ्क","education",EDUS,EDU_VALS)
+    +'</div>';
+
+  body+='<div class="grid2" style="margin-top:0"><section class="card"><h2>ग्रेड वितरण</h2>';
+  gl.forEach(function(g){body+=barRow(g+" ("+gradeLabel(g)+")",gcount[g],m,g==="D"?"var(--bad)":"var(--accent)",String(gcount[g]));});
+  body+='</section><section class="card"><h2>सत्रगत औसत सफलता</h2>';
+  sessAvg.forEach(function(s){body+=barRow(s.label,s.pct,100,"var(--gold)",s.pct+"%");});
+  body+='</section></div>';
+
+  body+='<section class="card"><h2>प्रश्नगत विश्लेषण</h2><p class="note">५०% भन्दा कम सहभागीले सही दिएका प्रश्न "कठिन" देखाइन्छ। सबैभन्दा धेरैले छानेको गलत विकल्प पनि देखाइन्छ।</p><div class="tbl-wrap"><table><thead><tr><th>प्रश्न</th><th>सत्र</th><th>सही उत्तर</th><th>सही दर</th><th>सबैभन्दा धेरैले छानेको गलत</th><th>स्थिति</th></tr></thead><tbody>';
+  qstats.forEach(function(s){
+    var hard=s.pct<50;
+    var wrongTxt=s.wrongN>0?L(s.wrong)+' ('+s.wrongN+' जना)':'—';
+    body+='<tr><td>'+(s.i+1)+'</td><td>'+(B[s.i].s+1)+'</td><td>'+L(B[s.i].a)+'</td><td>'+s.pct+'%</td><td>'+wrongTxt+'</td><td>'+(hard?'<span class="chip c-bad">कठिन</span>':'<span class="chip c-ok">ठीक</span>')+'</td></tr>';
+  });
+  body+='</tbody></table></div></section>';
+
+  body+='<section class="card"><h2>सहभागी ग्रेड</h2><div class="tbl-wrap"><table><thead><tr><th>#</th><th>कोड</th><th>लिङ्ग</th><th>उमेर</th><th>शैक्षिक तह</th><th>अङ्क</th><th>%</th><th>ग्रेड</th>';
+  SESSIONS.forEach(function(s){body+='<th>S'+(s.id+1)+'</th>';});
+  body+='<th>समय (मि.)</th><th>बुझाएको</th></tr></thead><tbody>';
+  recs.forEach(function(r,idx){
+    body+='<tr><td>'+(idx+1)+'</td><td>'+esc(r.code)+'</td><td>'+esc(labelOf(GENDERS,r.gender))+'</td><td>'+esc(labelOf(AGES,r.ageGroup))+'</td><td>'+esc(labelOf(EDUS,r.education))+'</td><td>'+r.score+'/'+N+'</td><td>'+r.pct+'%</td><td><strong>'+gradeOf(r.pct)+'</strong></td>';
+    SESSIONS.forEach(function(s){
+      var idxs=idxFor(B,s.id);
+      var c=0;idxs.forEach(function(k){if(r.answers[k]===B[k].a)c++;});
+      body+='<td>'+c+'/'+idxs.length+'</td>';
+    });
+    body+='<td>'+Math.round((r.seconds||0)/60)+'</td><td class="small">'+esc(String(r.submittedAt).slice(0,16).replace('T',' '))+'</td></tr>';
+  });
+  body+='</tbody></table></div></section>';
+
+  body+='<section class="card"><h2>प्रश्न × सहभागी (✔ सही, ✘ गलत)</h2><div class="tbl-wrap"><table><thead><tr><th>#</th><th>कोड</th>';
+  for(var q2=0;q2<N;q2++) body+='<th class="mx">'+(q2+1)+'</th>';
+  body+='<th>अङ्क</th></tr></thead><tbody>';
+  recs.forEach(function(r,idx){
+    body+='<tr><td>'+(idx+1)+'</td><td>'+esc(r.code)+'</td>';
+    for(var k=0;k<N;k++){
+      var ok=r.answers[k]===B[k].a;
+      body+='<td class="mx '+(ok?'ok':'bad')+'" title="प्रश्न '+(k+1)+'">'+(ok?'✔':'✘')+'</td>';
+    }
+    body+='<td><strong>'+r.score+'</strong></td></tr>';
+  });
+  body+='</tbody></table></div></section>';
+
+  box.innerHTML=body;
+}
+
+/* ---------- events ---------- */
+document.addEventListener("click",function(ev){
+  var t=ev.target.closest("[data-action]");
+  if(!t) return;
+  var a=t.getAttribute("data-action");
+  if(a==="tab"){
+    var tab=t.getAttribute("data-tab");
+    $("exam").classList.toggle("hide",tab!=="exam");
+    $("dash").classList.toggle("hide",tab!=="dash");
+    $("tabExam").classList.toggle("on",tab==="exam");
+    $("tabDash").classList.toggle("on",tab==="dash");
+    window.scrollTo(0,0);
+  }
+  else if(a==="unlock") unlock();
+  else if(a==="filter"){dashFilter=t.getAttribute("data-f");renderDash();}
+  else if(a==="begin") beginExam();
+  else if(a==="pick"){
+    st.answers[st.cur]=parseInt(t.getAttribute("data-i"),10);
+    st.submitArm=false;
+    renderApp();
+  }
+  else if(a==="prev"){if(st.cur>0){st.cur--;renderApp();}}
+  else if(a==="next"){if(st.cur<st.bank.length-1){st.cur++;renderApp();}}
+  else if(a==="goto"){st.cur=parseInt(t.getAttribute("data-k"),10);renderApp();}
+  else if(a==="arm"){st.submitArm=true;renderApp();}
+  else if(a==="disarm"){st.submitArm=false;renderApp();}
+  else if(a==="submit") submitExam();
+  else if(a==="retry") saveResult();
+  else if(a==="restart"){resetExam();renderApp();window.scrollTo(0,0);}
+});
+document.addEventListener("keydown",function(ev){
+  if(ev.key==="Enter" && ev.target && ev.target.id==="pass") unlock();
+});
+
+renderApp();
+})();
+</script>
