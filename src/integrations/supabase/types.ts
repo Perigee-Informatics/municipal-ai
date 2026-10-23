@@ -25,6 +25,7 @@ export type Database = {
           max_score: number | null
           score: number | null
           seconds: number | null
+          session_code: string | null
           submitted_at: string | null
           test: string
         }
@@ -38,6 +39,7 @@ export type Database = {
           max_score?: number | null
           score?: number | null
           seconds?: number | null
+          session_code?: string | null
           submitted_at?: string | null
           test: string
         }
@@ -51,8 +53,33 @@ export type Database = {
           max_score?: number | null
           score?: number | null
           seconds?: number | null
+          session_code?: string | null
           submitted_at?: string | null
           test?: string
+        }
+        Relationships: []
+      }
+      training_sessions: {
+        Row: {
+          client: string | null
+          code: string
+          created_at: string | null
+          location: string | null
+          session_date: string | null
+        }
+        Insert: {
+          client?: string | null
+          code: string
+          created_at?: string | null
+          location?: string | null
+          session_date?: string | null
+        }
+        Update: {
+          client?: string | null
+          code?: string
+          created_at?: string | null
+          location?: string | null
+          session_date?: string | null
         }
         Relationships: []
       }
