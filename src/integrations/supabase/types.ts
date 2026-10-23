@@ -14,7 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      assessment_results: {
+        Row: {
+          age_group: string | null
+          answers: Json | null
+          code: string
+          education: string | null
+          gender: string | null
+          id: string
+          max_score: number | null
+          score: number | null
+          seconds: number | null
+          submitted_at: string | null
+          test: string
+        }
+        Insert: {
+          age_group?: string | null
+          answers?: Json | null
+          code: string
+          education?: string | null
+          gender?: string | null
+          id?: string
+          max_score?: number | null
+          score?: number | null
+          seconds?: number | null
+          submitted_at?: string | null
+          test: string
+        }
+        Update: {
+          age_group?: string | null
+          answers?: Json | null
+          code?: string
+          education?: string | null
+          gender?: string | null
+          id?: string
+          max_score?: number | null
+          score?: number | null
+          seconds?: number | null
+          submitted_at?: string | null
+          test?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
