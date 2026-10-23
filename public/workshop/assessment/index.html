@@ -155,7 +155,7 @@ var POST = BANK;
 
 var TRAINER = "sandhikharka-2083"; // प्रशिक्षकको पासकोड (यो बदल्न सकिन्छ)
 var RESULTS = "assessment_results";
-var SESSION = (new URLSearchParams(location.search).get("s")||"").trim().toUpperCase().slice(0,40);
+var SESSION = "";
 var SESSIONS_TABLE = "training_sessions";
 var sessionList = [];
 var allRecords = [];
@@ -259,8 +259,32 @@ function selectHtml(id,label,list,current){
   return '<div class="field"><label for="'+id+'">'+esc(label)+'</label><select id="'+id+'">'+opts+'</select></div>';
 }
 
+function viewGate(){
+  return '<section class="card"><h2>सत्र कोड प्रविष्ट गर्नुहोस्</h2>'
+   +'<p class="muted">प्रशिक्षकले दिएको सत्र कोड यहाँ लेख्नुहोस्। कोड मिलेपछि परीक्षा सुरु गर्न सकिन्छ।</p>'
+   +'<div class="field"><label for="sessCode">सत्र कोड</label><input id="sessCode" type="text" maxlength="40" autocomplete="off" placeholder="जस्तै: SKH-2083-A"></div>'
+   +'<p id="sessErr" class="msg c-bad hide">सत्र कोड मिलेन। प्रशिक्षकसँग फेरि जाँच गर्नुहोस्।</p>'
+   +'<div class="row" style="margin-top:12px"><button class="primary" data-action="checkSession">अगाडि बढ्नुहोस्</button></div></section>';
+}
+
+async function checkSession(){
+  var inp=$("sessCode");
+  var code=(inp?inp.value:"").trim().toUpperCase();
+  var err=$("sessErr");
+  if(!code){ err.textContent="सत्र कोड लेख्नुहोस्।"; err.classList.remove("hide"); return; }
+  try{
+    var res=await fetch(SB_URL+"/rest/v1/"+SESSIONS_TABLE+"?select=code&code=eq."+encodeURIComponent(code),{headers:sbHeaders()});
+    var rows=res.ok?await res.json():[];
+    if(rows.length){ SESSION=code; renderApp(); window.scrollTo(0,0); return; }
+    err.textContent="सत्र कोड मिलेन। प्रशिक्षकसँग फेरि जाँच गर्नुहोस्।"; err.classList.remove("hide");
+  }catch(e){
+    err.textContent="जडानमा समस्या। इन्टरनेट जाँचेर फेरि प्रयास गर्नुहोस्।"; err.classList.remove("hide");
+  }
+}
+
 function viewStart(){
-  var sessInfo=SESSION?'<p class="muted small">सत्र: <strong>'+esc(SESSION)+'</strong></p>':'<p class="c-bad">सत्र लिङ्क छैन। प्रशिक्षकले दिएको लिङ्क खोल्नुहोस्।</p>';
+  if(!SESSION) return viewGate();
+  var sessInfo='<p class="muted small">सत्र: <strong>'+esc(SESSION)+'</strong></p>';
   return '<section class="card">'
    +'<h2>परीक्षामा स्वागत छ</h2>'+sessInfo
    +'<p>यो परीक्षामा ३० वटा बहुविकल्पीय प्रश्न छन्। प्रत्येक प्रश्नमा एउटा मात्र सही उत्तर हुन्छ। सबै प्रश्नको उत्तर दिएपछि मात्र जम्मा गर्न सकिन्छ।</p>'
@@ -360,7 +384,7 @@ function viewResult(){
 }
 
 function beginExam(){
-  if(!SESSION){ $("profErr").textContent="सत्र लिङ्क छैन। प्रशिक्षकले दिएको लिङ्क खोल्नुहोस्।"; $("profErr").classList.remove("hide"); return; }
+  if(!SESSION){ $("profErr").textContent="सत्र कोड छैन। पहिले प्रशिक्षकले दिएको सत्र कोड लेख्नुहोस्।"; $("profErr").classList.remove("hide"); return; }
   var t=$("tst"), c=$("code"), g=$("gen"), a=$("age"), e=$("edu");
   var tv=t?t.value:"", cv=c?c.value.trim().slice(0,20):"", gv=g?g.value:"", av=a?a.value:"", ev=e?e.value:"";
   if(!tv||!cv||!gv||!av||!ev){
@@ -856,6 +880,7 @@ document.addEventListener("click",function(ev){
   else if(a==="unlock") unlock();
   else if(a==="filter"){dashFilter=t.getAttribute("data-f");renderDash();}
   else if(a==="begin") beginExam();
+  else if(a==="checkSession") checkSession();
   else if(a==="pick"){
     st.answers[st.cur]=parseInt(t.getAttribute("data-i"),10);
     st.submitArm=false;
