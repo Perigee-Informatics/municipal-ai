@@ -257,7 +257,8 @@ function renderSide(cur) {
     <a href="#home" ${cur === 'home' ? 'aria-current="page"' : ''}>ड्यासबोर्ड</a>
     <a href="#agenda" ${cur === 'agenda' ? 'aria-current="page"' : ''}>कार्यक्रम तालिका र सत्र योजना</a>
     <a href="#resources" ${['resources', ...Object.keys(R), ...Object.keys(A)].includes(cur) ? 'aria-current="page"' : ''}>सन्दर्भ सामग्री</a>
-    <a href="#downloads" ${cur === 'downloads' ? 'aria-current="page"' : ''}>डाउनलोड</a></div>`;
+    <a href="#downloads" ${cur === 'downloads' ? 'aria-current="page"' : ''}>डाउनलोड</a>
+    <a href="../assessment/">AI ज्ञान परीक्षा</a></div>`;
   for (const d of DATA.DAYS) {
     h += `<p class="day-h"><b>${d.n === 1 ? 'पहिलो दिन' : 'दोस्रो दिन'}</b><span>${d.date}</span></p><ul class="tl">`;
     for (const it of d.items) {
