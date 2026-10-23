@@ -66,6 +66,7 @@ export type Database = {
           created_at: string | null
           location: string | null
           session_date: string | null
+          test: string | null
         }
         Insert: {
           client?: string | null
@@ -73,6 +74,7 @@ export type Database = {
           created_at?: string | null
           location?: string | null
           session_date?: string | null
+          test?: string | null
         }
         Update: {
           client?: string | null
@@ -80,6 +82,7 @@ export type Database = {
           created_at?: string | null
           location?: string | null
           session_date?: string | null
+          test?: string | null
         }
         Relationships: []
       }

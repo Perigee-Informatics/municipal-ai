@@ -15,6 +15,13 @@
       "when": 1792779734420,
       "tag": "0001_add_session_code_and_training_sessions",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792781962538,
+      "tag": "0002_add_test_to_training_sessions",
+      "breakpoints": true
     }
   ]
 }
