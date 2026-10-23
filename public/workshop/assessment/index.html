@@ -156,6 +156,7 @@ var POST = BANK;
 var TRAINER = "sandhikharka-2083"; // प्रशिक्षकको पासकोड (यो बदल्न सकिन्छ)
 var RESULTS = "assessment_results";
 var SESSION = "";
+var SESSION_TEST = "";
 var SESSIONS_TABLE = "training_sessions";
 var sessionList = [];
 var allRecords = [];
@@ -273,9 +274,9 @@ async function checkSession(){
   var err=$("sessErr");
   if(!code){ err.textContent="सत्र कोड लेख्नुहोस्।"; err.classList.remove("hide"); return; }
   try{
-    var res=await fetch(SB_URL+"/rest/v1/"+SESSIONS_TABLE+"?select=code&code=eq."+encodeURIComponent(code),{headers:sbHeaders()});
+    var res=await fetch(SB_URL+"/rest/v1/"+SESSIONS_TABLE+"?select=code,test&code=eq."+encodeURIComponent(code),{headers:sbHeaders()});
     var rows=res.ok?await res.json():[];
-    if(rows.length){ SESSION=code; renderApp(); window.scrollTo(0,0); return; }
+    if(rows.length){ SESSION=code; SESSION_TEST=(rows[0].test==="pre"||rows[0].test==="post")?rows[0].test:""; renderApp(); window.scrollTo(0,0); return; }
     err.textContent="सत्र कोड मिलेन। प्रशिक्षकसँग फेरि जाँच गर्नुहोस्।"; err.classList.remove("hide");
   }catch(e){
     err.textContent="जडानमा समस्या। इन्टरनेट जाँचेर फेरि प्रयास गर्नुहोस्।"; err.classList.remove("hide");
@@ -291,7 +292,7 @@ function viewStart(){
    +'<p class="muted small">तालिमअघि <strong>पूर्व-तालिम</strong> र तालिमपछि <strong>पश्च-तालिम</strong> परीक्षा दिइन्छ। तपाईंलाई दिइएको परीक्षा छान्नुहोस्।</p>'
    +'<p class="muted small">जम्मा गरेपछि परिणाम प्रशिक्षकको डासबोर्डमा स्वतः देखिन्छ। परिणाम सकिएपछि प्रत्येक प्रश्नको सही उत्तर र किन सही हो भन्ने व्याख्या पनि हेर्न सक्नुहुन्छ।</p>'
    +'<p class="muted small">सुरु गर्नुअघि तलका विवरण भर्नुहोस्। यी विवरण गोप्य राखिन्छन् र समूहगत विश्लेषणका लागि मात्र प्रयोग हुन्छन्।</p>'
-   +selectHtml("tst","परीक्षाको प्रकार (Test Type)",TESTS,st.test)
+   +(SESSION_TEST ? '<div class="field"><label>परीक्षाको प्रकार</label><p><strong>'+esc(labelOf(TESTS,SESSION_TEST))+'</strong> (सत्र कोडबाट तय भएको)</p><input type="hidden" id="tst" value="'+esc(SESSION_TEST)+'"></div>' : selectHtml("tst","परीक्षाको प्रकार (Test Type)",TESTS,st.test))
    +'<div class="field"><label for="code">सहभागी कोड (Participant Code)</label><input id="code" type="text" maxlength="20" autocomplete="off" value="'+esc(st.code)+'" placeholder="जस्तै: A-101"><p class="note" style="margin-top:6px">यो कोड तपाईंले रोज्नुहोस् (रोल नम्बर वा सङ्केत)। पूर्व र पश्च-तालिम दुवैमा <strong>उही कोड</strong> प्रयोग गर्नुहोस्। नाम नलेख्नुहोस्।</p></div>'
    +selectHtml("gen","लिङ्ग (Gender)",GENDERS,st.gender)
    +selectHtml("age","उमेर समूह (Age Group)",AGES,st.ageGroup)
@@ -386,7 +387,7 @@ function viewResult(){
 function beginExam(){
   if(!SESSION){ $("profErr").textContent="सत्र कोड छैन। पहिले प्रशिक्षकले दिएको सत्र कोड लेख्नुहोस्।"; $("profErr").classList.remove("hide"); return; }
   var t=$("tst"), c=$("code"), g=$("gen"), a=$("age"), e=$("edu");
-  var tv=t?t.value:"", cv=c?c.value.trim().slice(0,20):"", gv=g?g.value:"", av=a?a.value:"", ev=e?e.value:"";
+  var tv=SESSION_TEST||(t?t.value:""), cv=c?c.value.trim().slice(0,20):"", gv=g?g.value:"", av=a?a.value:"", ev=e?e.value:"";
   if(!tv||!cv||!gv||!av||!ev){
     $("profErr").classList.remove("hide");
     var miss=!tv?t:(!cv?c:(!gv?g:(!av?a:e)));
