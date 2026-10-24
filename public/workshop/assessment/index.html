@@ -76,7 +76,7 @@ th{background:var(--soft);font-size:13px}
   <header class="top">
     <div>
       <h1>AI ज्ञान परीक्षा</h1>
-      <p class="sub">सन्धिखर्क नगरपालिका · दुई दिनको तालिमका सबै सत्रमा आधारित · पूर्व-तालिम र पश्च-तालिम (एउटै ३० प्रश्न)</p>
+      <p class="sub" id="subLine">सन्धिखर्क नगरपालिका · दुई दिनको तालिमका सबै सत्रमा आधारित · पूर्व-तालिम र पश्च-तालिम (एउटै ३० प्रश्न)</p>
     </div>
     <nav class="tabs" aria-label="मुख्य मेनु">
       <button id="tabExam" class="on" data-action="tab" data-tab="exam">सहभागी परीक्षा</button>
@@ -157,6 +157,13 @@ var TRAINER = "sandhikharka-2083"; // प्रशिक्षकको पा�
 var RESULTS = "assessment_results";
 var SESSION = "";
 var SESSION_TEST = "";
+var SESSION_INFO = null;
+function neNum(v){ return String(v==null?"":v).replace(/[0-9]/g,function(d){return "०१२३४५६७८९"[d];}); }
+function sessionLine(){
+  if(!SESSION_INFO) return "";
+  var parts=[SESSION_INFO.client,SESSION_INFO.location,SESSION_INFO.session_date?neNum(SESSION_INFO.session_date):""].filter(Boolean);
+  return parts.join(" · ");
+}
 var SESSIONS_TABLE = "training_sessions";
 var sessionList = [];
 var allRecords = [];
@@ -274,9 +281,15 @@ async function checkSession(){
   var err=$("sessErr");
   if(!code){ err.textContent="सत्र कोड लेख्नुहोस्।"; err.classList.remove("hide"); return; }
   try{
-    var res=await fetch(SB_URL+"/rest/v1/"+SESSIONS_TABLE+"?select=code,test&code=eq."+encodeURIComponent(code),{headers:sbHeaders()});
+    var res=await fetch(SB_URL+"/rest/v1/"+SESSIONS_TABLE+"?select=code,test,client,location,session_date&code=eq."+encodeURIComponent(code),{headers:sbHeaders()});
     var rows=res.ok?await res.json():[];
-    if(rows.length){ SESSION=code; SESSION_TEST=(rows[0].test==="pre"||rows[0].test==="post")?rows[0].test:""; renderApp(); window.scrollTo(0,0); return; }
+    if(rows.length){
+      SESSION=code; SESSION_INFO=rows[0];
+      SESSION_TEST=(rows[0].test==="pre"||rows[0].test==="post")?rows[0].test:"";
+      var line=sessionLine(); var sub=document.getElementById("subLine");
+      if(sub && line){ sub.textContent=line+" · "+(SESSION_TEST==="post"?"पश्च-तालिम":"पूर्व-तालिम"); }
+      renderApp(); window.scrollTo(0,0); return;
+    }
     err.textContent="सत्र कोड मिलेन। प्रशिक्षकसँग फेरि जाँच गर्नुहोस्।"; err.classList.remove("hide");
   }catch(e){
     err.textContent="जडानमा समस्या। इन्टरनेट जाँचेर फेरि प्रयास गर्नुहोस्।"; err.classList.remove("hide");
@@ -285,7 +298,7 @@ async function checkSession(){
 
 function viewStart(){
   if(!SESSION) return viewGate();
-  var sessInfo='<p class="muted small">सत्र: <strong>'+esc(SESSION)+'</strong></p>';
+  var sessInfo='<p class="muted small">'+esc(sessionLine())+'</p>';
   return '<section class="card">'
    +'<h2>परीक्षामा स्वागत छ</h2>'+sessInfo
    +'<p>यो परीक्षामा ३० वटा बहुविकल्पीय प्रश्न छन्। प्रत्येक प्रश्नमा एउटा मात्र सही उत्तर हुन्छ। सबै प्रश्नको उत्तर दिएपछि मात्र जम्मा गर्न सकिन्छ।</p>'
