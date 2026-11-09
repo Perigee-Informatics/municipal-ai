@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="ne">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>प्रशिक्षक नियन्त्रण · AI तालिम</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;700;800&display=swap">
+<style>
+:root{--bg:#F5F3EE;--surface:#fff;--ink:#1B2320;--muted:#5D6A65;--line:#DAD6CB;--accent:#1F5C4A;--bad:#B3392F;--ok:#2E7D4F;--soft:#E7EFEA}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0D1420;--surface:#152033;--ink:#E3E9F2;--muted:#9AA8BB;--line:#26344B;--accent:#6FD3A2;--soft:#1B2942;--bad:#F2708C;--ok:#6FD3A2}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Mukta',system-ui,sans-serif;font-size:17px;line-height:1.55}
+.wrap{max-width:760px;margin:0 auto;padding:24px 16px 60px}
+h1{font-size:26px;margin:8px 0 4px}
+h2{font-size:20px;margin:24px 0 8px}
+.muted{color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;margin-top:12px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:560px){.grid{grid-template-columns:1fr}}
+label.f{display:block;font-weight:700;font-size:15px}
+input,select{font:inherit;width:100%;margin-top:4px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)}
+input[type=checkbox]{width:auto;margin:0}
+button{font:inherit;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:6px 12px;cursor:pointer}
+button.ok{background:var(--ok);color:#fff;border-color:var(--ok)}
+button.bad{background:var(--bad);color:#fff;border-color:var(--bad)}
+button.pri{background:var(--accent);color:#fff;border-color:var(--accent)}
+button[disabled]{opacity:.6;cursor:not-allowed}
+.chip{display:inline-flex;gap:6px;align-items:center;background:var(--soft);border-radius:999px;padding:3px 10px;margin:4px 6px 0 0;font-size:15px}
+.chip button{padding:0 6px;font-size:14px;line-height:1.2}
+.switch{display:flex;align-items:center;gap:10px}
+.msg{font-weight:700;margin-top:10px}
+.hide{display:none}
+.small{font-size:14px}
+.ev{padding:10px 0;border-top:1px solid var(--line)}
+a{color:var(--accent)}
+@media print{body *{visibility:hidden}#qrPanel,#qrPanel *{visibility:visible}#qrPanel{position:absolute;left:0;top:0;width:100%;border:0}}
+.qr svg{width:260px;height:260px;max-width:100%;height:auto}
+  .st-sel { color:#1c7c4d; font-weight:700; } .st-no { color:#b03a2e; }
+  table.calc { width:100%; border-collapse:collapse; margin:10px 0; font-size:15px; }
+  table.calc td, table.calc th { border:1px solid #d9dee8; padding:6px 8px; text-align:left; vertical-align:top; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="muted" style="margin:0">सन्धिखर्क नगरपालिका · AI तालिम</p>
+  <h1>प्रशिक्षक नियन्त्रण</h1>
+
+  <section id="needLogin" class="card hide">
+    <p>यो पृष्ठ प्रशिक्षकका लागि हो। <a href="login.html?next=admin.html">प्रशिक्षक खातामा साइन इन गर्नुहोस्</a>।</p>
+  </section>
+
+  <section id="panel" class="hide">
+    <section class="card">
+      <h2 style="margin-top:0">सामग्री सार्वजनिक</h2>
+      <div class="row">
+        <span>तालिम सामग्री सबैका लागि देखिने</span>
+        <label class="switch"><input id="matToggle" type="checkbox"> <span id="matState" class="small"></span></label>
+      </div>
+      <p id="matMsg" class="msg hide"></p>
+    </section>
+
+    <h2>इभेन्ट मास्टर</h2>
+    <section class="card" id="manualReg">
+    <h2>हस्तचालित दर्ता (ब्याकअप)</h2>
+    <p class="small muted">इमेल पुष्टि पठाउन नसकिएमा प्रशिक्षकले खाता सिधै बनाइदिन सक्छ। खाता स्वीकृत भएर इभेन्टमा जोडिन्छ। सहभागीले पहिलो पटक साइन इन गरेपछि आफ्नो विवरण आफैँ भर्छन्। <strong>पासवर्ड यो स्क्रिनमा एक पटक मात्र देखिन्छ</strong>; सहभागीलाई निजी रूपमा पठाउनुहोस्।</p>
+    <label class="f">इभेन्ट<select id="mrEvent" required></select></label>
+    <div class="row" style="justify-content:flex-start">
+      <button type="button" id="mrModeOne" class="ok">एक-एक गरी</button>
+      <button type="button" id="mrModeBulk">बल्क (CSV)</button>
+    </div>
+    <form id="mrOne">
+      <div class="grid">
+        <label class="f">युजरनेम (इमेल)<input id="mrEmail" type="email" required></label>
+        <label class="f">पासवर्ड (खाली छोडे स्वचालित बन्छ, कम्तीमा ८ अक्षर)<input id="mrPass" type="text" autocomplete="off"></label>
+      </div>
+      <div class="row"><button class="ok" type="submit" id="mrOneGo">खाता बनाउनुहोस्</button></div>
+    </form>
+    <div id="mrBulk" class="hide">
+      <label class="f">प्रत्येक लाइनमा: इमेल (युजरनेम) वा इमेल,पासवर्ड। पासवर्ड नदिएमा स्वचालित बन्छ।<textarea id="mrCsv" rows="8" placeholder="ram@example.com&#10;sita@example.com,Sita@2083"></textarea></label>
+      <p class="small muted">एक पटकमा अधिकतम १०० जना। हेडर लाइन (email) भए छोडिन्छ।</p>
+      <div class="row"><button class="ok" type="button" id="mrBulkGo">सबै खाता बनाउनुहोस्</button></div>
+    </div>
+    <p id="mrMsg" class="msg hide"></p>
+    <div id="mrResults"></div>
+  </section>
+
+  <section class="card">
+      <form id="evForm">
+        <div class="grid">
+          <label class="f">इभेन्टको नाम<input id="evName" type="text" required></label>
+          <label class="f">आयोजक (Organized by)<input id="evOrg" type="text"></label>
+          <label class="f">ठेगाना (Address)<input id="evAddr" type="text"></label>
+          <label class="f">इभेन्ट कोड (Code)<input id="evCode" type="text" required placeholder="जस्तै: SKH-01"></label>
+          <label class="f">प्रशिक्षण प्याकेज<select id="evPkg" required></select></label>
+        </div>
+        <label class="f" style="margin-top:10px">मिति छान्नुहोस् (धेरै मिति थप्न सकिन्छ)</label>
+        <div class="row" style="justify-content:flex-start">
+          <input id="evDateIn" type="date" style="width:auto">
+          <button type="button" id="evAddDate">मिति थप्नुहोस्</button>
+        </div>
+        <div id="evDates"></div>
+        <div class="row" style="justify-content:flex-start;margin-top:10px;gap:20px">
+          <label class="switch"><input id="evPre" type="checkbox"> <span>पूर्व-तालिम परीक्षा खुला</span></label>
+          <label class="switch"><input id="evPost" type="checkbox"> <span>पश्च-तालिम परीक्षा खुला</span></label>
+        </div>
+        <div class="row" style="justify-content:flex-start;margin-top:6px;gap:20px">
+          <label class="switch"><input id="evPreAns" type="checkbox"> <span>पूर्व: सही उत्तर र व्याख्या देखाउने</span></label>
+          <label class="switch"><input id="evPostAns" type="checkbox"> <span>पश्च: सही उत्तर र व्याख्या देखाउने</span></label>
+        </div>
+        <input id="evId" type="hidden">
+        <p class="row" style="justify-content:flex-start;margin-top:12px">
+          <button class="pri" type="submit" id="evSave">इभेन्ट सुरक्षित गर्नुहोस्</button>
+          <button type="button" id="evReset">नयाँ इभेन्ट</button>
+        </p>
+      </form>
+      <p id="evMsg" class="msg hide"></p>
+      <div id="evList" class="muted">लोड हुँदैछ…</div>
+      <div id="qrPanel" class="card hide"></div>
+    </section>
+
+    <h2>स्वीकृतिका लागि पर्खने दर्ता</h2>
+    <div id="pending" class="card muted">लोड हुँदैछ…</div>
+
+    <h2>स्वीकृत सहभागी</h2>
+    <div id="approved" class="card muted">लोड हुँदैछ…</div>
+
+    <p class="small muted">परीक्षाका परिणाम हेर्न <a href="assessment/">परीक्षा पृष्ठ</a> मा प्रशिक्षक खाताले डासबोर्ड देख्छ।</p>
+    <p class="row"><button id="signOut">साइन आउट</button></p>
+  </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script src="assessment/pool-employee.js"></script>
+<script src="assessment/pool-representative.js"></script>
+<script src="account.js"></script>
+<script>
+(function () {
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+  function flash(id, text, ok) { var m = $(id); m.textContent = text; m.className = "msg " + (ok ? "ok" : "bad"); m.classList.remove("hide"); }
+
+  var events = [];
+  var packages = [];
+  var manualRows = [];
+  var dates = [];
+
+  function pkgById(id) {
+    return packages.find(function (p) { return p.id === id; }) || null;
+  }
+
+  function pkgName(id) {
+    var p = pkgById(id);
+    return p ? p.name : "प्याकेज तोकिएको छैन";
+  }
+
+  function packageOptions(selected) {
+    return packages.map(function (p) {
+      return '<option value="' + esc(p.id) + '"' + (p.id === selected ? " selected" : "") + '>' + esc(p.name) + '</option>';
+    }).join("");
+  }
+
+  async function loadPackages() {
+    var r = await WS.listPackages();
+    if (r.error) { flash("evMsg", "प्याकेज लोड हुन सकेन: " + r.error.message, false); return; }
+    packages = r.data || [];
+    $("evPkg").innerHTML = packageOptions($("evPkg").value);
+  }
+
+  function eventOptions(selected) {
+    return '<option value="">— इभेन्ट छान्नुहोस् —</option>' + events.map(function (e) {
+      return '<option value="' + esc(e.id) + '"' + (e.id === selected ? " selected" : "") + '>' + esc(e.name) + ' (' + esc(e.code) + ')</option>';
+    }).join("");
+  }
+
+  function eventName(id) {
+    var e = events.find(function (x) { return x.id === id; });
+    return e ? e.name + " (" + e.code + ")" : "इभेन्ट तोकिएको छैन";
+  }
+
+  function row(p, actions) {
+    return '<div class="row" style="padding:8px 0;border-top:1px solid var(--line)"><div><strong>' + esc(p.full_name) + '</strong><div class="small muted">' +
+      esc(p.office) + ' · ' + esc(p.education) + ' · ' + esc(p.age_group) + ' · ' + esc(p.gender) + '</div></div><div>' + actions + '</div></div>';
+  }
+
+  function renderDates() {
+    dates.sort();
+    $("evDates").innerHTML = dates.map(function (d) {
+      return '<span class="chip">' + esc(d) + ' <button type="button" data-rmdate="' + esc(d) + '" aria-label="हटाउनुहोस्">✕</button></span>';
+    }).join("");
+  }
+
+  function resetForm() {
+    $("evForm").reset();
+    $("evId").value = "";
+    $("evPkg").value = packages.length ? packages[0].id : "";
+    dates = [];
+    renderDates();
+    $("evSave").textContent = "इभेन्ट सुरक्षित गर्नुहोस्";
+  }
+
+  function renderEvents() {
+    if (!events.length) { $("evList").innerHTML = "अहिलेसम्म कुनै इभेन्ट छैन।"; return; }
+    $("evList").innerHTML = events.map(function (e) {
+      var id = esc(e.id);
+      return '<div class="ev"><div class="row"><div><strong>' + esc(e.name) + '</strong> <span class="small">[' + esc(e.code) + ']</span>' +
+        '<div class="small muted">' + esc(pkgName(e.package_id)) + '</div>' +
+        '<div class="small muted">' + esc(e.organized_by || "") + ' · ' + esc(e.address || "") + '</div>' +
+        '<div class="small muted">मितिहरू: ' + esc((e.event_dates || []).join(", ")) + '</div></div>' +
+        '<div><button type="button" data-edit-ev="' + id + '">सम्पादन</button></div></div>' +
+        '<div class="row" style="justify-content:flex-start;margin-top:8px;gap:8px">' +
+        '<button type="button" data-flag="pre_open" data-ev="' + id + '" data-val="' + (!e.pre_open) + '">पूर्व परीक्षा: ' + (e.pre_open ? "खुला ✔" : "बन्द ✘") + '</button>' +
+        '<button type="button" data-flag="pre_answers" data-ev="' + id + '" data-val="' + (!e.pre_answers) + '">पूर्व उत्तर: ' + (e.pre_answers ? "देखिने ✔" : "लुकाइएको ✘") + '</button>' +
+        '<button type="button" data-qr="pre" data-ev="' + id + '">पूर्व QR</button>' +
+        '</div>' +
+        '<div class="row" style="justify-content:flex-start;margin-top:6px;gap:8px">' +
+        '<button type="button" data-flag="post_open" data-ev="' + id + '" data-val="' + (!e.post_open) + '">पश्च परीक्षा: ' + (e.post_open ? "खुला ✔" : "बन्द ✘") + '</button>' +
+        '<button type="button" data-flag="post_answers" data-ev="' + id + '" data-val="' + (!e.post_answers) + '">पश्च उत्तर: ' + (e.post_answers ? "देखिने ✔" : "लुकाइएको ✘") + '</button>' +
+        '<button type="button" data-qr="post" data-ev="' + id + '">पश्च QR</button>' +
+        '</div>' +
+        '<div class="row" style="justify-content:flex-start;margin-top:6px;gap:8px">' +
+        '<span class="small muted">प्रश्न सेट: ' + (e.question_ids && e.question_ids.length ? e.question_ids.length + ' प्रश्न (सरल ४ · मध्यम १० · जटिल ६)' : 'बनेको छैन') + '</span> ' +
+        '<button type="button" data-qset="' + id + '">' + (e.question_ids && e.question_ids.length ? 'प्रश्न सेट पुनः बनाउनुहोस्' : 'प्रश्न सेट बनाउनुहोस्') + '</button>' +
+        '</div></div>';
+    }).join("");
+  }
+
+  function showQr(test, evId) {
+    var ev = events.find(function (x) { return x.id === evId; });
+    if (!ev) return;
+    var url = new URL("assessment/index.html", location.href);
+    url.search = "?e=" + encodeURIComponent(ev.code) + "&t=" + test;
+    var panel = $("qrPanel");
+    try {
+      var qr = qrcode(0, "M");
+      qr.addData(url.href);
+      qr.make();
+      var label = test === "post" ? "पश्च-तालिम" : "पूर्व-तालिम";
+      panel.innerHTML = '<h2 style="margin-top:0">' + esc(ev.name) + ' · ' + label + ' QR</h2>' +
+        '<div class="qr" style="background:#fff;padding:12px;display:inline-block;border-radius:8px">' + qr.createSvgTag(6, 2) + '</div>' +
+        '<p class="small">लिङ्क: <a href="' + esc(url.href) + '">' + esc(url.href) + '</a></p>' +
+        '<p class="small muted">यो QR मा इभेन्ट कोड र परीक्षा प्रकार मात्र छ। सहभागीको व्यक्तिगत विवरण छैन।</p>' +
+        '<p class="row" style="justify-content:flex-start"><button id="qrPrint" class="pri">छाप्नुहोस्</button> <button id="qrClose">बन्द गर्नुहोस्</button></p>';
+      panel.classList.remove("hide");
+      panel.scrollIntoView({ behavior: "smooth" });
+    } catch (err) {
+      flash("evMsg", "QR बनाउन सकिएन (QR लाइब्रेरी लोड भएन)।", false);
+    }
+  }
+
+  async function regenSet(evId) {
+    var ev = events.find(function (x) { return x.id === evId; });
+    if (!ev) return;
+    if (ev.question_ids && ev.question_ids.length &&
+        !confirm("यो इभेन्टको प्रश्न सेट फेरि बनाउने हो? नयाँ सेट अबदेखि लागू हुन्छ। पूर्व र पश्च परीक्षा फरक सेटमा नपरोस् भनी यो काम परीक्षा सुरु हुनु अघि गर्नुहोस्।")) return;
+    var pkg = pkgById(ev.package_id);
+    var isRep = pkg && pkg.key === "representative";
+    var ids = isRep ? pickRepresentativeSet() : pickEventSet();
+    var r = await WS.updateEvent(evId, { question_ids: ids });
+    if (r.error) { flash("evMsg", "प्रश्न सेट सुरक्षित हुन सकेन: " + r.error.message, false); return; }
+    flash("evMsg", "प्रश्न सेट बनियो (२० प्रश्न)।", true);
+    await loadEvents();
+  }
+
+  // ---- Manual registration (backup) ----
+  function renderManualEvents() {
+    var cur = $("mrEvent").value;
+    $("mrEvent").innerHTML = '<option value="">— इभेन्ट छान्नुहोस् —</option>' + events.map(function (e) {
+      return '<option value="' + esc(e.id) + '">' + esc(e.name) + ' (' + esc(e.code) + ')</option>';
+    }).join("");
+    if (cur) $("mrEvent").value = cur;
+  }
+
+  function mrFlash(text, ok) { var m = $("mrMsg"); m.textContent = text; m.className = "msg " + (ok ? "ok" : "bad"); m.classList.remove("hide"); }
+
+  function copyText(text, btn) {
+    var done = function () { if (btn) { var t = btn.textContent; btn.textContent = "प्रतिलिपि भयो ✔"; setTimeout(function () { btn.textContent = t; }, 1500); } };
+    if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text); done(); }); }
+    else { fallbackCopy(text); done(); }
+  }
+  function fallbackCopy(text) {
+    var ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); } catch (e) {} ta.remove();
+  }
+
+  function renderManualResults(event, results) {
+    manualRows = results;
+    var rows = results.map(function (r, i) {
+      var pw = r.password ? '<code>' + esc(r.password) + '</code> <button type="button" data-copy-pw="' + i + '">कपी</button>' : '<span class="muted">—</span>';
+      var cls = r.status === "created" ? "st-sel" : "st-no";
+      return '<tr><td>' + esc(r.email) + '</td><td class="' + cls + '">' + esc(r.message) + '</td><td>' + pw + '</td></tr>';
+    }).join("");
+    var created = results.filter(function (r) { return r.status === "created"; }).length;
+    $("mrResults").innerHTML = '<p class="small">इभेन्ट: <strong>' + esc(event) + '</strong> · सफल: ' + created + ' / ' + results.length +
+      '</p><div class="row"><button type="button" id="mrCopyAll">सबै इमेल र पासवर्ड कपी गर्नुहोस्</button></div>' +
+      '<div class="scroll"><table class="calc"><thead><tr><th>इमेल</th><th>स्थिति</th><th>पासवर्ड</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+  }
+
+  async function createManual(participants) {
+    var evId = $("mrEvent").value;
+    if (!evId) { mrFlash("पहिले इभेन्ट छान्नुहोस्।", false); return null; }
+    var go = $("mrOneGo"), bulk = $("mrBulkGo");
+    go.disabled = true; bulk.disabled = true;
+    try {
+      var res = await fetch(WS.SB_URL + "/functions/v1/admin-create-participants", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "apikey": WS.SB_KEY, "Authorization": "Bearer " + WS.token() },
+        body: JSON.stringify({ event_id: evId, participants: participants })
+      });
+      var data = await res.json().catch(function () { return {}; });
+      if (!res.ok) {
+        var msg = { "not-trainer": "यो खाताले यो काम गर्न पाउँदैन।", "event-not-found": "इभेन्ट भेटिएन।", "too-many": "एक पटकमा अधिकतम १०० जना मात्र।" }[data.error] || ("त्रुटि: " + (data.error || res.status));
+        mrFlash(msg, false); return null;
+      }
+      renderManualResults(data.event, data.results || []);
+      await renderLists();
+      return data;
+    } catch (err) {
+      mrFlash("सर्भरसँग जडान हुन सकेन। फेरि प्रयास गर्नुहोस्।", false); return null;
+    } finally { go.disabled = false; bulk.disabled = false; }
+  }
+
+  function parseCsv(text) {
+    var out = [], errs = [];
+    text.split(/\r?\n/).forEach(function (line, i) {
+      line = line.trim();
+      if (!line) return;
+      var c = line.split(",").map(function (x) { return x.trim(); });
+      if (c[0].toLowerCase() === "email") return;
+      if (!c[0] || c[0].indexOf("@") < 1) { errs.push("लाइन " + (i + 1) + ": इमेल मिलेन"); return; }
+      out.push({ email: c[0], password: c[1] || "" });
+    });
+    return { rows: out, errs: errs };
+  }
+
+  $("mrModeOne").addEventListener("click", function () {
+    $("mrOne").classList.remove("hide"); $("mrBulk").classList.add("hide");
+    $("mrModeOne").className = "ok"; $("mrModeBulk").className = "";
+  });
+  $("mrModeBulk").addEventListener("click", function () {
+    $("mrBulk").classList.remove("hide"); $("mrOne").classList.add("hide");
+    $("mrModeBulk").className = "ok"; $("mrModeOne").className = "";
+  });
+  $("mrOne").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    var pw = $("mrPass").value;
+    if (pw && pw.length < 8) { mrFlash("पासवर्ड कम्तीमा ८ अक्षरको हुनुपर्छ।", false); return; }
+    var data = await createManual([{ email: $("mrEmail").value.trim(), password: pw }]);
+    if (data) { mrFlash("खाता प्रक्रिया सम्पन्न भयो। तलको पासवर्ड सहभागीलाई पठाउनुहोस्।", true); $("mrOne").reset(); }
+  });
+  $("mrBulkGo").addEventListener("click", async function () {
+    var parsed = parseCsv($("mrCsv").value);
+    if (parsed.errs.length) { mrFlash(parsed.errs.join(" · "), false); return; }
+    if (!parsed.rows.length) { mrFlash("कुनै लाइन भेटिएन।", false); return; }
+    if (parsed.rows.length > 100) { mrFlash("एक पटकमा अधिकतम १०० जना मात्र।", false); return; }
+    var data = await createManual(parsed.rows);
+    if (data) mrFlash("बल्क प्रक्रिया सम्पन्न भयो। तलको नतिजा हेर्नुहोस्।", true);
+  });
+  document.addEventListener("click", function (e) {
+    var t = e.target.closest("button");
+    if (!t) return;
+    if (t.dataset.copyPw !== undefined) { copyText(manualRows[+t.dataset.copyPw].password, t); }
+    else if (t.id === "mrCopyAll") {
+      var txt = manualRows.filter(function (r) { return r.password; }).map(function (r) { return r.email + "\t" + r.password; }).join("\n");
+      copyText(txt, t);
+    }
+  });
+
+  async function loadEvents() {
+    if (!packages.length) await loadPackages();
+    var r = await WS.listEvents();
+    if (r.error) { flash("evMsg", "इभेन्ट लोड हुन सकेन: " + r.error.message, false); return; }
+    events = r.data || [];
+    renderEvents();
+    renderManualEvents();
+  }
+
+  async function renderLists() {
+    await loadEvents();
+    var pend = await WS.listByStatus("pending");
+    var appr = await WS.listByStatus("approved");
+    var pendHtml = (pend.data || []).map(function (p) {
+      return row(p, '<select id="sel-' + esc(p.id) + '" style="width:auto;margin:0 6px 6px 0">' + eventOptions(p.event_id) + '</select> ' +
+        '<button class="ok" data-approve="' + esc(p.id) + '">स्वीकृत</button> <button class="bad" data-reject="' + esc(p.id) + '">अस्वीकृत</button>');
+    }).join("");
+    $("pending").innerHTML = pendHtml || "कुनै नयाँ दर्ता छैन।";
+    var apprHtml = (appr.data || []).filter(function (p) { return p.role !== "trainer"; }).map(function (p) {
+      return row(p, '<select data-changeev="' + esc(p.id) + '" style="width:auto;margin:0 6px 6px 0">' + eventOptions(p.event_id) + '</select> ' +
+        '<button data-revoke="' + esc(p.id) + '">स्वीकृति रद्द</button>');
+    }).join("");
+    $("approved").innerHTML = apprHtml || "अहिलेसम्म कुनै स्वीकृत सहभागी छैन।";
+  }
+
+  async function setStatus(id, status, eventId) {
+    var r = await WS.setStatus(id, status, eventId);
+    if (r.error) flash("matMsg", "अपडेट हुन सकेन: " + r.error.message, false);
+    await renderLists();
+  }
+
+  document.addEventListener("click", async function (e) {
+    var t = e.target.closest("button");
+    if (!t) return;
+    if (t.dataset.approve) {
+      var sel = $("sel-" + t.dataset.approve);
+      if (!sel || !sel.value) { flash("matMsg", "पहिले इभेन्ट छान्नुहोस्।", false); return; }
+      setStatus(t.dataset.approve, "approved", sel.value);
+    }
+    else if (t.dataset.reject) setStatus(t.dataset.reject, "rejected", null);
+    else if (t.dataset.revoke) setStatus(t.dataset.revoke, "pending", null);
+    else if (t.dataset.rmdate) { dates = dates.filter(function (d) { return d !== t.dataset.rmdate; }); renderDates(); }
+    else if (t.dataset.editEv) {
+      var ev = events.find(function (x) { return x.id === t.dataset.editEv; });
+      if (!ev) return;
+      $("evId").value = ev.id;
+      $("evName").value = ev.name || "";
+      $("evOrg").value = ev.organized_by || "";
+      $("evAddr").value = ev.address || "";
+      $("evCode").value = ev.code || "";
+      $("evPkg").value = ev.package_id || (packages.length ? packages[0].id : "");
+      $("evPre").checked = !!ev.pre_open;
+      $("evPost").checked = !!ev.post_open;
+      $("evPreAns").checked = !!ev.pre_answers;
+      $("evPostAns").checked = !!ev.post_answers;
+      dates = (ev.event_dates || []).slice();
+      renderDates();
+      $("evSave").textContent = "इभेन्ट अद्यावधिक गर्नुहोस्";
+      window.scrollTo({ top: $("evForm").getBoundingClientRect().top + window.scrollY - 20, behavior: "smooth" });
+    }
+    else if (t.dataset.qset) { regenSet(t.dataset.qset); }
+    else if (t.dataset.qr) { showQr(t.dataset.qr, t.dataset.ev); }
+    else if (t.id === "qrPrint") { window.print(); }
+    else if (t.id === "qrClose") { $("qrPanel").classList.add("hide"); }
+    else if (t.dataset.flag) {
+      var patch = {}; patch[t.dataset.flag] = t.dataset.val === "true";
+      var fr = await WS.updateEvent(t.dataset.ev, patch);
+      if (fr.error) flash("evMsg", "बदल्न सकिएन: " + fr.error.message, false);
+      await loadEvents();
+    }
+    else if (t.id === "evAddDate") {
+      var v = $("evDateIn").value;
+      if (!v) { flash("evMsg", "पहिले मिति छान्नुहोस्।", false); return; }
+      if (dates.indexOf(v) === -1) dates.push(v);
+      $("evDateIn").value = "";
+      renderDates();
+    }
+    else if (t.id === "evReset") { resetForm(); }
+    else if (t.id === "signOut") { WS.signOut().then(function () { location.href = "login.html"; }); }
+  });
+
+  $("evForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    var name = $("evName").value.trim();
+    var code = $("evCode").value.trim().toUpperCase();
+    if (!name || !code) { flash("evMsg", "इभेन्टको नाम र कोड भर्नुहोस्।", false); return; }
+    if (!dates.length) { flash("evMsg", "कम्तीमा एउटा मिति छान्नुहोस्।", false); return; }
+    var payload = {
+      name: name,
+      code: code,
+      package_id: $("evPkg").value || null,
+      organized_by: $("evOrg").value.trim(),
+      address: $("evAddr").value.trim(),
+      event_dates: dates.slice(),
+      pre_open: $("evPre").checked,
+      post_open: $("evPost").checked,
+      pre_answers: $("evPreAns").checked,
+      post_answers: $("evPostAns").checked
+    };
+    if ($("evId").value) payload.id = $("evId").value;
+    var btn = $("evSave"); btn.disabled = true;
+    var r = await WS.saveEvent(payload);
+    btn.disabled = false;
+    if (r.error) { flash("evMsg", "सुरक्षित हुन सकेन: " + r.error.message, false); return; }
+    flash("evMsg", "इभेन्ट सुरक्षित भयो।", true);
+    resetForm();
+    await renderLists();
+  });
+
+  document.addEventListener("change", async function (e) {
+    var s = e.target;
+    if (s.dataset && s.dataset.changeev) {
+      if (!s.value) { flash("matMsg", "इभेन्ट खाली हुन सक्दैन।", false); await renderLists(); return; }
+      await setStatus(s.dataset.changeev, "approved", s.value);
+    }
+  });
+
+  $("matToggle").addEventListener("change", async function (e) {
+    var on = e.target.checked;
+    var r = await WS.setMaterialsPublic(on);
+    if (r.error) { e.target.checked = !on; flash("matMsg", "बदल्न सकिएन: " + r.error.message, false); return; }
+    $("matState").textContent = on ? "सार्वजनिक (सबैले हेर्न सक्छन्)" : "निजी (स्वीकृत सहभागी मात्र)";
+    flash("matMsg", on ? "सामग्री अब सार्वजनिक भयो।" : "सामग्री अब निजी भयो।", true);
+  });
+
+  WS.init().then(async function () {
+    if (!WS.isTrainer()) { $("needLogin").classList.remove("hide"); return; }
+    $("panel").classList.remove("hide");
+    var pub = await WS.materialsPublic();
+    $("matToggle").checked = pub;
+    $("matState").textContent = pub ? "सार्वजनिक (सबैले हेर्न सक्छन्)" : "निजी (स्वीकृत सहभागी मात्र)";
+    renderDates();
+    await renderLists();
+  }).catch(function () {
+    $("needLogin").classList.remove("hide");
+  });
+})();
+</script>
+</body>
+</html>

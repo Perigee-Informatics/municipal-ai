@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ne">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>मेरो विवरण · AI तालिम</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;700;800&display=swap">
+<style>
+:root{--bg:#F5F3EE;--surface:#fff;--ink:#1B2320;--muted:#5D6A65;--line:#DAD6CB;--accent:#1F5C4A;--bad:#B3392F;--ok:#2E7D4F;--soft:#E7EFEA}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0D1420;--surface:#152033;--ink:#E3E9F2;--muted:#9AA8BB;--line:#26344B;--accent:#6FD3A2;--soft:#1B2942;--bad:#F2708C;--ok:#6FD3A2}}
+:root[data-theme="dark"]{--bg:#0D1420;--surface:#152033;--ink:#E3E9F2;--muted:#9AA8BB;--line:#26344B;--accent:#6FD3A2;--soft:#1B2942;--bad:#F2708C;--ok:#6FD3A2}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Mukta',system-ui,sans-serif;font-size:17px;line-height:1.55}
+.wrap{max-width:520px;margin:0 auto;padding:24px 16px 60px}
+h1{font-size:24px;margin:8px 0 4px}
+.muted{color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;margin-top:14px}
+label{display:block;margin-top:12px;font-weight:700;font-size:15px}
+input,select{display:block;width:100%;margin-top:6px;padding:10px;font:inherit;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+button{margin-top:16px;width:100%;padding:12px;font:inherit;font-weight:700;border:0;border-radius:8px;background:var(--accent);color:#fff;cursor:pointer}
+button:disabled{opacity:.6}
+.msg{margin-top:12px;padding:10px;border-radius:8px}
+.msg.bad{color:var(--bad)} .msg.ok{color:var(--ok)}
+.hide{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>मेरो विवरण</h1>
+  <p class="muted">तपाईंको खाता प्रशिक्षकले बनाइदिनुभएको हो। कृपया आफ्नो विवरण भरेर सुरक्षित गर्नुहोस्। नाम अनिवार्य छ।</p>
+  <div class="card">
+    <p class="muted" style="margin:0">युजरनेम: <strong id="email">—</strong></p>
+    <form id="pForm">
+      <label for="pName">पूरा नाम *<input id="pName" type="text" required maxlength="120"></label>
+      <label for="pGender">लिङ्ग
+        <select id="pGender"><option value="">—</option><option value="Male">Male</option><option value="Female">Female</option><option value="Others">Others</option></select></label>
+      <label for="pAge">उमेर समूह
+        <select id="pAge"><option value="">—</option><option>Below 20</option><option>20-30</option><option>30-40</option><option>40-50</option><option>50 and above</option></select></label>
+      <label for="pEdu">शैक्षिक योग्यता
+        <select id="pEdu"><option value="">—</option><option>High School</option><option>Undergraduate</option><option>Masters and Above</option></select></label>
+      <label for="pOffice">कार्यालय / पद<input id="pOffice" type="text" maxlength="160"></label>
+      <button type="submit" id="pSave">सुरक्षित गर्नुहोस्</button>
+    </form>
+    <p id="pMsg" class="msg hide"></p>
+  </div>
+</div>
+<script src="account.js"></script>
+<script>
+(function () {
+  function $(id) { return document.getElementById(id); }
+  function show(text, ok) { var m = $("pMsg"); m.textContent = text; m.className = "msg " + (ok ? "ok" : "bad"); m.classList.remove("hide"); }
+  // Only allow a relative path inside this site as the destination after saving.
+  var raw = new URLSearchParams(location.search).get("next") || "assessment/";
+  var next = /^[A-Za-z0-9_\-\/.]+$/.test(raw) && raw.indexOf("..") === -1 ? raw : "assessment/";
+
+  WS.init().then(function () {
+    if (!WS.session) { location.href = "login.html"; return; }
+    if (!WS.isApproved()) { location.href = "login.html"; return; }
+    $("email").textContent = WS.session.user.email || "";
+    var p = WS.profile || {};
+    $("pName").value = p.full_name || "";
+    $("pGender").value = p.gender || "";
+    $("pAge").value = p.age_group || "";
+    $("pEdu").value = p.education || "";
+    $("pOffice").value = p.office || "";
+  }).catch(function () { show("जडानमा समस्या। फेरि प्रयास गर्नुहोस्।", false); });
+
+  $("pForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    var btn = $("pSave"); btn.disabled = true;
+    try {
+      var r = await WS.saveMyProfile({
+        full_name: $("pName").value.trim(), gender: $("pGender").value, age_group: $("pAge").value,
+        education: $("pEdu").value, office: $("pOffice").value.trim()
+      });
+      if (r.error) { show("सुरक्षित हुन सकेन: " + r.error.message, false); btn.disabled = false; return; }
+      await WS.loadProfile();
+      show("सुरक्षित भयो। अब जारी राख्न सकिन्छ।", true);
+      setTimeout(function () { location.href = next; }, 600);
+    } catch (err) { show("सुरक्षित हुन सकेन। फेरि प्रयास गर्नुहोस्।", false); btn.disabled = false; }
+  });
+})();
+</script>
+</body>
+</html>

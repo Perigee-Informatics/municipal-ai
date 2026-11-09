@@ -1,3 +1,8 @@
+<!doctype html>
+<html lang="ne">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>AI ज्ञान परीक्षा</title>
 <style>
 :root{
@@ -90,17 +95,20 @@ th{background:var(--soft);font-size:13px}
     <section class="card" id="gate">
       <h2>प्रशिक्षक पहुँच</h2>
       <p class="muted small">यो डासबोर्ड प्रशिक्षकका लागि हो। सहभागीहरूले परीक्षा बुझाएपछि परिणाम यहाँ स्वतः देखिन्छ।</p>
-      <label for="pass">पासकोड</label>
+      <p>प्रशिक्षक खातामा साइन इन गरेपछि डासबोर्ड खुल्छ।</p>
       <div class="row">
-        <input id="pass" type="password" autocomplete="off" style="max-width:300px">
-        <button class="primary" data-action="unlock">खोल्नुहोस्</button>
+        <a href="../login.html?next=assessment/">प्रशिक्षक साइन इन</a>
+        <button class="primary" data-action="unlock">डासबोर्ड खोल्नुहोस्</button>
       </div>
-      <p id="gateMsg" class="msg c-bad hide">पासकोड मिलेन।</p>
+      <p id="gateMsg" class="msg c-bad hide">डासबोर्ड खोल्न प्रशिक्षक खाता चाहिन्छ।</p>
     </section>
     <div id="dashBody" class="hide"></div>
   </main>
 </div>
 
+<script src="../account.js"></script>
+<script src="pool-employee.js"></script>
+<script src="pool-representative.js"></script>
 <script>
 (function(){
 "use strict";
@@ -116,42 +124,10 @@ var SESSIONS = [
   {id:5,label:"गोपनीयता, नैतिकता र सेवा प्रवाह"}
 ];
 
-/* पूर्व-तालिम परीक्षा: ३० प्रश्न, सत्रअनुसार समूहबद्ध (प्रत्येक सत्रमा ५) */
-var BANK = [
- {s: 0, "q": "जेनेरेटिभ AI को मुख्य विशेषता के हो?", "o": ["नयाँ पाठ, छवि वा अन्य सामग्री सिर्जना गर्नु", "केवल पूर्वनिर्धारित नियम मात्र पालना गर्नु", "केवल सङ्ख्यात्मक तथ्याङ्कको योग गर्नु", "इन्टरनेट बिना कुनै पनि काम नगर्नु"], "a": 0, "e": "जेनेरेटिभ AI ले सिकेको ढाँचाको आधारमा नयाँ सामग्री तयार गर्छ।"},
- {s: 0, "q": "मेसिन लर्निङ र जेनेरेटिभ AI बीचको सम्बन्ध के हो?", "o": ["दुवै एउटै हुन्, फरक छैन", "मेसिन लर्निङ AI को एक भाग हो, र जेनेरेटिभ AI प्रायः मेसिन लर्निङमा आधारित हुन्छ", "जेनेरेटिभ AI मेसिन लर्निङभन्दा पुरानो हो", "मेसिन लर्निङ केवल फोटो प्रशोधनमा प्रयोग हुन्छ"], "a": 1, "e": "मेसिन लर्निङ AI को एक उपक्षेत्र हो, र जेनेरेटिभ AI प्रायः यही प्रविधिमा आधारित हुन्छ।"},
- {s: 0, "q": "भाषा मोडल (LLM) ले उत्तर कसरी तयार गर्छ?", "o": ["इन्टरनेटबाट सिधै सत्य तथ्य खोजेर", "मानिसले पहिल्यै लेखेको उत्तर कपी गरेर", "अर्को सम्भाव्य शब्द वा टोकनको अनुमान गर्दै, क्रमशः", "कुनै गणना नगरी"], "a": 2, "e": "LLM ले सिकेको ढाँचाबाट अर्को सम्भाव्य शब्द अनुमान गर्दै वाक्य बनाउँछ; त्यसैले गलत तर विश्वसनीय देखिने उत्तर दिन सक्छ।"},
- {s: 0, "q": "AI ले गलत तर विश्वसनीय देखिने जानकारी दिनुलाई के भनिन्छ?", "o": ["Encryption (इन्क्रिप्सन)", "Backup (ब्याकअप)", "Bandwidth (ब्यान्डविथ)", "Hallucination (काल्पनिक तथ्य)"], "a": 3, "e": "AI ले काल्पनिक तथ्य प्रस्तुत गर्ने यस्तो अवस्थालाई Hallucination भनिन्छ।"},
- {s: 0, "q": "AI को उत्तर सधैं सही हुन्छ भन्ने धारणा कस्तो छ?", "o": ["गलत, मानवीय जाँच र तथ्य प्रमाणीकरण आवश्यक छ", "सही, AI कहिल्यै गल्ती गर्दैन", "सही, यदि उत्तर लामो छ भने", "सही, यदि सरकारी वेबसाइटबाट लिइएको छ भने"], "a": 0, "e": "AI ले गल्ती गर्न सक्छ, त्यसैले हरेक महत्त्वपूर्ण उत्तर मानिसले जाँच्नुपर्छ।"},
- {s: 1, "q": "कार्यालयीय काममा AI ले सबैभन्दा सहयोग गर्ने काम कुन हो?", "o": ["निर्णय अन्तिम रूपमा स्वचालित गर्न", "कागजातको सारांश र मस्यौदा तयार गर्न", "नागरिकको पासवर्ड सुरक्षित राख्न", "कर्मचारीको उपस्थिति अन्तिम पुष्टि गर्न"], "a": 1, "e": "AI ले मस्यौदा र सारांशमा सहयोग गर्छ; अन्तिम निर्णय भने मानिसको जिम्मा हो।"},
- {s: 1, "q": "मोबाइलमा नयाँ AI एप डाउनलोड गर्दा सबैभन्दा पहिले के जाँच्नुपर्छ?", "o": ["एपको रङ", "एपको नाम मात्र", "एपको विश्वसनीयता र आधिकारिक प्रकाशक", "डाउनलोड सङ्ख्या मात्र"], "a": 2, "e": "आधिकारिक प्रकाशक र विश्वसनीय स्रोत जाँचेर मात्र एप डाउनलोड गर्नुपर्छ।"},
- {s: 1, "q": "नक्कली AI एपबाट सबैभन्दा ठूलो जोखिम के हुन सक्छ?", "o": ["फोनको ब्याट्री छिटो सक्किनु", "इन्टरनेटको गति बढ्नु", "फोन स्वतः अपडेट हुनु", "व्यक्तिगत डेटा र खाताको पासवर्ड चोरी हुनु"], "a": 3, "e": "नक्कली एपले प्रयोगकर्ताको विवरण र पासवर्ड चोर्न सक्छ।"},
- {s: 1, "q": "AI उपकरणको खाता सुरक्षित राख्न कुन उपाय उपयोगी छ?", "o": ["दुई चरणको प्रमाणीकरण (Two-step verification) सक्रिय गर्नु", "पासवर्ड सबैसँग साझा गर्नु", "एउटै पासवर्ड सबै खातामा राख्नु", "पासवर्ड लेखेर सार्वजनिक ठाउँमा टाँस्नु"], "a": 0, "e": "दुई चरणको प्रमाणीकरणले खातामा अनधिकृत पहुँच रोक्न मद्दत गर्छ।"},
- {s: 1, "q": "निःशुल्क AI उपकरण प्रयोग गर्दा ध्यान दिनुपर्ने कुरा कुन हो?", "o": ["उपकरण सधैं पूर्ण रूपमा सुरक्षित हुन्छ भनेर मान्नु", "सेवाको सर्त र गोपनीयता नीति पढ्नु", "सबै सेवा निःशुल्क भए जाँच्न आवश्यक छैन", "लगइन विवरण जो कसैलाई पठाउनु"], "a": 1, "e": "सेवाका सर्त र गोपनीयता नीति बुझेर मात्र प्रयोग गर्नुपर्छ।"},
- {s: 2, "q": "प्रभावकारी प्रम्प्टमा प्रायः कुन तत्व राखिन्छ?", "o": ["केवल एउटा शब्द", "केवल प्रश्नचिन्ह", "भूमिका, काम, सन्दर्भ, ढाँचा र सीमा", "केवल लामो कथा"], "a": 2, "e": "स्पष्ट प्रम्प्टमा भूमिका, काम, सन्दर्भ, ढाँचा र सीमा समावेश हुन्छन्।"},
- {s: 2, "q": "तलका मध्ये कुन प्रम्प्ट बढी स्पष्ट छ?", "o": ["नगरपालिकाको बारेमा लेख।", "केही राम्रो लेख।", "जे पनि लेख।", "तपाईं नगर प्रशासन अधिकृत हुनुहुन्छ। नागरिक सेवा सुधारका ३ बुँदा, सरल नेपालीमा, १५० शब्दभित्र लेख्नुहोस्।"], "a": 3, "e": "यसमा भूमिका, काम, ढाँचा र सीमा सबै स्पष्ट छन्।"},
- {s: 2, "q": "AI को उत्तर मन नपरे के गर्नु उपयुक्त हुन्छ?", "o": ["थप निर्देशन दिएर पूरक प्रम्प्ट पठाउनु", "तुरुन्तै AI बन्द गर्नु", "उत्तर सबै मेटाएर छोड्नु", "अरू कुनै AI मा नसोध्नु"], "a": 0, "e": "पूरक प्रम्प्टले उत्तरलाई क्रमशः सुधार्न मद्दत गर्छ।"},
- {s: 2, "q": "प्रम्प्टमा भूमिका (जस्तै 'तपाईं प्रशासन अधिकृत हुनुहुन्छ') दिनुको मुख्य उद्देश्य के हो?", "o": ["AI लाई इन्टरनेट बन्द गर्न लगाउनु", "उत्तरको दृष्टिकोण र शैली निर्धारण गर्नु", "उत्तरको लम्बाइ शून्य गर्नु", "AI लाई सुत्न लगाउनु"], "a": 1, "e": "भूमिकाले उत्तरको दृष्टिकोण, शब्दावली र शैली तय गर्न मद्दत गर्छ।"},
- {s: 2, "q": "AI सँग काम गर्दा ढाँचा (Format) निर्देश दिनुको फाइदा के हो?", "o": ["उत्तर केवल अङ्ग्रेजीमा आउँछ", "उत्तर ढिलो आउँछ", "उत्तर तालिका, बुँदा वा शीर्षक जस्तो चाहिएको रूपमा आउँछ", "उत्तरमा कुनै फरक पर्दैन"], "a": 2, "e": "ढाँचा तोक्दा उत्तर कार्यालयीय प्रयोगमा सिधै मिल्ने रूपमा आउँछ।"},
- {s: 3, "q": "AI ले तयार गरेको पत्र वा प्रतिवेदन अन्तिम गर्नु अघि कुन कुरा अनिवार्य हो?", "o": ["केवल शीर्षक हेर्नु", "केवल हस्ताक्षर गर्नु", "फाइल सिधै नागरिकलाई पठाउनु", "तथ्य, नाम, मिति र सङ्ख्या मानिसले जाँच्नु"], "a": 3, "e": "AI का तथ्य र सङ्ख्या गलत हुन सक्ने भएकाले मानिसले जाँच्नुपर्छ।"},
- {s: 3, "q": "AI बाट अङ्ग्रेजी परिपत्रको नेपाली अनुवाद गराएपछि उचित कदम के हो?", "o": ["विषय जानकार व्यक्तिबाट पुनरावलोकन र सच्याउने", "जस्ताको तस्तै प्रकाशित गर्ने", "अनुवाद पूरै हटाउने", "नेपाली बोल्ने AI मात्र प्रयोग गर्ने"], "a": 0, "e": "अनुवाद विषयविज्ञबाट जाँचेर मात्र अन्तिम गर्नुपर्छ।"},
- {s: 3, "q": "कागजातको सारांश बनाउँदा AI बाट सबैभन्दा सतर्क रहनुपर्ने कुरा के हो?", "o": ["सारांशको फन्ट", "मूल पाठमा नभएको तथ्य वा अङ्क सारांशमा थपिएको छ कि छैन", "सारांशको रङ", "सारांशको पृष्ठ सङ्ख्या"], "a": 1, "e": "AI ले मूल पाठमा नभएको कुरा थप्न सक्छ, त्यसैले मूल पाठसँग मिलाएर जाँच्नुपर्छ।"},
- {s: 3, "q": "सरकारी पत्रमा AI को सहयोग लिँदा अन्तिम जिम्मेवारी कसको हुन्छ?", "o": ["AI कम्पनीको", "इन्टरनेट प्रदायकको", "पत्र हस्ताक्षर गरी जारी गर्ने कर्मचारी वा अधिकारीको", "कसैको पनि होइन"], "a": 2, "e": "कागजात जारी गर्ने व्यक्ति नै जवाफदेही हुन्छ।"},
- {s: 3, "q": "अवधारणा-पत्र (Concept Note) को मुख्य उद्देश्य के हो?", "o": ["सिनेमाको समीक्षा गर्नु", "व्यक्तिगत डायरी लेख्नु", "फोटो सम्पादन गर्नु", "समस्या, औचित्य, उद्देश्य र प्रस्तावित समाधान प्रस्ताव गर्नु"], "a": 3, "e": "अवधारणा-पत्रले समस्या र प्रस्तावित समाधान स्पष्ट पार्छ।"},
- {s: 4, "q": "Excel फाइल AI मा अपलोड गर्नु अघि सबैभन्दा महत्त्वपूर्ण कुरा के हो?", "o": ["नागरिकको व्यक्तिगत पहिचान विवरण हटाउनु", "फाइलको नाम लामो बनाउनु", "रङ परिवर्तन गर्नु", "सबै पानाहरू मिलाउनु"], "a": 0, "e": "गोपनीयता जोगाउन व्यक्तिगत पहिचान विवरण हटाउनुपर्छ।"},
- {s: 4, "q": "AI ले गरेको गणना जाँच्ने एउटा सरल तरिका कुन हो?", "o": ["AI लाई उही प्रश्न फेरि सोध्नु मात्र", "केही नमूना मानहरू हातैले वा Excel सूत्रबाट पुनः गणना गर्नु", "उत्तर कपी गरी अगाडि पठाउनु", "परिणाम मेटाउनु"], "a": 1, "e": "नमूना गणना गरी मिलाउनु सबैभन्दा भरपर्दो जाँच हो।"},
- {s: 4, "q": "तथ्याङ्क सफा गर्ने (Data cleaning) क्रममा के खोज्नुपर्छ?", "o": ["सबै स्तम्भको रङ", "फाइलको आकार मात्र", "दोहोरिएका प्रविष्टि, खाली मान र गलत ढाँचा", "सबै स्तम्भ हटाउनु"], "a": 2, "e": "दोहोरिएका र खाली मानले विश्लेषणको नतिजा बिगार्छन्।"},
- {s: 4, "q": "समयअनुसार परिवर्तन (प्रवृत्ति) देखाउन कुन चार्ट उपयुक्त हुन्छ?", "o": ["पाई चार्ट बाहेक केही पनि होइन", "केवल तालिका", "कुनै चार्टको आवश्यकता छैन", "रेखा चार्ट (Line chart)"], "a": 3, "e": "रेखा चार्ट समयसँगको परिवर्तन देखाउन उपयुक्त हुन्छ।"},
- {s: 4, "q": "प्रस्तुतीकरण स्लाइडमा राम्रो अभ्यास कुन हो?", "o": ["प्रति स्लाइड एउटा मुख्य सन्देश र थोरै बुँदा", "एउटै स्लाइडमा सम्पूर्ण प्रतिवेदन", "सानो अक्षरमा सबै कुरा", "कुनै शीर्षक नराख्नु"], "a": 0, "e": "स्पष्ट र थोरै बुँदाले श्रोतालाई सन्देश बुझाउँछ।"},
- {s: 5, "q": "नागरिकको व्यक्तिगत विवरण (जस्तै नागरिकता नम्बर) AI मा राख्नु उचित हो?", "o": ["हो, सबै कुरा राख्न सकिन्छ", "होइन, व्यक्तिगत विवरण नराख्ने वा हटाउने", "हो, यदि प्रम्प्टमा 'गोप्य' लेखिएको छ भने", "हो, यदि धेरै नगरपालिकाले प्रयोग गर्छन् भने"], "a": 1, "e": "नागरिकको व्यक्तिगत विवरण AI मा नराख्ने वा हटाउने नियम हो।"},
- {s: 5, "q": "अज्ञात वा शङ्कास्पद इमेल वा लिङ्कमा खाताको पासवर्ड हाल्नु कस्तो हो?", "o": ["सुरक्षित", "सामान्य अभ्यास", "फिसिङ (Phishing) को सम्भावना भएको जोखिमपूर्ण काम", "आवश्यक प्रक्रिया"], "a": 2, "e": "पासवर्ड चोर्ने उद्देश्यले बनाइएका नक्कली लिङ्क हुन सक्छन्।"},
- {s: 5, "q": "AI प्रयोग गरी तयार गरिएको सामग्री सार्वजनिक गर्दा नैतिक अभ्यास के हो?", "o": ["AI प्रयोग लुकाउने", "जानकारी नदिने", "कसैलाई जानकारी नदिने", "AI को प्रयोग पारदर्शी रूपमा उल्लेख गर्ने र तथ्य प्रमाणीकरण गर्ने"], "a": 3, "e": "पारदर्शिता र तथ्य प्रमाणीकरण जिम्मेवार प्रयोगका आधार हुन्।"},
- {s: 5, "q": "नयाँ AI सेवा सुरु गर्नु अघि सोध्नुपर्ने महत्त्वपूर्ण प्रश्न कुन हो?", "o": ["कसलाई लाभ पुग्छ, कुन समस्या समाधान हुन्छ, र कसको डेटा प्रयोग हुन्छ?", "सेवाको रङ के हो?", "सेवाको नाम कति लामो छ?", "सेवा कुन मितिमा बन्द हुन्छ?"], "a": 0, "e": "लाभ, समस्या र डेटा प्रयोगबारे स्पष्ट हुनु सेवा-विचारको मुख्य आधार हो।"},
- {s: 5, "q": "AI सेवा प्रवाहमा सबैभन्दा महत्त्वपूर्ण कुरा कुन हो?", "o": ["सबैभन्दा छिटो मात्र", "नागरिकको गोपनीयता, समान पहुँच र मानवीय जवाफदेहिता", "सबैभन्दा महँगो उपकरण", "सबैभन्दा धेरै स्क्रिन"], "a": 1, "e": "सेवा प्रवाहमा गोपनीयता, समान पहुँच र जवाफदेहिता नै प्राथमिक हुन्।"}
-];
+/* Question pools: pool-employee.js (ids 1-50) and pool-representative.js (ids 101-150). Each event has its own set of 20 pool ids (events.question_ids). */
+var POOL_BY_ID={}; POOL_EMPLOYEE.concat(POOL_REPRESENTATIVE).forEach(function(q){POOL_BY_ID[q.id]=q;});
+function itemsFor(ids){ return (ids||[]).map(function(id){return POOL_BY_ID[id];}).filter(Boolean); }
 
-var PRE = BANK;
-var POST = BANK;
 
 var TRAINER = "sandhikharka-2083"; // प्रशिक्षकको पासकोड (यो बदल्न सकिन्छ)
 var RESULTS = "assessment_results";
@@ -165,6 +141,22 @@ function sessionLine(){
   return parts.join(" · ");
 }
 var SESSIONS_TABLE = "training_sessions";
+var CUR_EVENT = null;
+/* Public (no sign-up) mode: opened from a QR link like ...index.html?e=CODE&t=pre */
+var PUBLIC = false, PUB = null, PUB_ERR = false, PUB_CODE = "", PUB_TEST = "pre";
+(function(){
+  try{
+    var q = new URLSearchParams(location.search);
+    if(q.get("e")){
+      PUBLIC = true;
+      PUB_CODE = String(q.get("e")).trim().toUpperCase().slice(0,40);
+      PUB_TEST = q.get("t")==="post" ? "post" : "pre";
+    }
+  }catch(e){}
+})();
+function openTests(ev){
+  return TESTS.filter(function(t){ return (t.v==="pre"&&ev.pre_open)||(t.v==="post"&&ev.post_open); });
+}
 var sessionList = [];
 var allRecords = [];
 var sessionFilter = "all";
@@ -174,7 +166,6 @@ var TESTS = [
   {v:"pre",  l:"पूर्व-तालिम परीक्षा (Pre-training, ३० प्रश्न)"},
   {v:"post", l:"पश्च-तालिम परीक्षा (Post-training, ३० प्रश्न)"}
 ];
-function bankOf(t){return t==="post"?POST:PRE;}
 function testLabel(t){return t==="post"?"पश्च-तालिम":"पूर्व-तालिम";}
 
 /* ---------- Respondent profile ---------- */
@@ -220,8 +211,8 @@ function scoreOf(ans,bank){var n=0;for(var i=0;i<bank.length;i++){if(ans[i]===ba
 function validRecord(r){
   if(!r || TEST_VALS.indexOf(r.test)<0) return false;
   if(typeof r.code!=="string" || !r.code) return false;
-  var B=bankOf(r.test);
-  return Array.isArray(r.answers) && r.answers.length===B.length
+  if(!Array.isArray(r.qids) || !r.qids.length || !r.qids.every(function(id){return !!POOL_BY_ID[id];})) return false;
+  return Array.isArray(r.answers) && r.answers.length===r.qids.length
     && GENDER_VALS.indexOf(r.gender)>=0 && AGE_VALS.indexOf(r.ageGroup)>=0 && EDU_VALS.indexOf(r.education)>=0;
 }
 function meanOf(a){return a.length?a.reduce(function(x,y){return x+y;},0)/a.length:null;}
@@ -234,15 +225,16 @@ function shareOf(ans,B,idxs){
 
 /* Storage: Lovable Supabase table, via its REST API. */
 function sbHeaders(extra){
-  return Object.assign({apikey:SB_KEY,Authorization:"Bearer "+SB_KEY,"Content-Type":"application/json"},extra||{});
+  var tok=(!PUBLIC&&window.WS&&WS.session)?WS.session.access_token:SB_KEY;
+  return Object.assign({apikey:SB_KEY,Authorization:"Bearer "+tok,"Content-Type":"application/json"},extra||{});
 }
 function toRow(b){
   return {test:b.test,code:b.code,gender:b.gender,age_group:b.ageGroup,education:b.education,
-          answers:b.answers,score:b.score,max_score:b.max,seconds:b.seconds,submitted_at:b.submittedAt,session_code:b.session};
+          answers:b.answers,score:b.score,max_score:b.max,seconds:b.seconds,submitted_at:b.submittedAt,session_code:b.session,user_id:b.userId,question_ids:b.qids};
 }
 function fromRow(r){
   return {test:r.test,code:r.code,gender:r.gender,ageGroup:r.age_group,education:r.education,
-          answers:r.answers,score:r.score,max:r.max_score,seconds:r.seconds,submittedAt:r.submitted_at,session:r.session_code};
+          answers:r.answers,score:r.score,max:r.max_score,seconds:r.seconds,submittedAt:r.submitted_at,session:r.session_code,qids:r.question_ids};
 }
 
 /* ---------- participant exam ---------- */
@@ -281,22 +273,130 @@ async function checkSession(){
   var err=$("sessErr");
   if(!code){ err.textContent="सत्र कोड लेख्नुहोस्।"; err.classList.remove("hide"); return; }
   try{
-    var res=await fetch(SB_URL+"/rest/v1/"+SESSIONS_TABLE+"?select=code,test,client,location,session_date&code=eq."+encodeURIComponent(code),{headers:sbHeaders()});
-    var rows=res.ok?await res.json():[];
-    if(rows.length){
-      SESSION=code; SESSION_INFO=rows[0];
-      SESSION_TEST=(rows[0].test==="pre"||rows[0].test==="post")?rows[0].test:"";
-      var line=sessionLine(); var sub=document.getElementById("subLine");
-      if(sub && line){ sub.textContent=line+" · "+(SESSION_TEST==="post"?"पश्च-तालिम":"पूर्व-तालिम"); }
-      renderApp(); window.scrollTo(0,0); return;
-    }
-    err.textContent="सत्र कोड मिलेन। प्रशिक्षकसँग फेरि जाँच गर्नुहोस्।"; err.classList.remove("hide");
+    var ev=await WS.loadEventForProfile();
+    if(!ev){ err.textContent="तपाईंलाई अहिलेसम्म कुनै इभेन्ट तोकिएको छैन। प्रशिक्षकसँग सम्पर्क गर्नुहोस्।"; err.classList.remove("hide"); return; }
+    if(String(ev.code||"").toUpperCase()!==code){ err.textContent="सत्र कोड मिलेन। प्रशिक्षकसँग फेरि जाँच गर्नुहोस्।"; err.classList.remove("hide"); return; }
+    var open=openTests(ev);
+    if(!open.length){ err.textContent="यो इभेन्टका परीक्षा अहिले खुला छैनन्। प्रशिक्षकसँग सम्पर्क गर्नुहोस्।"; err.classList.remove("hide"); return; }
+    CUR_EVENT=ev;
+    SESSION=ev.code;
+    SESSION_INFO={client:ev.name, location:ev.address, session_date:(ev.event_dates||[]).join(", ")};
+    SESSION_TEST=open.length===1?open[0].v:"";
+    var line=sessionLine(); var sub=document.getElementById("subLine");
+    if(sub && line){ sub.textContent=line; }
+    renderApp(); window.scrollTo(0,0); return;
   }catch(e){
     err.textContent="जडानमा समस्या। इन्टरनेट जाँचेर फेरि प्रयास गर्नुहोस्।"; err.classList.remove("hide");
   }
 }
 
+/* ---------- public (QR) mode: no sign-up ---------- */
+function doneKey(){ return "ws-anon-done:"+PUB_CODE+":"+PUB_TEST; }
+function isAnonDone(){ try{ return localStorage.getItem(doneKey())==="1"; }catch(e){ return false; } }
+function markAnonDone(){ try{ localStorage.setItem(doneKey(),"1"); }catch(e){} }
+
+async function fetchPublicInfo(){
+  try{
+    var res=await fetch(SB_URL+"/rest/v1/rpc/public_event_info",{method:"POST",headers:sbHeaders(),body:JSON.stringify({p_code:PUB_CODE})});
+    if(!res.ok){ throw {code:"HTTP "+res.status}; }
+    var rows=await res.json();
+    PUB=rows[0]||null;
+  }catch(e){ PUB=null; PUB_ERR=true; }
+  renderApp();
+}
+
+function viewPublic(){
+  var head='<h2>AI ज्ञान परीक्षा · '+esc(labelOf(TESTS,PUB_TEST))+'</h2>';
+  if(!PUB){
+    return '<section class="card">'+head+'<p>'+(PUB_ERR?'जडानमा समस्या। इन्टरनेट जाँचेर फेरि प्रयास गर्नुहोस्।':'यो लिङ्क मिलेन वा इभेन्ट फेला परेन। प्रशिक्षकसँग सम्पर्क गर्नुहोस्।')+'</p></section>';
+  }
+  var open = PUB_TEST==="post" ? PUB.post_ok : PUB.pre_ok;
+  var info='<p class="muted small">'+esc(PUB.name)+(PUB.address?' · '+esc(PUB.address):'')
+    +(PUB.event_dates&&PUB.event_dates.length?' · '+esc(neNum(PUB.event_dates.join(", "))):'')+'</p>';
+  var body;
+  if(!(PUB.question_ids&&PUB.question_ids.length)) body='<p>इभेन्टको प्रश्न सेट अझै बनेको छैन।</p>';
+  else if(!open) body='<p>यो परीक्षा अहिले खुला छैन।</p>';
+  else if(isAnonDone()) body='<p>यो उपकरणबाट यो परीक्षा पहिले नै पेश भइसकेको छ।</p>';
+  else body='<p class="muted small">परीक्षा सुरु गर्नुअघि तलका विवरण भर्नुहोस्। सहभागी कोड भनेको तपाईंले छान्ने सङ्केत (जस्तै रोल नम्बर) हो। पूर्व र पश्च दुवैमा <strong>उही कोड</strong> प्रयोग गर्नुहोस्। नाम वा ठेगाना लेख्नु पर्दैन।</p>'
+    +'<div class="field"><label for="code">सहभागी कोड (Participant Code)</label><input id="code" type="text" maxlength="20" autocomplete="off" placeholder="जस्तै: A-101"></div>'
+    +selectHtml("gen","लिङ्ग (Gender)",GENDERS,"")
+    +selectHtml("age","उमेर समूह (Age Group)",AGES,"")
+    +selectHtml("edu","शैक्षिक तह (Education Level)",EDUS,"")
+    +'<p id="profErr" class="msg c-bad hide">कृपया सबै विवरण भर्नुहोस् र सहभागी कोड लेख्नुहोस्।</p>'
+    +'<div class="row" style="margin-top:16px"><button class="primary" data-action="publicBegin">परीक्षा सुरु गर्नुहोस्</button></div>';
+  var review='';
+  if(answersOn()){
+    review='<div style="margin-top:22px"><h3 style="margin:0 0 6px">मेरो उत्तर र सही उत्तर हेर्नुहोस्</h3>'
+      +'<p class="muted small">पश्च-तालिम बन्द भएपछि मात्र सही उत्तर देखिन्छ। सहभागी कोड लेख्नुहोस्।</p>'
+      +'<div class="field"><input id="revCode" type="text" maxlength="20" autocomplete="off" placeholder="सहभागी कोड"></div>'
+      +'<p id="revErr" class="msg c-bad hide"></p>'
+      +'<div class="row" style="margin-top:10px"><button data-action="publicReview">हेर्नुहोस्</button></div></div>';
+  }
+  return '<section class="card">'+head+info+body+review+'</section>';
+}
+
+function answersOn(){
+  if(!PUB) return false;
+  return PUB_TEST==="post" ? !!PUB.post_answers : !!PUB.pre_answers;
+}
+
+function publicBegin(){
+  if(!PUB||isAnonDone()) { renderApp(); return; }
+  var open = PUB_TEST==="post" ? PUB.post_ok : PUB.pre_ok;
+  if(!open){ renderApp(); return; }
+  var err=$("profErr");
+  var c=$("code"), g=$("gen"), a=$("age"), e=$("edu");
+  var cv=c?c.value.trim().slice(0,20):"", gv=g?g.value:"", av=a?a.value:"", ev=e?e.value:"";
+  if(!cv||!gv||!av||!ev){
+    if(err) err.classList.remove("hide");
+    var miss=!cv?c:(!gv?g:(!av?a:e));
+    if(miss) miss.focus();
+    return;
+  }
+  SESSION=PUB_CODE;
+  st.anon=true; st.reviewOpen=answersOn();
+  var pubIds=(PUB&&PUB.question_ids)||[];
+  if(!pubIds.length){ renderApp(); return; }
+  st.test=PUB_TEST; st.bank=itemsFor(pubIds); st.qids=pubIds.slice();
+  st.code=cv; st.gender=gv; st.ageGroup=av; st.education=ev;
+  st.answers=new Array(st.bank.length).fill(-1);
+  st.cur=0; st.startedAt=Date.now(); st.phase="quiz"; st.submitArm=false;
+  renderApp();
+  window.scrollTo(0,0);
+}
+
+async function publicReview(){
+  var inp=$("revCode"), err=$("revErr");
+  var code=(inp?inp.value:"").trim().toUpperCase();
+  err.classList.add("hide");
+  if(!code){ err.textContent="सहभागी कोड लेख्नुहोस्।"; err.classList.remove("hide"); return; }
+  try{
+    var res=await fetch(SB_URL+"/rest/v1/rpc/public_review",{method:"POST",headers:sbHeaders(),
+      body:JSON.stringify({p_code:PUB_CODE,p_test:PUB_TEST,p_participant:code})});
+    var data=res.ok?await res.json():null;
+    if(!data||!data.answers){ err.textContent="यस कोडको परिणाम फेला परेन, वा सही उत्तर अहिले खुला छैन।"; err.classList.remove("hide"); return; }
+    st.anon=true; st.reviewOpen=true;
+    var revIds=(PUB&&PUB.question_ids)||[];
+    st.test=PUB_TEST; st.bank=itemsFor(revIds); st.qids=revIds.slice(); st.code=code;
+    st.gender=""; st.ageGroup=""; st.education="";
+    st.result={answers:data.answers,score:data.score};
+    st.save="saved"; st.phase="result";
+    renderApp(); window.scrollTo(0,0);
+  }catch(e){ err.textContent="जडानमा समस्या। फेरि प्रयास गर्नुहोस्।"; err.classList.remove("hide"); }
+}
+
+function viewAccount(){
+  var p=WS.profile, s=WS.session, msg;
+  if(!s) msg="परीक्षा दिन पहिले खाता चाहिन्छ। साइन इन गर्नुहोस् वा नयाँ दर्ता गर्नुहोस्।";
+  else if(!p) msg="प्रोफाइल लोड हुँदैछ…";
+  else if(p.status==="pending") msg="तपाईंको दर्ता प्रशिक्षकबाट स्वीकृत हुन बाँकी छ। स्वीकृत भएपछि साइन इन गर्नुहोस्।";
+  else msg="तपाईंको दर्ता स्वीकृत भएन। थप जानकारीका लागि प्रशिक्षकसँग सम्पर्क गर्नुहोस्।";
+  return '<section class="card"><h2>खाता आवश्यक छ</h2><p>'+msg+'</p><p><a href="../login.html?next=assessment/">साइन इन / नयाँ दर्ता</a></p></section>';
+}
+
 function viewStart(){
+  if(PUBLIC) return viewPublic();
+  if(!(window.WS&&WS.isApproved())) return viewAccount();
   if(!SESSION) return viewGate();
   var sessInfo='<p class="muted small">'+esc(sessionLine())+'</p>';
   return '<section class="card">'
@@ -305,7 +405,7 @@ function viewStart(){
    +'<p class="muted small">तालिमअघि <strong>पूर्व-तालिम</strong> र तालिमपछि <strong>पश्च-तालिम</strong> परीक्षा दिइन्छ। तपाईंलाई दिइएको परीक्षा छान्नुहोस्।</p>'
    +'<p class="muted small">जम्मा गरेपछि परिणाम प्रशिक्षकको डासबोर्डमा स्वतः देखिन्छ। परिणाम सकिएपछि प्रत्येक प्रश्नको सही उत्तर र किन सही हो भन्ने व्याख्या पनि हेर्न सक्नुहुन्छ।</p>'
    +'<p class="muted small">सुरु गर्नुअघि तलका विवरण भर्नुहोस्। यी विवरण गोप्य राखिन्छन् र समूहगत विश्लेषणका लागि मात्र प्रयोग हुन्छन्।</p>'
-   +(SESSION_TEST ? '<div class="field"><label>परीक्षाको प्रकार</label><p><strong>'+esc(labelOf(TESTS,SESSION_TEST))+'</strong> (सत्र कोडबाट तय भएको)</p><input type="hidden" id="tst" value="'+esc(SESSION_TEST)+'"></div>' : selectHtml("tst","परीक्षाको प्रकार (Test Type)",TESTS,st.test))
+   +(SESSION_TEST ? '<div class="field"><label>परीक्षाको प्रकार</label><p><strong>'+esc(labelOf(TESTS,SESSION_TEST))+'</strong> (सत्र कोडबाट तय भएको)</p><input type="hidden" id="tst" value="'+esc(SESSION_TEST)+'"></div>' : selectHtml("tst","परीक्षाको प्रकार (Test Type)",CUR_EVENT?openTests(CUR_EVENT):TESTS,st.test))
    +'<div class="field"><label for="code">सहभागी कोड (Participant Code)</label><input id="code" type="text" maxlength="20" autocomplete="off" value="'+esc(st.code)+'" placeholder="जस्तै: A-101"><p class="note" style="margin-top:6px">यो कोड तपाईंले रोज्नुहोस् (रोल नम्बर वा सङ्केत)। पूर्व र पश्च-तालिम दुवैमा <strong>उही कोड</strong> प्रयोग गर्नुहोस्। नाम नलेख्नुहोस्।</p></div>'
    +selectHtml("gen","लिङ्ग (Gender)",GENDERS,st.gender)
    +selectHtml("age","उमेर समूह (Age Group)",AGES,st.ageGroup)
@@ -367,7 +467,7 @@ function viewResult(){
   var r=st.result, B=st.bank, N=B.length;
   var p=pctOf(r.score,N);
   var rev="";
-  var showReview = st.test==="post";
+  var showReview = st.reviewOpen===true || (!st.anon && st.test==="post");
   for(var i=0;showReview && i<N;i++){
     var q=B[i];
     var mine=r.answers[i];
@@ -398,6 +498,7 @@ function viewResult(){
 }
 
 function beginExam(){
+  if(!(window.WS&&WS.isApproved())){ renderApp(); return; }
   if(!SESSION){ $("profErr").textContent="सत्र कोड छैन। पहिले प्रशिक्षकले दिएको सत्र कोड लेख्नुहोस्।"; $("profErr").classList.remove("hide"); return; }
   var t=$("tst"), c=$("code"), g=$("gen"), a=$("age"), e=$("edu");
   var tv=SESSION_TEST||(t?t.value:""), cv=c?c.value.trim().slice(0,20):"", gv=g?g.value:"", av=a?a.value:"", ev=e?e.value:"";
@@ -407,7 +508,10 @@ function beginExam(){
     if(miss) miss.focus();
     return;
   }
-  st.test=tv; st.bank=bankOf(tv);
+  if(CUR_EVENT && !openTests(CUR_EVENT).some(function(x){return x.v===tv;})){ $("profErr").textContent="यो परीक्षा अहिले खुला छैन।"; $("profErr").classList.remove("hide"); return; }
+  var evIds=(CUR_EVENT&&CUR_EVENT.question_ids)||[];
+  if(!evIds.length){ $("profErr").textContent="इभेन्टको प्रश्न सेट अझै बनेको छैन। प्रशिक्षकसँग सम्पर्क गर्नुहोस्।"; $("profErr").classList.remove("hide"); return; }
+  st.test=tv; st.bank=itemsFor(evIds); st.qids=evIds.slice();
   st.code=cv;
   st.gender=gv; st.ageGroup=av; st.education=ev;
   st.answers=new Array(st.bank.length).fill(-1);
@@ -419,7 +523,7 @@ function beginExam(){
 async function submitExam(){
   var seconds=Math.round((Date.now()-st.startedAt)/1000);
   var score=scoreOf(st.answers,st.bank);
-  var body={v:4,session:SESSION,test:st.test,code:st.code.toUpperCase(),gender:st.gender,ageGroup:st.ageGroup,education:st.education,submittedAt:new Date().toISOString(),seconds:seconds,answers:st.answers.slice(),score:score,max:st.bank.length};
+  var body={v:4,userId:(WS.session&&WS.session.user)?WS.session.user.id:null,session:SESSION,test:st.test,code:st.code.toUpperCase(),gender:st.gender,ageGroup:st.ageGroup,education:st.education,submittedAt:new Date().toISOString(),seconds:seconds,answers:st.answers.slice(),score:score,max:st.bank.length,qids:st.qids};
   st.result={answers:body.answers,score:score};
   st.phase="result";
   st.save="saving";
@@ -436,6 +540,7 @@ async function saveResult(){
     var res=await fetch(SB_URL+"/rest/v1/"+RESULTS,{method:"POST",headers:sbHeaders({Prefer:"return=minimal"}),body:JSON.stringify(toRow(st.body))});
     if(!res.ok){ throw {code:"HTTP "+res.status}; }
     st.save="saved";
+    if(st.anon){ markAnonDone(); }
   }catch(err){
     st.save="error";
     st.errCode=(err && err.code) ? err.code : ((err && err.message) ? err.message : "unknown");
@@ -519,8 +624,7 @@ var subscribed=false;
 var dashFilter="all";
 
 function unlock(){
-  var v=$("pass").value;
-  if(v!==TRAINER){ $("gateMsg").classList.remove("hide"); return; }
+  if(!(window.WS&&WS.isTrainer())){ $("gateMsg").classList.remove("hide"); return; }
   trainerUnlocked=true;
   $("gate").classList.add("hide");
   $("dashBody").classList.remove("hide");
@@ -528,8 +632,8 @@ function unlock(){
 }
 
 async function loadSessions(){
-  var res=await fetch(SB_URL+"/rest/v1/"+SESSIONS_TABLE+"?select=*&order=session_date.desc",{headers:sbHeaders()});
-  if(res.ok){ sessionList=await res.json(); }
+  var res=await fetch(SB_URL+"/rest/v1/events?select=code,name,address,event_dates&order=created_at.desc",{headers:sbHeaders()});
+  if(res.ok){ sessionList=(await res.json()).map(function(e){ return {code:e.code, client:e.name, location:e.address, session_date:(e.event_dates||[])[0]||""}; }); }
 }
 
 function applySessionFilter(){
@@ -541,9 +645,9 @@ async function loadRows(){
   if(!res.ok){ throw {code:"HTTP "+res.status}; }
   var rows=await res.json();
   allRecords=rows.map(fromRow).filter(validRecord).map(function(r){
-    var B=bankOf(r.test);
+    var B=itemsFor(r.qids);
     var sc=scoreOf(r.answers,B);
-    return {session:r.session||"",test:r.test,code:r.code,gender:r.gender,ageGroup:r.ageGroup,education:r.education,submittedAt:r.submittedAt||"",seconds:r.seconds||0,answers:r.answers,score:sc,pct:pctOf(sc,B.length)};
+    return {session:r.session||"",test:r.test,code:r.code,gender:r.gender,ageGroup:r.ageGroup,education:r.education,submittedAt:r.submittedAt||"",seconds:r.seconds||0,answers:r.answers,qids:r.qids,score:sc,pct:pctOf(sc,B.length)};
   }).sort(function(a,b){return b.pct-a.pct || String(a.submittedAt).localeCompare(String(b.submittedAt));});
   try{ await loadSessions(); }catch(e){}
   applySessionFilter();
@@ -582,16 +686,29 @@ function groupScores(recs,field,valsList){
   });
 }
 
+/* Per-record helpers: each record carries its own question ids, so events with different sets combine by question id. */
+function recPos(r,id){ return (r.qids||[]).indexOf(id); }
+function themeIds(r,theme){ return (r.qids||[]).filter(function(id){return POOL_BY_ID[id].s===theme;}); }
+function shareRec(r,theme){
+  var ids=themeIds(r,theme); if(!ids.length) return null;
+  var c=0; ids.forEach(function(id){ if(r.answers[recPos(r,id)]===POOL_BY_ID[id].a) c++; });
+  return c/ids.length*100;
+}
+function uniqueIds(recs){
+  var seen={}; recs.forEach(function(r){ (r.qids||[]).forEach(function(id){ seen[id]=true; }); });
+  return Object.keys(seen).map(Number).sort(function(a,b){return a-b;});
+}
+
 /* ---------- learning achievement (pre vs post, paired by participant code) ---------- */
 function pairedRows(){
   var sorted=records.slice().sort(function(a,b){return String(a.submittedAt).localeCompare(String(b.submittedAt));});
   var pre={},post={};
   sorted.forEach(function(r){
-    var k=r.code;
+    var k=(r.session||"")+"|"+r.code;
     if(r.test==="pre"){ if(!pre[k]) pre[k]=r; }
     else if(!post[k]) post[k]=r;
   });
-  return Object.keys(pre).filter(function(k){return !!post[k];}).map(function(k){return {code:k,pre:pre[k],post:post[k]};});
+  return Object.keys(pre).filter(function(k){return !!post[k];}).map(function(k){return {code:pre[k].code,pre:pre[k],post:post[k]};});
 }
 
 function learningSection(){
@@ -639,11 +756,9 @@ function learningSection(){
     +'<p class="note" style="margin-top:6px">पूर्व परीक्षामा १००% अङ्क ल्याउनेको g गणना गरिँदैन।</p>';
 
   /* session-wise achievement (paired) */
-  var PRE_B=PRE, POST_B=POST;
   var srows=SESSIONS.map(function(s){
-    var pi=idxFor(PRE_B,s.id), qi=idxFor(POST_B,s.id);
-    var pv=P.map(function(p){return shareOf(p.pre.answers,PRE_B,pi);}).filter(function(x){return x!==null;});
-    var qv=P.map(function(p){return shareOf(p.post.answers,POST_B,qi);}).filter(function(x){return x!==null;});
+    var pv=P.map(function(p){return shareRec(p.pre,s.id);}).filter(function(x){return x!==null;});
+    var qv=P.map(function(p){return shareRec(p.post,s.id);}).filter(function(x){return x!==null;});
     var pm=meanOf(pv), qm=meanOf(qv);
     var d=(pm===null||qm===null)?null:qm-pm;
     var tone=d===null?'var(--muted)':(d>=0?'var(--ok)':'var(--bad)');
@@ -753,8 +868,8 @@ function renderDash(){
     return;
   }
 
-  var B=bankOf(dashFilter), N=B.length;
   var recs=records.filter(function(r){return r.test===dashFilter;});
+  var IDS=uniqueIds(recs), N=IDS.length;
   var m=recs.length;
   if(m===0){
     box.innerHTML=body+'<section class="card"><p>यो परीक्षामा अहिलेसम्म कुनै परिणाम छैन।</p></section>';
@@ -765,20 +880,26 @@ function renderDash(){
   var pass=recs.filter(function(r){return r.pct>=50;}).length;
   var hiP=recs[0].pct, loP=recs[m-1].pct;
 
-  /* question stats */
+  /* question stats, by pool question id (events with different sets combine) */
   var qstats=[];
-  for(var i=0;i<N;i++){
-    var corr=0,opt=[0,0,0,0];
-    recs.forEach(function(r){var a=r.answers[i];if(a===B[i].a)corr++;if(a>=0)opt[a]++;});
+  IDS.forEach(function(id,i){
+    var it=POOL_BY_ID[id], corr=0, n=0, opt=[0,0,0,0];
+    recs.forEach(function(r){
+      var rk=recPos(r,id); if(rk<0) return;
+      n++; var a=r.answers[rk];
+      if(a===it.a) corr++;
+      if(a>=0) opt[a]++;
+    });
     var wrongTop=-1,wrongN=-1;
-    for(var j=0;j<4;j++){if(j!==B[i].a&&opt[j]>wrongN){wrongN=opt[j];wrongTop=j;}}
-    qstats.push({i:i,pct:Math.round(corr/m*100),wrong:wrongTop,wrongN:wrongN<0?0:wrongN});
-  }
+    for(var j=0;j<4;j++){ if(j!==it.a && opt[j]>wrongN){ wrongN=opt[j]; wrongTop=j; } }
+    qstats.push({id:id,i:i,theme:it.s,ans:it.a,pct:n?Math.round(corr/n*100):0,n:n,wrong:wrongTop,wrongN:wrongN<0?0:wrongN});
+  });
   var sessAvg=SESSIONS.map(function(s){
-    var idx=idxFor(B,s.id);
-    if(!idx.length) return {label:s.label,pct:0};
-    var tot=0;recs.forEach(function(r){idx.forEach(function(k){if(r.answers[k]===B[k].a)tot++;});});
-    return {label:s.label,pct:Math.round(tot/(idx.length*m)*100)};
+    var tot=0,cnt=0;
+    recs.forEach(function(r){
+      themeIds(r,s.id).forEach(function(id){ cnt++; if(r.answers[recPos(r,id)]===POOL_BY_ID[id].a) tot++; });
+    });
+    return {label:s.label,pct:cnt?Math.round(tot/cnt*100):0};
   });
   var gl=["A+","A","B+","B","C","D"];
   var gcount={};gl.forEach(function(g){gcount[g]=0;});
@@ -844,7 +965,7 @@ function renderDash(){
   qstats.forEach(function(s){
     var hard=s.pct<50;
     var wrongTxt=s.wrongN>0?L(s.wrong)+' ('+s.wrongN+' जना)':'—';
-    body+='<tr><td>'+(s.i+1)+'</td><td>'+(B[s.i].s+1)+'</td><td>'+L(B[s.i].a)+'</td><td>'+s.pct+'%</td><td>'+wrongTxt+'</td><td>'+(hard?'<span class="chip c-bad">कठिन</span>':'<span class="chip c-ok">ठीक</span>')+'</td></tr>';
+    body+='<tr><td>'+s.id+'</td><td>'+(s.theme+1)+'</td><td>'+L(s.ans)+'</td><td>'+s.pct+'%</td><td>'+wrongTxt+'</td><td>'+(hard?'<span class="chip c-bad">कठिन</span>':'<span class="chip c-ok">ठीक</span>')+'</td></tr>';
   });
   body+='</tbody></table></div></section>';
 
@@ -852,25 +973,27 @@ function renderDash(){
   SESSIONS.forEach(function(s){body+='<th>S'+(s.id+1)+'</th>';});
   body+='<th>समय (मि.)</th><th>बुझाएको</th></tr></thead><tbody>';
   recs.forEach(function(r,idx){
-    body+='<tr><td>'+(idx+1)+'</td><td>'+esc(r.code)+'</td><td>'+esc(labelOf(GENDERS,r.gender))+'</td><td>'+esc(labelOf(AGES,r.ageGroup))+'</td><td>'+esc(labelOf(EDUS,r.education))+'</td><td>'+r.score+'/'+N+'</td><td>'+r.pct+'%</td><td><strong>'+gradeOf(r.pct)+'</strong></td>';
+    body+='<tr><td>'+(idx+1)+'</td><td>'+esc(r.code)+'</td><td>'+esc(labelOf(GENDERS,r.gender))+'</td><td>'+esc(labelOf(AGES,r.ageGroup))+'</td><td>'+esc(labelOf(EDUS,r.education))+'</td><td>'+r.score+'/'+r.qids.length+'</td><td>'+r.pct+'%</td><td><strong>'+gradeOf(r.pct)+'</strong></td>';
     SESSIONS.forEach(function(s){
-      var idxs=idxFor(B,s.id);
-      var c=0;idxs.forEach(function(k){if(r.answers[k]===B[k].a)c++;});
-      body+='<td>'+c+'/'+idxs.length+'</td>';
+      var tids=themeIds(r,s.id), c=0;
+      tids.forEach(function(id){ if(r.answers[recPos(r,id)]===POOL_BY_ID[id].a) c++; });
+      body+='<td>'+c+'/'+tids.length+'</td>';
     });
     body+='<td>'+Math.round((r.seconds||0)/60)+'</td><td class="small">'+esc(String(r.submittedAt).slice(0,16).replace('T',' '))+'</td></tr>';
   });
   body+='</tbody></table></div></section>';
 
   body+='<section class="card"><h2>प्रश्न × सहभागी (✔ सही, ✘ गलत)</h2><div class="tbl-wrap"><table><thead><tr><th>#</th><th>कोड</th>';
-  for(var q2=0;q2<N;q2++) body+='<th class="mx">'+(q2+1)+'</th>';
+  IDS.forEach(function(id){ body+='<th class="mx">'+id+'</th>'; });
   body+='<th>अङ्क</th></tr></thead><tbody>';
   recs.forEach(function(r,idx){
     body+='<tr><td>'+(idx+1)+'</td><td>'+esc(r.code)+'</td>';
-    for(var k=0;k<N;k++){
-      var ok=r.answers[k]===B[k].a;
-      body+='<td class="mx '+(ok?'ok':'bad')+'" title="प्रश्न '+(k+1)+'">'+(ok?'✔':'✘')+'</td>';
-    }
+    IDS.forEach(function(id){
+      var rk=recPos(r,id);
+      if(rk<0){ body+='<td class="mx" title="प्रश्न '+id+'">—</td>'; return; }
+      var ok=r.answers[rk]===POOL_BY_ID[id].a;
+      body+='<td class="mx '+(ok?'ok':'bad')+'" title="प्रश्न '+id+'">'+(ok?'✔':'✘')+'</td>';
+    });
     body+='<td><strong>'+r.score+'</strong></td></tr>';
   });
   body+='</tbody></table></div></section>';
@@ -894,6 +1017,8 @@ document.addEventListener("click",function(ev){
   else if(a==="unlock") unlock();
   else if(a==="filter"){dashFilter=t.getAttribute("data-f");renderDash();}
   else if(a==="begin") beginExam();
+  else if(a==="publicBegin") publicBegin();
+  else if(a==="publicReview") publicReview();
   else if(a==="checkSession") checkSession();
   else if(a==="pick"){
     st.answers[st.cur]=parseInt(t.getAttribute("data-i"),10);
@@ -909,10 +1034,13 @@ document.addEventListener("click",function(ev){
   else if(a==="retry") saveResult();
   else if(a==="restart"){resetExam();renderApp();window.scrollTo(0,0);}
 });
-document.addEventListener("keydown",function(ev){
-  if(ev.key==="Enter" && ev.target && ev.target.id==="pass") unlock();
-});
+document.addEventListener("ws-auth",function(){ renderApp(); if(window.WS&&WS.isTrainer()) unlock(); });
 
+if(PUBLIC) fetchPublicInfo();
 renderApp();
+if(window.WS){
+  WS.init().then(function(){ renderApp(); if(WS.isTrainer()) unlock(); }).catch(function(){ renderApp(); });
+}
 })();
 </script>
+

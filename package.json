@@ -11,6 +11,7 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "vitest run",
+    "test:workshop": "node --test tests/workshop/workshop.test.mjs",
     "test:watch": "vitest"
   },
   "overrides": {

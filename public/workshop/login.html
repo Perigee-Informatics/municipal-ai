@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="ne">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>खाता · AI तालिम</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;700;800&display=swap">
+<style>
+:root{--bg:#F5F3EE;--surface:#fff;--ink:#1B2320;--muted:#5D6A65;--line:#DAD6CB;--accent:#1F5C4A;--bad:#B3392F;--ok:#2E7D4F;--soft:#E7EFEA}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0D1420;--surface:#152033;--ink:#E3E9F2;--muted:#9AA8BB;--line:#26344B;--accent:#6FD3A2;--soft:#1B2942;--bad:#F2708C;--ok:#6FD3A2}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Mukta',system-ui,sans-serif;font-size:17px;line-height:1.55}
+.wrap{max-width:520px;margin:0 auto;padding:24px 16px 60px}
+h1{font-size:26px;margin:8px 0 4px}
+.muted{color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;margin-top:14px}
+.tabs{display:flex;gap:8px;margin-top:16px}
+.tabs button{flex:1;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:8px;font:inherit;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+label{display:block;margin-top:12px;font-weight:700;font-size:15px}
+input,select{width:100%;margin-top:4px;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);font:inherit}
+button.primary{margin-top:16px;width:100%;padding:11px;border:0;border-radius:8px;background:var(--accent);color:#fff;font:inherit;font-weight:700;cursor:pointer}
+button.primary[disabled]{opacity:.6}
+.msg{margin-top:12px;font-weight:700}
+.bad{color:var(--bad)} .ok{color:var(--ok)}
+.hide{display:none}
+a{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="muted" style="margin:0">सन्धिखर्क नगरपालिका · AI तालिम</p>
+  <h1>सहभागी खाता</h1>
+  <p class="muted">दर्ता गरेपछि प्रशिक्षकले स्वीकृत गरेपछि मात्र परीक्षा र सामग्री हेर्न सकिन्छ।</p>
+
+  <div class="tabs" role="tablist">
+    <button id="tabIn" role="tab" aria-selected="true" data-tab="in">साइन इन</button>
+    <button id="tabUp" role="tab" aria-selected="false" data-tab="up">नयाँ दर्ता</button>
+  </div>
+
+  <section class="card" id="formIn">
+    <form id="fIn">
+      <label for="inEmail">इमेल</label>
+      <input id="inEmail" type="email" autocomplete="email" required>
+      <label for="inPass">पासवर्ड</label>
+      <input id="inPass" type="password" autocomplete="current-password" required>
+      <button class="primary" type="submit">साइन इन गर्नुहोस्</button>
+    </form>
+    <p id="inMsg" class="msg hide"></p>
+  </section>
+
+  <section class="card hide" id="formUp">
+    <form id="fUp">
+      <label for="upName">पूरा नाम</label>
+      <input id="upName" type="text" required>
+      <label for="upEmail">इमेल</label>
+      <input id="upEmail" type="email" autocomplete="email" required>
+      <label for="upPass">पासवर्ड (कम्तीमा ८ अक्षर)</label>
+      <input id="upPass" type="password" minlength="8" autocomplete="new-password" required>
+      <label for="upGender">लिङ्ग</label>
+      <select id="upGender" required>
+        <option value="">— छान्नुहोस् —</option>
+        <option value="Male">पुरुष (Male)</option>
+        <option value="Female">महिला (Female)</option>
+        <option value="Others">अन्य (Others)</option>
+      </select>
+      <label for="upAge">उमेर समूह</label>
+      <select id="upAge" required>
+        <option value="">— छान्नुहोस् —</option>
+        <option value="Below 20">२० वर्षभन्दा कम (Below 20)</option>
+        <option value="20-30">२०–३० (20-30)</option>
+        <option value="30-40">३०–४० (30-40)</option>
+        <option value="40-50">४०–५० (40-50)</option>
+        <option value="50 and above">५० वर्षभन्दा माथि (50 above)</option>
+      </select>
+      <label for="upEdu">शैक्षिक योग्यता</label>
+      <select id="upEdu" required>
+        <option value="">— छान्नुहोस् —</option>
+        <option value="High School">हाई स्कुल (High School)</option>
+        <option value="Undergraduate">स्नातक (Undergraduate)</option>
+        <option value="Masters and Above">स्नातकोत्तर र माथि (Masters and Above)</option>
+      </select>
+      <label for="upOffice">कार्यालय वा वडा</label>
+      <input id="upOffice" type="text" required>
+      <button class="primary" type="submit">दर्ता गर्नुहोस्</button>
+    </form>
+    <p id="upMsg" class="msg hide"></p>
+  </section>
+</div>
+
+<script src="account.js"></script>
+<script>
+(function () {
+  var next = new URLSearchParams(location.search).get("next") || "assessment/";
+
+  function $(id) { return document.getElementById(id); }
+  function show(el, text, cls) { el.textContent = text; el.className = "msg " + cls; }
+
+  document.querySelectorAll("[data-tab]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var up = b.getAttribute("data-tab") === "up";
+      $("tabIn").setAttribute("aria-selected", String(!up));
+      $("tabUp").setAttribute("aria-selected", String(up));
+      $("formIn").classList.toggle("hide", up);
+      $("formUp").classList.toggle("hide", !up);
+    });
+  });
+
+  WS.init().then(function () {
+    if (WS.session && WS.profile) routeSignedIn();
+  }).catch(function () {
+    show($("inMsg"), "जडानमा समस्या। इन्टरनेट जाँचेर फेरि प्रयास गर्नुहोस्।", "bad");
+    $("inMsg").classList.remove("hide");
+  });
+
+  function routeSignedIn() {
+    if (WS.isTrainer()) { location.href = "admin.html"; return; }
+    if (WS.isApproved() && !(WS.profile && WS.profile.full_name)) {
+      location.href = "profile.html?next=" + encodeURIComponent(next); return;
+    }
+    if (WS.isApproved()) { location.href = next; return; }
+    var status = WS.profile && WS.profile.status;
+    var text = status === "rejected"
+      ? "तपाईंको दर्ता स्वीकृत भएन। थप जानकारीका लागि प्रशिक्षकसँग सम्पर्क गर्नुहोस्।"
+      : "तपाईंको दर्ता प्रशिक्षकद्वारा स्वीकृत हुन बाँकी छ। स्वीकृत भएपछि साइन इन गर्नुहोस्।";
+    WS.signOut();
+    var box = $("inMsg"); box.classList.remove("hide"); show(box, text, "bad");
+  }
+
+  $("fIn").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    var btn = e.target.querySelector("button"); btn.disabled = true;
+    var box = $("inMsg"); box.classList.add("hide");
+    try {
+      var r = await WS.signIn($("inEmail").value.trim(), $("inPass").value);
+      if (r.error) {
+        show(box, "इमेल वा पासवर्ड मिलेन।", "bad"); box.classList.remove("hide");
+      } else {
+        await WS.loadProfile();
+        routeSignedIn();
+      }
+    } catch (err) {
+      show(box, "जडानमा समस्या। फेरि प्रयास गर्नुहोस्।", "bad"); box.classList.remove("hide");
+    } finally { btn.disabled = false; }
+  });
+
+  $("fUp").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    var btn = e.target.querySelector("button"); btn.disabled = true;
+    var box = $("upMsg"); box.classList.add("hide");
+    var details = {
+      full_name: $("upName").value.trim(),
+      gender: $("upGender").value,
+      age_group: $("upAge").value,
+      education: $("upEdu").value,
+      office: $("upOffice").value.trim()
+    };
+    try {
+      var r = await WS.signUp($("upEmail").value.trim(), $("upPass").value, details);
+      if (r.error) {
+        show(box, "दर्ता हुन सकेन: " + r.error.message, "bad");
+      } else {
+        show(box, "दर्ता भयो। प्रशिक्षकले स्वीकृत गरेपछि साइन इन गर्न सकिन्छ। इमेल पुष्टि माग्छ भने इमेल जाँच्नुहोस्।", "ok");
+        e.target.reset();
+      }
+      box.classList.remove("hide");
+    } catch (err) {
+      show(box, "जडानमा समस्या। फेरि प्रयास गर्नुहोस्।", "bad"); box.classList.remove("hide");
+    } finally { btn.disabled = false; }
+  });
+})();
+</script>
+</body>
+</html>
