@@ -1,14 +1,15 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { brandLine, useEventBrand } from "@/hooks/use-event-brand";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({
     meta: [
-      { title: "मेरो खाता · AI तालिम सन्धिखर्क" },
+      { title: "मेरो खाता · AI तालिम" },
       { name: "description", content: "सहभागी खाता विवरण र साइन आउट" },
-      { property: "og:title", content: "मेरो खाता · AI तालिम सन्धिखर्क" },
+      { property: "og:title", content: "मेरो खाता · AI तालिम" },
       { property: "og:description", content: "सहभागी खाता विवरण र साइन आउट" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -42,6 +43,7 @@ function AccountPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data, isPending, error } = useQuery(profileQuery);
+  const brand = useEventBrand("मेरो खाता · AI तालिम");
 
   async function handleSignOut() {
     await queryClient.cancelQueries();
@@ -53,7 +55,7 @@ function AccountPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-md rounded-lg border border-border bg-card p-6 shadow-sm">
-        <p className="text-sm text-muted-foreground">सन्धिखर्क नगरपालिका · AI तालिम</p>
+        <p className="text-sm text-muted-foreground">{brandLine(brand)}</p>
         <h1 className="mt-2 text-2xl font-bold text-foreground">मेरो खाता</h1>
 
         {isPending && <p className="mt-6 text-muted-foreground">लोड हुँदैछ…</p>}

@@ -277,6 +277,14 @@ export type Database = {
       }
       is_approved: { Args: never; Returns: boolean }
       is_trainer: { Args: never; Returns: boolean }
+      public_event_brand: {
+        Args: { p_code: string }
+        Returns: {
+          address: string | null
+          event_dates: string[]
+          organized_by: string | null
+        }[]
+      }
       public_event_info: {
         Args: { p_code: string }
         Returns: {

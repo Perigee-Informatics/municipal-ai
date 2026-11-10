@@ -79,10 +79,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "AI तालिम सन्धिखर्क" },
-      { name: "description", content: "सन्धिखर्क नगरपालिका AI कर्मचारी क्षमता अभिवृद्धि तालिम" },
-      { property: "og:title", content: "AI तालिम सन्धिखर्क" },
-      { property: "og:description", content: "सन्धिखर्क नगरपालिका AI कर्मचारी क्षमता अभिवृद्धि तालिम" },
+      { title: "AI तालिम" },
+      {
+        name: "description",
+        content:
+          "नगरपालिका तथा गाउँपालिकाका कर्मचारी र जनप्रतिनिधिका लागि AI क्षमता अभिवृद्धि तालिम",
+      },
+      { property: "og:title", content: "AI तालिम" },
+      {
+        property: "og:description",
+        content:
+          "नगरपालिका तथा गाउँपालिकाका कर्मचारी र जनप्रतिनिधिका लागि AI क्षमता अभिवृद्धि तालिम",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },

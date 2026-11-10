@@ -2,20 +2,21 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
 
+import { brandLine, useEventBrand } from "@/hooks/use-event-brand";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "साइन इन · AI तालिम सन्धिखर्क" },
+      { title: "साइन इन · AI तालिम" },
       {
         name: "description",
-        content: "AI तालिम सन्धिखर्कमा सहभागी खाता — साइन इन वा नयाँ दर्ता",
+        content: "AI तालिमका सहभागी खाता — साइन इन वा नयाँ दर्ता",
       },
-      { property: "og:title", content: "साइन इन · AI तालिम सन्धिखर्क" },
+      { property: "og:title", content: "साइन इन · AI तालिम" },
       {
         property: "og:description",
-        content: "AI तालिम सन्धिखर्कमा सहभागी खाता — साइन इन वा नयाँ दर्ता",
+        content: "AI तालिमका सहभागी खाता — साइन इन वा नयाँ दर्ता",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -50,6 +51,7 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const brand = useEventBrand("साइन इन · AI तालिम");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -106,7 +108,7 @@ function AuthPage() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-md">
         <div className="text-center">
-          <p className="text-sm text-muted-foreground">सन्धिखर्क नगरपालिका · AI तालिम</p>
+          <p className="text-sm text-muted-foreground">{brandLine(brand)}</p>
           <h1 className="mt-2 text-2xl font-bold text-foreground">सहभागी खाता</h1>
         </div>
 
