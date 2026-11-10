@@ -98,7 +98,7 @@ th{background:var(--soft);font-size:13px}
       <p class="muted small">यो डासबोर्ड प्रशिक्षकका लागि हो। सहभागीहरूले परीक्षा बुझाएपछि परिणाम यहाँ स्वतः देखिन्छ।</p>
       <p>प्रशिक्षक खातामा साइन इन गरेपछि डासबोर्ड खुल्छ।</p>
       <div class="row">
-        <a href="../login.html?next=assessment/">प्रशिक्षक साइन इन</a>
+        <a href="../login.html?next=assessment/index.html">प्रशिक्षक साइन इन</a>
         <button class="primary" data-action="unlock">डासबोर्ड खोल्नुहोस्</button>
       </div>
       <p id="gateMsg" class="msg c-bad hide">डासबोर्ड खोल्न प्रशिक्षक खाता चाहिन्छ।</p>
@@ -107,8 +107,8 @@ th{background:var(--soft);font-size:13px}
   </main>
 </div>
 
-<script src="../account.js?v=20261110c"></script>
-<script src="../event-info.js?v=20261110c"></script>
+<script src="../account.js?v=20261110d"></script>
+<script src="../event-info.js?v=20261110d"></script>
 <script>EVI.home().then(EVI.mountHome).catch(function () {});</script>
 <script src="pool-employee.js"></script>
 <script src="pool-representative.js"></script>
@@ -400,7 +400,7 @@ function viewAccount(){
   else if(!p) msg="प्रोफाइल लोड हुँदैछ…";
   else if(p.status==="pending") msg="तपाईंको दर्ता प्रशिक्षकबाट स्वीकृत हुन बाँकी छ। स्वीकृत भएपछि साइन इन गर्नुहोस्।";
   else msg="तपाईंको दर्ता स्वीकृत भएन। थप जानकारीका लागि प्रशिक्षकसँग सम्पर्क गर्नुहोस्।";
-  return '<section class="card"><h2>खाता आवश्यक छ</h2><p>'+msg+'</p><p><a href="../login.html?next=assessment/">साइन इन / नयाँ दर्ता</a></p></section>';
+  return '<section class="card"><h2>खाता आवश्यक छ</h2><p>'+msg+'</p><p><a href="../login.html?next=assessment/index.html">साइन इन / नयाँ दर्ता</a></p></section>';
 }
 
 function viewStart(){

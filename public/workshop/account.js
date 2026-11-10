@@ -7,6 +7,7 @@
   var SDK_URL = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js";
   var client = null;
   var loading = null;
+  var initPromise = null;
 
   function loadSdk() {
     if (window.supabase) return Promise.resolve();
@@ -28,27 +29,34 @@
     profile: null,
     ready: false,
 
-    init: async function () {
-      await loadSdk();
-      if (!client) {
-        client = window.supabase.createClient(SB_URL, SB_KEY, {
-          auth: { persistSession: true, autoRefreshToken: true }
-        });
-        client.auth.onAuthStateChange(function (_event, session) {
-          WS.session = session || null;
-          WS.profile = null;
-          if (WS.session) {
+    /* Safe to call many times and from several places at once: all callers share one start-up. */
+    init: function () {
+      if (initPromise) return initPromise;
+      initPromise = (async function () {
+        await loadSdk();
+        if (!client) {
+          client = window.supabase.createClient(SB_URL, SB_KEY, {
+            auth: { persistSession: true, autoRefreshToken: true }
+          });
+          client.auth.onAuthStateChange(function (_event, session) {
+            var before = WS.session && WS.session.user ? WS.session.user.id : null;
+            var after = session && session.user ? session.user.id : null;
+            WS.session = session || null;
+            // The same person (initial session, token refresh): keep the loaded profile. Clearing it
+            // here made pages briefly treat a signed-in trainer or participant as signed out.
+            if (after && after === before && WS.profile) return;
+            if (!after) { WS.profile = null; document.dispatchEvent(new Event("ws-auth")); return; }
             WS.loadProfile().then(function () { document.dispatchEvent(new Event("ws-auth")); });
-          } else {
-            document.dispatchEvent(new Event("ws-auth"));
-          }
-        });
-      }
-      var r = await client.auth.getSession();
-      WS.session = r.data ? r.data.session : null;
-      if (WS.session) await WS.loadProfile();
-      WS.ready = true;
-      return WS;
+          });
+        }
+        var r = await client.auth.getSession();
+        WS.session = r.data ? r.data.session : null;
+        if (WS.session && !(WS.profile && WS.profile.id === WS.session.user.id)) await WS.loadProfile();
+        WS.ready = true;
+        return WS;
+      })();
+      initPromise.catch(function () { initPromise = null; });
+      return initPromise;
     },
 
     token: function () {
@@ -111,7 +119,7 @@
     /* Event master (trainer only; RLS enforces this). */
     /* Training packages (AI for Municipal Employee / Representative). */
     listPackages: function () {
-      return client.from("training_packages").select("*").order("created_at", { ascending: true });
+      return client.from("training_packages").select("*").order("created_at", { ascending: true }).order("key", { ascending: true });
     },
 
     /* Participant fills in their own details (after a manual registration, or any time). */

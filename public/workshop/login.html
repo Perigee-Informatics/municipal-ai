@@ -89,8 +89,8 @@ a{color:var(--accent)}
   </section>
 </div>
 
-<script src="account.js?v=20261110c"></script>
-<script src="event-info.js?v=20261110c"></script>
+<script src="account.js?v=20261110d"></script>
+<script src="event-info.js?v=20261110d"></script>
 <script>EVI.home().then(EVI.mountHome).catch(function () {});</script>
 <script>
 /* Organiser of the event this visitor came for (link with ?event=CODE, or their own event once signed in). */
@@ -98,7 +98,8 @@ EVI.resolve().then(function (ev) { var i = EVI.info(ev); if (i && i.org) documen
 </script>
 <script>
 (function () {
-  var next = new URLSearchParams(location.search).get("next") || "assessment/";
+  var next = new URLSearchParams(location.search).get("next") || "assessment/index.html";
+  if (/(^|\/)assessment\/?$/.test(next)) next = next.replace(/assessment\/?$/, "assessment/index.html"); // the host has no /assessment/ folder page
 
   function $(id) { return document.getElementById(id); }
   function show(el, text, cls) { el.textContent = text; el.className = "msg " + cls; }

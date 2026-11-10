@@ -45,16 +45,17 @@ button:disabled{opacity:.6}
     <p id="pMsg" class="msg hide"></p>
   </div>
 </div>
-<script src="account.js?v=20261110c"></script>
-<script src="event-info.js?v=20261110c"></script>
+<script src="account.js?v=20261110d"></script>
+<script src="event-info.js?v=20261110d"></script>
 <script>EVI.home().then(EVI.mountHome).catch(function () {});</script>
 <script>
 (function () {
   function $(id) { return document.getElementById(id); }
   function show(text, ok) { var m = $("pMsg"); m.textContent = text; m.className = "msg " + (ok ? "ok" : "bad"); m.classList.remove("hide"); }
   // Only allow a relative path inside this site as the destination after saving.
-  var raw = new URLSearchParams(location.search).get("next") || "assessment/";
-  var next = /^[A-Za-z0-9_\-\/.]+$/.test(raw) && raw.indexOf("..") === -1 ? raw : "assessment/";
+  var raw = new URLSearchParams(location.search).get("next") || "assessment/index.html";
+  var next = /^[A-Za-z0-9_\-\/.]+$/.test(raw) && raw.indexOf("..") === -1 ? raw : "assessment/index.html";
+  if (/(^|\/)assessment\/?$/.test(next)) next = next.replace(/assessment\/?$/, "assessment/index.html"); // the host has no /assessment/ folder page
 
   WS.init().then(function () {
     if (!WS.session) { location.href = "login.html"; return; }
