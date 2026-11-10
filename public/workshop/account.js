@@ -153,8 +153,18 @@
     },
 
     /* Make one event the active event (trainer only; the database checks). Empty code clears it. */
-    setActiveEvent: function (code) {
-      return client.rpc("set_active_event", { p_code: code || "" });
+    setActiveEvent: async function (code) {
+      var r = await client.rpc("set_active_event", { p_code: code || "" });
+      // If the API has not picked up the function yet (PGRST202 "not found in the schema cache"),
+      // do the same with two updates; row-level security still limits this to the trainer and
+      // the unique index still allows only one active event.
+      if (r.error && (r.error.code === "PGRST202" || /schema cache|could not find the function/i.test(r.error.message || ""))) {
+        var off = await client.from("events").update({ is_active: false }).eq("is_active", true);
+        if (off.error) return off;
+        if (!code) return off;
+        return client.from("events").update({ is_active: true }).eq("code", String(code).toUpperCase()).select("code");
+      }
+      return r;
     },
 
     /* One event by its code (signed-in users only; RLS enforces this). */
