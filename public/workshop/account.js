@@ -152,6 +152,12 @@
       return client.from("events").delete().eq("id", id);
     },
 
+    /* One event by its code (signed-in users only; RLS enforces this). */
+    loadEventByCode: async function (code) {
+      var r = await client.from("events").select("*").eq("code", String(code || "").trim().toUpperCase()).maybeSingle();
+      return r.data || null;
+    },
+
     /* The event a participant is linked to (for the test page). */
     loadEventForProfile: async function () {
       if (!WS.profile || !WS.profile.event_id) return null;
