@@ -563,7 +563,10 @@ details.card>summary{cursor:pointer;font-weight:700}
     var name = $("evName").value.trim();
     var code = $("evCode").value.trim().toUpperCase();
     if (!name || !code) { flash("evMsg", "इभेन्टको नाम र कोड भर्नुहोस्।", false); return; }
-    if (!dates.length) { flash("evMsg", "कम्तीमा एउटा मिति छान्नुहोस्।", false); return; }
+    // A date picked in the box but not yet added with "मिति थप्नुहोस्" counts too.
+    var pendingDate = $("evDateIn").value;
+    if (pendingDate && dates.indexOf(pendingDate) === -1) { dates.push(pendingDate); $("evDateIn").value = ""; renderDates(); }
+    if (!dates.length) { flash("evMsg", "कम्तीमा एउटा मिति छान्नुहोस्, अनि \"मिति थप्नुहोस्\" थिच्नुहोस्।", false); return; }
     var payload = {
       name: name,
       code: code,
