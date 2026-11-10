@@ -215,11 +215,24 @@ td.st-sel { color: var(--ok); font-weight: 700 } td.st-no { color: var(--accent)
 </div>
 <div class="toast" id="toast" hidden></div>
 
-<script src="data.js"></script>
-<script src="../account.js"></script>
-<script src="../event-info.js"></script>
+<script src="/workshop/representative/data.js"></script>
+<script src="/workshop/account.js"></script>
+<script src="/workshop/event-info.js"></script>
+<script>
+/* If a supporting file did not load, say so instead of leaving a blank page. */
+(function () {
+  var missing = [];
+  if (!window.D_REP) missing.push('/workshop/representative/data.js');
+  if (!window.WS) missing.push('/workshop/account.js');
+  if (!missing.length) return;
+  window.__REP_MISSING = missing;
+  document.getElementById('view').innerHTML = '<p class="eyebrow">सामग्री लोड हुन सकेन</p><h1>पृष्ठ खुलेन</h1>' +
+    '<p class="meta">यी फाइल लोड भएनन्: <code>' + missing.join('</code>, <code>') + '</code>। पृष्ठ फेरि लोड गर्नुहोस् (Ctrl+Shift+R)। समस्या रहिरह्यो भने प्रशिक्षकलाई यो सन्देश देखाउनुहोस्।</p>';
+})();
+</script>
 <script>
 /* Same shell as the employee materials (../index.html): running order on the left, the selected session's materials on the right. */
+if (!window.D_REP || !window.WS) throw new Error("representative page: missing " + window.__REP_MISSING);
 const DATA = window.D_REP;
 const DEV = '०१२३४५६७८९';
 const dn = s => String(s).replace(/[0-9]/g, d => DEV[d]);
