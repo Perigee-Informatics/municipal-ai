@@ -101,9 +101,15 @@ function AccountPage() {
         </button>
 
         <p className="mt-4 text-center text-sm text-muted-foreground">
-          <a href="/workshop/index.html" className="underline hover:text-foreground">
-            ← तालिम सामग्रीमा फर्कनुहोस्
-          </a>
+          {data?.profile?.role === "trainer" && data.profile.status === "approved" ? (
+            <a href="/workshop/admin.html" className="underline hover:text-foreground">
+              ⌂ प्रशिक्षक गृहपृष्ठ
+            </a>
+          ) : (
+            <a href="/workshop/index.html" className="underline hover:text-foreground">
+              ⌂ गृहपृष्ठ (तालिम सामग्री)
+            </a>
+          )}
         </p>
       </div>
     </div>

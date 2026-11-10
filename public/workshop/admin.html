@@ -59,6 +59,7 @@ details.card>summary{cursor:pointer;font-weight:700}
 </head>
 <body>
 <div class="wrap">
+  <p style="margin:0 0 6px"><a data-home href="/workshop/index.html" style="font-weight:600;text-decoration:none">⌂ गृहपृष्ठ</a></p>
   <p class="muted" style="margin:0" id="orgLine">AI तालिम</p>
   <div class="row"><h1>प्रशिक्षक नियन्त्रण</h1><button id="signOut">साइन आउट</button></div>
 
@@ -243,6 +244,7 @@ details.card>summary{cursor:pointer;font-weight:700}
 <script src="assessment/pool-representative.js"></script>
 <script src="account.js"></script>
 <script src="event-info.js"></script>
+<script>EVI.home().then(EVI.mountHome).catch(function () {});</script>
 <script>
 (function () {
   function $(id) { return document.getElementById(id); }

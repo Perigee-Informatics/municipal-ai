@@ -80,6 +80,7 @@ th{background:var(--soft);font-size:13px}
 <div class="wrap">
   <header class="top">
     <div>
+      <p style="margin:0 0 4px"><a data-home href="/workshop/index.html" style="font-weight:600;text-decoration:none">⌂ गृहपृष्ठ</a></p>
       <h1>AI ज्ञान परीक्षा</h1>
       <p class="sub" id="subLine">तालिमका सबै सत्रमा आधारित · पूर्व-तालिम र पश्च-तालिम</p>
     </div>
@@ -108,6 +109,7 @@ th{background:var(--soft);font-size:13px}
 
 <script src="../account.js"></script>
 <script src="../event-info.js"></script>
+<script>EVI.home().then(EVI.mountHome).catch(function () {});</script>
 <script src="pool-employee.js"></script>
 <script src="pool-representative.js"></script>
 <script>

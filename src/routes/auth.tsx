@@ -220,7 +220,7 @@ function AuthPage() {
 
         <p className="mt-4 text-center text-sm text-muted-foreground">
           <a href="/workshop/index.html" className="underline hover:text-foreground">
-            ← तालिम सामग्रीमा फर्कनुहोस्
+            ⌂ गृहपृष्ठ (तालिम सामग्री)
           </a>
         </p>
       </div>

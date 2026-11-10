@@ -53,6 +53,7 @@ a { color: var(--navy) }
 .results a { display: block; padding: 8px 10px; border-radius: 8px; text-decoration: none; color: var(--ink) }
 .results a:hover, .results a:focus { background: var(--soft) }
 .results small { display: block; color: var(--muted); font-size: 13px; line-height: 1.4 }
+.home-link { white-space: nowrap; text-decoration: none; font-weight: 600; font-size: 15px; color: var(--navy) }
 .menu-btn { display: none; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 5px 12px; font-size: 15px }
 
 .shell { display: grid; grid-template-columns: 320px minmax(0, 1fr); min-height: calc(100% - 56px) }
@@ -165,6 +166,7 @@ a.block:hover { background: var(--soft) }
   .side { position: fixed; inset: 56px auto 0 0; width: min(330px, 88vw); height: auto; z-index: 30; transform: translateX(-102%); transition: transform .2s ease; box-shadow: 0 0 40px rgba(0,0,0,.25) }
   .side.open { transform: none }
   .menu-btn { display: inline-block }
+  .top .home-link { display: none }
   .brand span { display: none }
 }
 @media (max-width: 640px) {
@@ -178,6 +180,7 @@ a.block:hover { background: var(--soft) }
 <header class="top">
   <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="side">कार्यतालिका</button>
   <a class="brand" href="#home"><b>AI तालिम</b><span id="brandSub">सन्धिखर्क नगरपालिका · २०८३ असोज २४ र २५</span></a>
+  <a class="home-link" data-home href="/workshop/index.html" hidden>⌂ गृहपृष्ठ</a>
   <div class="search">
     <input id="q" type="search" placeholder="खोज्नुहोस्: प्रम्प्ट, Excel, गोपनीयता…" autocomplete="off" aria-label="सामग्री खोज्नुहोस्">
     <div class="results" id="results" hidden></div>
@@ -256,6 +259,7 @@ function titleOf(it) { return it.kind === 'session' ? 'सत्र ' + S[it.id]
 function renderSide(cur) {
   const nn = nowNext();
   let h = `<div class="nav-links">
+    <a data-home href="/workshop/index.html" hidden>⌂ गृहपृष्ठ</a>
     <a href="#home" ${cur === 'home' ? 'aria-current="page"' : ''}>ड्यासबोर्ड</a>
     <a href="#agenda" ${cur === 'agenda' ? 'aria-current="page"' : ''}>कार्यक्रम तालिका र सत्र योजना</a>
     <a href="#resources" ${['resources', ...Object.keys(R), ...Object.keys(A)].includes(cur) ? 'aria-current="page"' : ''}>सन्दर्भ सामग्री</a>
@@ -272,6 +276,7 @@ function renderSide(cur) {
     h += '</ul>';
   }
   $('#side').innerHTML = h;
+  if (HOME) EVI.mountHome(HOME);
 }
 
 /* ---------- views ---------- */
@@ -506,6 +511,7 @@ function slowView() {
   <p><button class="btn primary" data-retry>फेरि प्रयास गर्नुहोस्</button></p></div>`;
 }
 let EVENT_DONE = false;
+let HOME = null;
 async function start() {
   $('#view').innerHTML = LOADING;
   let ok;
@@ -516,6 +522,7 @@ async function start() {
   if (ok === null) { $('#view').innerHTML = slowView(); renderSide('home'); return; }
   MATERIALS_OK = ok;
   route();
+  if (window.EVI && !HOME) EVI.home().then(h => { HOME = h; EVI.mountHome(h); }).catch(() => {});
   if (EVENT_DONE) return;
   try {
     await withTimeout(applyEvent(), 7000);

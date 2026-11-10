@@ -193,5 +193,41 @@
     ];
   }
 
-  window.EVI = { resolve: resolve, info: info, toBS: toBS, fmtFull: fmtFull, fmtRange: fmtRange, fill: fill, fillDeep: fillDeep, employeeRules: employeeRules, representativeRules: representativeRules, dn: dn };
+  /* Where "home" is for this visitor: the trainer console for the trainer, the participant's own
+     course materials for a signed-in participant, otherwise the main materials page. */
+  var homePromise = null;
+  function home() {
+    if (homePromise) return homePromise;
+    homePromise = (async function () {
+      var fallback = { href: "/workshop/index.html", label: "गृहपृष्ठ" };
+      try { if (!WS.ready) await WS.init(); } catch (e) { return fallback; }
+      if (WS.isTrainer()) return { href: "/workshop/admin.html", label: "प्रशिक्षक गृहपृष्ठ" };
+      if (WS.session && WS.profile && WS.profile.event_id) {
+        try {
+          var ev = await WS.loadEventForProfile();
+          var pk = ((await WS.listPackages()).data || []).filter(function (p) { return ev && p.id === ev.package_id; })[0];
+          if (pk && pk.key === "representative") return { href: "/workshop/representative/index.html", label: "गृहपृष्ठ" };
+        } catch (e) {}
+      }
+      return fallback;
+    })();
+    return homePromise;
+  }
+  function samePage(href) {
+    var here = location.pathname.replace(/\/index\.html$/, "/");
+    return here === href.replace(/\/index\.html$/, "/");
+  }
+  /* Point every <a data-home> at the visitor's home (opened in the top window, so it also works
+     from a page shown inside the trainer console). A link to the page itself is hidden. */
+  function mountHome(h) {
+    if (!h) return;
+    document.querySelectorAll("a[data-home]").forEach(function (a) {
+      a.href = h.href;
+      a.target = "_top";
+      a.textContent = "⌂ " + h.label;
+      a.hidden = samePage(h.href);
+    });
+  }
+
+  window.EVI = { home: home, mountHome: mountHome, resolve: resolve, info: info, toBS: toBS, fmtFull: fmtFull, fmtRange: fmtRange, fill: fill, fillDeep: fillDeep, employeeRules: employeeRules, representativeRules: representativeRules, dn: dn };
 })();

@@ -29,6 +29,7 @@ a{color:var(--accent)}
 </head>
 <body>
 <div class="wrap">
+  <p style="margin:0 0 6px"><a data-home href="/workshop/index.html" style="font-weight:600;text-decoration:none">⌂ गृहपृष्ठ</a></p>
   <p class="muted" style="margin:0" id="orgLine">AI तालिम</p>
   <h1>सहभागी खाता</h1>
   <p class="muted">दर्ता गरेपछि प्रशिक्षकले स्वीकृत गरेपछि मात्र परीक्षा र सामग्री हेर्न सकिन्छ।</p>
@@ -90,6 +91,7 @@ a{color:var(--accent)}
 
 <script src="account.js"></script>
 <script src="event-info.js"></script>
+<script>EVI.home().then(EVI.mountHome).catch(function () {});</script>
 <script>
 /* Organiser of the event this visitor came for (link with ?event=CODE, or their own event once signed in). */
 EVI.resolve().then(function (ev) { var i = EVI.info(ev); if (i && i.org) document.getElementById("orgLine").textContent = i.org + " · AI तालिम"; }).catch(function () {});
