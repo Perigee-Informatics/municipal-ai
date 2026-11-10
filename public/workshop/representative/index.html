@@ -2,1798 +2,583 @@
 <html lang="ne">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>जनप्रतिनिधिका लागि AI: कार्यशाला सामग्री</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>जनप्रतिनिधिका लागि AI</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;700;800&family=Rozha+One&display=swap">
 <style>
-:root { --ink:#1d2433; --muted:#5b6475; --line:#d9dee8; --bg:#f6f7fb; --card:#fff; --brand:#1f5fa8; --ok:#1c7c4d; --bad:#b03a2e; }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) { --ink:#e8ecf3; --muted:#a4adbd; --line:#2f3644; --bg:#14171e; --card:#1b2029; --brand:#7fb0ea; --ok:#5fcf93; --bad:#f08a7e; }
+/* Layout: a two-day running order on the left (the spine of the event), the selected session's handbook pages on the right; phones get the order as a drawer. */
+:root {
+  --bg: #EEF1F4; --surface: #FFFFFF; --ink: #142440; --muted: #556275; --line: #D6DDE6;
+  --accent: #B3123A; --accent-ink: #FFFFFF; --navy: #1C3A66; --soft: #E6ECF4;
+  --prompt-bg: #FFF5DC; --prompt-line: #C98A0B; --prompt-ink: #3B2E10;
+  --warn-bg: #FBE8EC; --warn-line: #B3123A; --doc-bg: #F6F7F9; --ok: #237A52; --ok-bg: #E2F2EA;
+  --now-bg: #FBE3E9;
+  --f-body: 'Mukta', 'Nirmala UI', 'Kohinoor Devanagari', 'Noto Sans Devanagari', system-ui, sans-serif;
+  --f-display: 'Rozha One', 'Mukta', 'Noto Serif Devanagari', Georgia, serif;
+  --r: 10px;
 }
-:root[data-theme="dark"] { --ink:#e8ecf3; --muted:#a4adbd; --line:#2f3644; --bg:#14171e; --card:#1b2029; --brand:#7fb0ea; --ok:#5fcf93; --bad:#f08a7e; }
-* { box-sizing: border-box; }
-body { margin:0; background:var(--bg); color:var(--ink); font-family:'Mukta', 'Noto Sans Devanagari', sans-serif; font-size:17px; line-height:1.65; }
-header.top { background:var(--card); border-bottom:1px solid var(--line); padding:14px 16px; position:sticky; top:0; z-index:5; }
-header.top h1 { font-size:18px; margin:0; }
-header.top nav { display:flex; gap:8px; overflow-x:auto; margin-top:8px; }
-header.top nav a { white-space:nowrap; color:var(--brand); text-decoration:none; font-size:14px; border:1px solid var(--line); border-radius:999px; padding:4px 10px; }
-main { max-width:920px; margin:0 auto; padding:18px 16px 60px; }
-section.doc, section.tool { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px 18px 8px; margin:0 0 18px; }
-h1,h2,h3 { line-height:1.3; }
-h2 { font-size:21px; border-bottom:2px solid var(--brand); padding-bottom:4px; }
-h3 { font-size:18px; }
-.doc table, .scroll table { width:100%; border-collapse:collapse; margin:10px 0; font-size:15px; }
-.doc td, .doc th, .scroll td, .scroll th { border:1px solid var(--line); padding:6px 8px; vertical-align:top; text-align:left; }
-.doc th, .scroll th { background:var(--bg); }
-.scroll { overflow-x:auto; }
-.note, .small { color:var(--muted); font-size:15px; }
-button { font:inherit; padding:8px 14px; border:1px solid var(--brand); background:var(--brand); color:#fff; border-radius:8px; cursor:pointer; }
-button.ok { background:var(--ok); border-color:var(--ok); }
-button.ghost { background:transparent; color:var(--brand); }
-input, textarea, select { font:inherit; width:100%; padding:8px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--ink); }
-input[type=number] { width:100px; }
-input[type=checkbox], input[type=radio] { width:auto; }
-label.f { display:block; margin:10px 0; }
-label.chk { display:flex; gap:8px; align-items:center; margin:10px 0; }
-.row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:10px 0; }
-.msg { padding:8px 10px; border-radius:8px; }
-.msg.ok { color:var(--ok); } .msg.bad { color:var(--bad); }
-.hide { display:none !important; }
-.calc-sum { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin:12px 0; }
-.calc-sum div { border:1px solid var(--line); border-radius:10px; padding:8px 10px; }
-.calc-sum span { display:block; color:var(--muted); font-size:14px; }
-td.st-sel { color:var(--ok); font-weight:700; } td.st-no { color:var(--bad); }
-table.rate td { text-align:center; } table.rate td:first-child { text-align:left; }
-.gate { text-align:center; padding:40px 16px; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0D1420; --surface: #152033; --ink: #E3E9F2; --muted: #9AA8BB; --line: #26344B;
+  --accent: #F2708C; --accent-ink: #1A0A10; --navy: #93B4E6; --soft: #1B2942;
+  --prompt-bg: #2A2414; --prompt-line: #E2AE45; --prompt-ink: #F3E6C4;
+  --warn-bg: #33161E; --warn-line: #F2708C; --doc-bg: #182436; --ok: #6FD3A2; --ok-bg: #133227; --now-bg: #3A1824;
+  color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0D1420; --surface: #152033; --ink: #E3E9F2; --muted: #9AA8BB; --line: #26344B;
+  --accent: #F2708C; --accent-ink: #1A0A10; --navy: #93B4E6; --soft: #1B2942;
+  --prompt-bg: #2A2414; --prompt-line: #E2AE45; --prompt-ink: #F3E6C4;
+  --warn-bg: #33161E; --warn-line: #F2708C; --doc-bg: #182436; --ok: #6FD3A2; --ok-bg: #133227; --now-bg: #3A1824;
+  color-scheme: dark }
+
+* { box-sizing: border-box }
+html, body { height: 100% }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 16.5px; line-height: 1.6; }
+button { font: inherit; color: inherit; cursor: pointer }
+a { color: var(--navy) }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 4px }
+
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--surface); border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; gap: 12px; padding: 10px 16px; }
+.brand { display: flex; align-items: baseline; gap: 10px; min-width: 0; text-decoration: none; color: var(--ink) }
+.brand b { font-family: var(--f-display); font-weight: 400; font-size: 22px; color: var(--accent); white-space: nowrap }
+.brand span { font-size: 14px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.search { margin-left: auto; position: relative; flex: 0 1 340px; min-width: 0 }
+.search input { width: 100%; border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 999px; padding: 7px 14px; font: inherit; font-size: 15px }
+.results { position: absolute; right: 0; top: calc(100% + 6px); width: min(460px, 92vw); max-height: 60vh; overflow: auto; background: var(--surface);
+  border: 1px solid var(--line); border-radius: var(--r); box-shadow: 0 12px 30px rgba(10,20,40,.18); padding: 6px }
+.results a { display: block; padding: 8px 10px; border-radius: 8px; text-decoration: none; color: var(--ink) }
+.results a:hover, .results a:focus { background: var(--soft) }
+.results small { display: block; color: var(--muted); font-size: 13px; line-height: 1.4 }
+.menu-btn { display: none; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 5px 12px; font-size: 15px }
+
+.shell { display: grid; grid-template-columns: 320px minmax(0, 1fr); min-height: calc(100% - 56px) }
+.side { border-right: 1px solid var(--line); background: var(--surface); padding: 16px; position: sticky; top: 56px; height: calc(100vh - 56px); overflow: auto }
+.nav-links { display: grid; gap: 2px; margin-bottom: 14px }
+.nav-links a { text-decoration: none; color: var(--ink); padding: 6px 10px; border-radius: 8px; font-weight: 500 }
+.nav-links a[aria-current="page"] { background: var(--soft); color: var(--navy) }
+.day-h { font-size: 13px; letter-spacing: .04em; color: var(--muted); margin: 14px 0 6px; display: flex; justify-content: space-between; gap: 8px }
+.day-h b { color: var(--ink); font-size: 14px; letter-spacing: 0 }
+.tl { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px }
+.tl a, .tl .brk { display: grid; grid-template-columns: 58px minmax(0, 1fr) auto; gap: 8px; align-items: start; padding: 7px 8px; border-radius: 8px; text-decoration: none; color: var(--ink); font-size: 15px; line-height: 1.35 }
+.tl .t { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 13.5px; padding-top: 2px }
+.tl .brk { color: var(--muted); font-size: 13.5px }
+.tl a:hover { background: var(--soft) }
+.tl a[aria-current="page"] { background: var(--soft); box-shadow: inset 3px 0 0 var(--navy) }
+.tl a.is-now { background: var(--now-bg) }
+.chip { font-size: 11.5px; font-weight: 700; border-radius: 999px; padding: 1px 8px; white-space: nowrap; align-self: center }
+.chip.now { background: var(--accent); color: var(--accent-ink) }
+.chip.done { background: var(--ok-bg); color: var(--ok) }
+
+main { min-width: 0; padding-block: 28px 80px; padding-inline: clamp(16px, 4vw, 48px) }
+.wrap { max-width: 860px }
+.eyebrow { font-size: 14px; font-weight: 700; color: var(--accent); letter-spacing: .02em; margin: 0 }
+h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(30px, 4.6vw, 44px); line-height: 1.2; margin: 4px 0 10px; text-wrap: balance }
+.meta { color: var(--muted); margin: 0 0 18px }
+.prose h2.sec-h { font-size: 24px; margin: 30px 0 10px }
+.prose h3 { font-size: 21px; margin: 30px 0 8px; color: var(--navy); text-wrap: balance }
+.prose h4 { font-size: 17.5px; margin: 20px 0 6px }
+.prose p { margin: 8px 0; max-width: 68ch }
+.prose ul, .prose ol { padding-left: 1.4em; margin: 8px 0 }
+.prose li { margin: 4px 0 }
+.prose .note { color: var(--muted); font-size: 14.5px }
+ol.steps { list-style: none; padding: 0; counter-reset: st; display: grid; gap: 8px }
+ol.steps > li { counter-increment: st; display: grid; grid-template-columns: 34px minmax(0,1fr); gap: 12px; align-items: start; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 10px 12px; margin: 0 }
+ol.steps > li::before { content: counter(st); width: 30px; height: 30px; border-radius: 50%; background: var(--navy); color: var(--surface); display: grid; place-items: center; font-weight: 700; font-size: 14px }
+ol.steps > li > div { min-width: 0 }
+.tbl { overflow-x: auto; margin: 12px 0; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface) }
+table { border-collapse: collapse; width: 100%; font-size: 15px; font-variant-numeric: tabular-nums }
+th { background: var(--soft); text-align: left; font-weight: 700; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: bottom }
+td { padding: 8px 10px; border-top: 1px solid var(--line); vertical-align: top }
+.box { border-radius: var(--r); padding: 12px 16px; margin: 14px 0; border-left: 4px solid var(--navy); background: var(--soft) }
+.box.warn { background: var(--warn-bg); border-left-color: var(--warn-line) }
+.box.doc { background: var(--doc-bg); border-left-color: var(--muted); border: 1px solid var(--line); border-left-width: 4px }
+.box-t { font-weight: 700; margin: 0 0 4px }
+.prompt { margin: 14px 0; border-radius: var(--r); background: var(--prompt-bg); border: 1px solid var(--prompt-line); overflow: hidden }
+.prompt figcaption { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 12px; font-weight: 700; color: var(--prompt-ink); border-bottom: 1px dashed var(--prompt-line) }
+.prompt pre { margin: 0; padding: 12px 14px; white-space: pre-wrap; font-family: var(--f-body); font-size: 15.5px; color: var(--prompt-ink); line-height: 1.6 }
+.copy, .btn { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 4px 12px; font-size: 14px; font-weight: 500; white-space: nowrap }
+.copy { border-color: var(--prompt-line) }
+.btn.primary { background: var(--navy); color: var(--surface); border-color: var(--navy) }
+.btn[disabled] { opacity: .55; cursor: not-allowed }
+code.ic { font-family: var(--f-body); background: var(--prompt-bg); color: var(--prompt-ink); border-radius: 5px; padding: 1px 6px }
+.mini-copy { border: 0; background: none; color: var(--navy); font-size: 12.5px; text-decoration: underline; padding: 0 4px }
+
+.plan { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; margin: 6px 0 22px }
+.plan div { background: var(--surface); padding: 12px 14px; min-width: 0 }
+.plan dt { font-size: 13px; font-weight: 700; color: var(--muted); letter-spacing: .03em }
+.plan dd { margin: 2px 0 0; font-size: 15px; line-height: 1.5 }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 18px }
+.toggle-done[aria-pressed="true"] { background: var(--ok-bg); color: var(--ok); border-color: var(--ok) }
+
+.related { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; margin: 12px 0 }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 12px 14px; text-decoration: none; color: var(--ink); display: grid; gap: 4px; min-width: 0 }
+a.card:hover { border-color: var(--navy) }
+.card .k { font-size: 13px; font-weight: 700; color: var(--accent) }
+.card .s { font-size: 13.5px; color: var(--muted) }
+.pager { display: flex; justify-content: space-between; gap: 10px; margin-top: 36px; flex-wrap: wrap }
+.pager a { max-width: 48%; min-width: 0 }
+
+/* home */
+.hero { display: grid; gap: 4px; margin-bottom: 18px }
+.hero h1 { font-size: clamp(30px, 5vw, 50px) }
+.factline { display: flex; flex-wrap: wrap; gap: 6px 18px; color: var(--muted); font-size: 15px }
+.factline b { color: var(--ink); font-weight: 500 }
+.nowcard { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; display: grid; gap: 12px; margin: 18px 0 }
+.nowtop { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden }
+.seg button { border: 0; background: none; padding: 4px 14px; font-size: 14px }
+.seg button[aria-pressed="true"] { background: var(--navy); color: var(--surface) }
+.clock { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 14px }
+.nowgrid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px }
+.slot { border-radius: 10px; padding: 12px 14px; background: var(--bg); display: grid; gap: 2px; text-decoration: none; color: var(--ink); min-width: 0 }
+.slot.live { background: var(--now-bg) }
+.slot .lbl { font-size: 12.5px; font-weight: 700; letter-spacing: .04em; color: var(--accent) }
+.slot .tt { font-size: 18px; font-weight: 700; line-height: 1.35 }
+.slot .tm { font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums }
+.progress { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--muted) }
+.bar { flex: 1; height: 8px; background: var(--bg); border-radius: 99px; overflow: hidden }
+.bar i { display: block; height: 100%; background: var(--ok); border-radius: 99px }
+.days { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; margin: 10px 0 24px }
+.daycol { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px; min-width: 0 }
+.daycol h3 { margin: 0; font-size: 18px }
+.daycol p.th { margin: 0 0 8px; color: var(--muted); font-size: 14px }
+.block { display: grid; grid-template-columns: 92px minmax(0,1fr); gap: 10px; padding: 8px 6px; border-top: 1px solid var(--line); text-decoration: none; color: var(--ink); align-items: baseline }
+.block .t { font-variant-numeric: tabular-nums; font-size: 13.5px; color: var(--muted) }
+.block.b { color: var(--muted); font-size: 14px; padding-block: 4px }
+.block .n { font-family: var(--f-display); color: var(--accent); margin-right: 6px }
+a.block:hover { background: var(--soft) }
+.quick { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px }
+.dl-list { display: grid; gap: 10px }
+.dl { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px; display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between }
+.dl .ti { font-weight: 700 }
+.dl .wh { font-size: 13.5px; color: var(--muted) }
+.dl .fmts { display: flex; gap: 8px; flex-wrap: wrap }
+.toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--surface); padding: 8px 16px; border-radius: 999px; font-size: 14px; z-index: 50 }
+.section-title { font-size: 20px; margin: 26px 0 8px }
+
+@media (max-width: 900px) {
+  .shell { grid-template-columns: minmax(0,1fr) }
+  .side { position: fixed; inset: 56px auto 0 0; width: min(330px, 88vw); height: auto; z-index: 30; transform: translateX(-102%); transition: transform .2s ease; box-shadow: 0 0 40px rgba(0,0,0,.25) }
+  .side.open { transform: none }
+  .menu-btn { display: inline-block }
+  .brand span { display: none }
+}
+@media (max-width: 640px) {
+  .days, .nowgrid, .plan { grid-template-columns: minmax(0,1fr) }
+  .search { flex-basis: 160px }
+  .pager a { max-width: 100% }
+}
+@media (prefers-reduced-motion: reduce) { .side { transition: none } }
+</style>
+<style>
+/* Representative-only additions on top of the shared employee layout. */
+.prose blockquote { margin: 10px 0; padding: 8px 14px; border-left: 4px solid var(--line); background: var(--doc-bg); border-radius: 0 var(--r) var(--r) 0 }
+.prose ul.task-list { list-style: none; padding-left: 0 }
+.prose ul.task-list label { display: flex; gap: 8px; align-items: flex-start }
+.prose ul.task-list input { margin-top: 6px }
+.prose li > .prompt { margin: 8px 0 }
+.days.one { grid-template-columns: minmax(0,1fr) }
+.tool { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin: 22px 0 }
+.tool h3 { margin-top: 0 }
+.tool input, .tool textarea { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px }
+.tool textarea, .tool input[type=text] { width: 100% }
+.tool input[type=number] { width: 80px }
+.tool label.f { display: block; margin: 10px 0 }
+.tool label.chk { display: flex; gap: 8px; align-items: center; margin: 10px 0 }
+.tool table.rate td { text-align: center } .tool table.rate td:first-child { text-align: left }
+.calc-sum { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 12px 0 }
+.calc-sum div { background: var(--bg); border-radius: 10px; padding: 8px 10px }
+.calc-sum span.l { display: block; color: var(--muted); font-size: 13.5px }
+td.st-sel { color: var(--ok); font-weight: 700 } td.st-no { color: var(--accent) }
+.msg { margin: 8px 0; font-weight: 500 } .msg.ok { color: var(--ok) } .msg.bad { color: var(--accent) }
 @media print {
-  header.top, .tool, #gate, .no-print { display:none !important; }
-  body { background:#fff; color:#000; font-size:12pt; }
-  section.doc { border:none; padding:0; page-break-before:always; }
-  .doc h2 { page-break-after:avoid; }
+  .top, .side, .actions, .pager, .no-print, .toast { display: none !important }
+  .shell { display: block } main { padding: 0 } body { background: #fff; color: #000; font-size: 12pt }
+  .hb-mat { page-break-before: always }
 }
 </style>
 </head>
-<body>
-<header class="top no-print">
-  <h1>AI for Municipal Representative: कार्यशाला सामग्री</h1>
-  <nav>
-    <a href="#plan">कार्ययोजना</a>
-    <a href="#materials">सामग्री १–७</a>
-    <a href="#calc">सामग्री ७ क्याल्कुलेटर</a>
-    <a href="#s8">सामग्री ८–११</a>
-    <a href="#feedback">पृष्ठपोषण</a>
-    <a href="../login.html">लगइन</a>
-  </nav>
-</header>
-<main>
-  <div id="gate" class="gate hide">
-    <h2>सामग्री खुला भएपछि देखिनेछ</h2>
-    <p>प्रशिक्षकले सामग्री खुला गरेपछि, वा स्वीकृत सहभागीले लगइन गरेपछि यो पृष्ठ देखिनेछ। <a href="../login.html">लगइन गर्नुहोस्</a></p>
+<body style="margin:0">
+<header class="top">
+  <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="side">कार्यतालिका</button>
+  <a class="brand" href="#home"><b>AI तालिम</b><span>जनप्रतिनिधिका लागि · २०८३ कात्तिक २७</span></a>
+  <div class="search">
+    <input id="q" type="search" placeholder="खोज्नुहोस्: सूचना, माइन्युट, आयोजना छनौट…" autocomplete="off" aria-label="सामग्री खोज्नुहोस्">
+    <div class="results" id="results" hidden></div>
   </div>
-  <div id="content" class="hide">
-    <section class="doc" id="plan"><h1 id="plan-जनपरतनधक-लग-ai-परयग-समबनध-एकदन-करयशल-करयशल-करययजन">जनप्रतिनिधिका
-लागि AI प्रयोग सम्बन्धी एकदिने कार्यशाला: कार्यशाला कार्ययोजना</h1>
-<p><strong>………………. पालिका, …………… · मिति: …………</strong></p>
-<p>………………….. पालिकाका जनप्रतिनिधिहरूलाई आफ्नै मोबाइलमा, नेपाली भाषामै, निःशुल्क
-AI उपकरण प्रयोग गरी दैनिक कामकाज छिटो र प्रभावकारी बनाउन सक्षम बनाउने उद्देश्यले
-यो एकदिने व्यावहारिक कार्यशाला आयोजना गरिएको हो। वार्षिक योजना तथा बजेटका
-लागि आयोजना छनौट गर्ने अभ्यास यस कार्यशालाको मुख्य आकर्षण हुनेछ।</p>
-<h2 id="plan-करयशलक-सकषपत-परचय">कार्यशालाको संक्षिप्त परिचय</h2>
-<div class="scroll"><table>
-<colgroup>
-<col style="width: 17%" />
-<col style="width: 82%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th><strong>विवरण</strong></th>
-<th><strong>जानकारी</strong></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>कार्यशालाको नाम</td>
-<td>जनप्रतिनिधिका लागि कृत्रिम बुद्धिमत्ता (AI): कार्यदक्षता र प्रभावकारिता
-अभिवृद्धि कार्यशाला</td>
-</tr>
-<tr class="even">
-<td>आयोजक</td>
-<td>…………………. पालिका, ………… प्रदेश</td>
-</tr>
-<tr class="odd">
-<td>मिति</td>
-<td>२०८३ कात्तिक २७ गते</td>
-</tr>
-<tr class="even">
-<td>समय</td>
-<td>बिहान १०:०० देखि बेलुका ४:०० बजेसम्म (खाना: १२:४५ देखि १:३० बजेसम्म)</td>
-</tr>
-<tr class="odd">
-<td>स्थान</td>
-<td>गाउँपालिकाको सभाहल (यकिन गर्न बाँकी)</td>
-</tr>
-<tr class="even">
-<td>सहभागी</td>
-<td>गाउँपालिका अध्यक्ष, उपाध्यक्ष, वडाध्यक्षहरू, गाउँ कार्यपालिका सदस्यहरू, महिला
-तथा दलित महिला सदस्यहरू र वडा सदस्यहरू (करिब ३० देखि ४५ जना)</td>
-</tr>
-<tr class="odd">
-<td>पर्यवेक्षक तथा सहयोगी</td>
-<td>प्रमुख प्रशासकीय अधिकृत, सूचना प्रविधि अधिकृत, योजना अधिकृत</td>
-</tr>
-<tr class="even">
-<td>सहजकर्ता टोली</td>
-<td>मुख्य सहजकर्ता, सह-सहजकर्ता र ५ देखि ६ जना सहयोगी (६ देखि ८ जना सहभागीका
-लागि एक जना)</td>
-</tr>
-<tr class="odd">
-<td>प्रयोग हुने उपकरण</td>
-<td>पूरै कोठाले एउटै निःशुल्क AI च्याट एप (ChatGPT, Gemini वा Claude मध्ये एक) र
-Gboard मा नेपाली बोलेर टाइप गर्ने सुविधा</td>
-</tr>
-<tr class="even">
-<td>सहभागी सामग्री</td>
-<td>छुट्टै पुस्तिका: <em>सिकाइ सामग्री</em> (सामग्री १ देखि १२)</td>
-</tr>
-</tbody>
-</table></div>
-<p><strong>कार्यशालाका उद्देश्यहरू:</strong> कार्यशाला सकिँदासम्म प्रत्येक
-सहभागीले:</p>
-<ol type="1">
-<li>AI ले के गर्न सक्छ र के सक्दैन, अनि यसको उत्तर किन जाँच्नुपर्छ भन्ने कुरा सरल
-भाषामा बुझाउन सक्नेछन्।</li>
-<li>भूमिका + काम + सन्दर्भ + ढाँचा मिलाएर नेपालीमा स्पष्ट प्रम्प्ट (निर्देशन) लेख्न र
-आएको उत्तरलाई थप सुधार्न सक्नेछन्।</li>
-<li>बोलेर टाइप गर्ने सुविधा र मोबाइलको क्यामेराबाट कागजात छिटो AI मा हाल्न
-सक्नेछन्।</li>
-<li>सूचना, माइन्युट, कागजातको सारांश, भाषण र सामाजिक सञ्जालको पोस्ट गरी पाँच
-साझा काम आफैँ गर्न सक्नेछन्।</li>
-<li>स्थानीय सरकार सञ्चालन ऐन, २०७४ अनुसार आफ्नो पदको जिम्मेवारीसँग जोडिएका
-काममा AI प्रयोग गर्न सक्नेछन्।</li>
-<li>वडाको वार्षिक योजनाका लागि आएका माग छुट्याउन, अङ्क दिन र छनौट गर्न AI को
-सहयोग लिन सक्नेछन्, र आफ्नो छनौटको औचित्य पुष्टि गर्न सक्नेछन्।</li>
-<li>सार्वजनिक पदमा रहेर AI प्रयोग गर्दा गोपनीयता, शुद्धता र जवाफदेहिताका नियम
-पालना गर्नेछन्।</li>
-</ol>
-<p><strong>गाउँपालिकाका लागि अपेक्षित उपलब्धि:</strong> सूचना, पत्र, माइन्युट र
-भाषणको मस्यौदा छिटो तयार हुने; कार्यपालिका तथा गाउँ सभाको बैठकमा जनप्रतिनिधिहरू
-थप तयारीका साथ सहभागी हुने; आयोजना छनौट थप स्पष्ट र तथ्यमा आधारित हुने; र AI
-प्रयोगसम्बन्धी साझा प्रतिबद्धता पत्रमा हस्ताक्षर हुने।</p>
-<h2 id="plan-दनभरक-करयतलक-मत-२०८३-कततक-२७-बहन-१०००-दख-बलक-४००-बजसमम">दिनभरको
-कार्यतालिका (मिति २०८३ कात्तिक २७, बिहान १०:०० देखि बेलुका ४:०० बजेसम्म)</h2>
-<p>बिहानका सत्रमा सबैले गर्ने पाँच साझा काम सिकिनेछ भने दिउँसो तिनै सीपलाई आ–आफ्नो
-पदको काम र आयोजना छनौट अभ्यासमा प्रयोग गरिनेछ। कुल समयको करिब तीन चौथाइ भाग
-प्रत्यक्ष अभ्यासमा खर्च हुनेछ।</p>
-<div class="scroll"><table>
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 29%" />
-<col style="width: 25%" />
-<col style="width: 9%" />
-<col style="width: 24%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th><strong>समय</strong></th>
-<th><strong>सत्र</strong></th>
-<th><strong>विधि</strong></th>
-<th><strong>सामग्री</strong></th>
-<th><strong>नतिजा</strong></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>१०:०० – १०:३० (३० मिनेट)</td>
-<td>उद्घाटन: अध्यक्षज्यूबाट स्वागत, परिचय, अपेक्षा संकलन र पूर्व–प्रश्नावली</td>
-<td>सामूहिक; ५ प्रश्नको छोटो प्रश्नावली</td>
-<td>सामग्री ११</td>
-<td>सहभागीको सुरुको ज्ञान थाहा हुने</td>
-</tr>
-<tr class="even">
-<td>१०:३० – ११:०० (३० मिनेट)</td>
-<td>सत्र १: AI भनेको के हो? स्थानीय सरकारका लागि अवसर र सीमा</td>
-<td>छोटो प्रस्तुति, प्रत्यक्ष प्रदर्शन, "भ्रम कि तथ्य" खेल</td>
-<td>सामग्री १</td>
-<td>AI बारे साझा र सरल बुझाइ</td>
-</tr>
-<tr class="odd">
-<td>११:०० – ११:२० (२० मिनेट)</td>
-<td>सत्र २: मोबाइल तयारी, बोलेर टाइप गर्ने र पहिलो प्रम्प्ट</td>
-<td>सबै एकसाथ, चरणबद्ध</td>
-<td>सामग्री २, ३</td>
-<td>सबैको मोबाइलमा AI चल्ने</td>
-</tr>
-<tr class="even">
-<td>११:२० – ११:३५ (१५ मिनेट)</td>
-<td>चिया विश्राम</td>
-<td>सहयोगीले लगइन समस्या समाधान गर्ने</td>
-<td></td>
-<td></td>
-</tr>
-<tr class="odd">
-<td>११:३५ – १२:४५ (७० मिनेट)</td>
-<td>सत्र ३: पाँच साझा कामको निर्देशित अभ्यास (सूचना, माइन्युट, सारांश, भाषण,
-सामाजिक सञ्जाल पोस्ट)</td>
-<td>सहजकर्ताले प्रोजेक्टरमा देखाउने, सहभागीले सँगसँगै गर्ने</td>
-<td>सामग्री ३, ४</td>
-<td>प्रत्येकको मोबाइलमा ५ वटा मस्यौदा तयार</td>
-</tr>
-<tr class="even">
-<td>१२:४५ – १:३० (४५ मिनेट)</td>
-<td>खाना</td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="odd">
-<td>१:३० – २:१५ (४५ मिनेट)</td>
-<td>सत्र ४: मेरो पद, मेरो काम (पदअनुसार समूह अभ्यास)</td>
-<td>४ समूहमा अभ्यास कार्ड; जोडीमा एकअर्काको काम जाँच</td>
-<td>सामग्री ५, ६</td>
-<td>प्रत्येकले आफ्नो पदका ३ काम गर्ने</td>
-</tr>
-<tr class="even">
-<td>२:१५ – २:४० (२५ मिनेट)</td>
-<td>सत्र ५: जिम्मेवार प्रयोग: गोपनीयता, शुद्धता र जवाफदेहिता</td>
-<td>घटना छलफल, "गल्ती पत्ता लगाऔँ" अभ्यास</td>
-<td>सामग्री ८</td>
-<td>के गर्ने, के नगर्ने भन्नेमा सहमति</td>
-</tr>
-<tr class="odd">
-<td>२:४० – २:५० (१० मिनेट)</td>
-<td>छोटो विश्राम</td>
-<td>वडा समितिका रूपमा मिश्रित टोली बनाउने</td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td>२:५० – ३:३५ (४५ मिनेट)</td>
-<td>सत्र ६: मुख्य अभ्यास: वार्षिक योजना तथा बजेटका लागि आयोजना छनौट</td>
-<td>५–६ जनाको मिश्रित टोली; AI को सहयोगमा छुट्याउने, अङ्क दिने, छनौट गर्ने; २
-मिनेटको प्रस्तुति</td>
-<td>सामग्री ७</td>
-<td>प्रत्येक टोलीको प्राथमिकताप्राप्त आयोजना सूची र गाउँ सभामा बोल्ने भाषण</td>
-</tr>
-<tr class="odd">
-<td>३:३५ – ३:५० (१५ मिनेट)</td>
-<td>सत्र ७: ३० दिने कार्ययोजना र AI प्रयोग प्रतिबद्धता</td>
-<td>व्यक्तिगत योजना; सामूहिक हस्ताक्षर</td>
-<td>सामग्री ९, १०</td>
-<td>व्यक्तिगत कार्ययोजना; हस्ताक्षरित प्रतिबद्धता पत्र</td>
-</tr>
-<tr class="even">
-<td>३:५० – ४:०० (१० मिनेट)</td>
-<td>उत्तर–प्रश्नावली, पृष्ठपोषण र समापन (उपाध्यक्षज्यू वा प्रमुख प्रशासकीय
-अधिकृतज्यूबाट)</td>
-<td>प्रश्नावली र फाराम</td>
-<td>सामग्री ११, १२</td>
-<td>सिकाइमा भएको सुधार र पृष्ठपोषण</td>
-</tr>
-</tbody>
-</table></div>
-<p><strong>सत्र ४ का समूहहरू:</strong> (क) अध्यक्ष र उपाध्यक्ष, (ख) वडाध्यक्षहरू,
-(ग) गाउँ कार्यपालिका सदस्यहरू, (घ) महिला तथा दलित महिला सदस्यसहित वडा
-सदस्यहरू।</p>
-<p><strong>सत्र ६ का मिश्रित टोली:</strong> प्रत्येक टोलीलाई एउटा वडा समिति
-मानिनेछ, जसमा १ जना वडाध्यक्ष, १ जना कार्यपालिका सदस्य, १ जना महिला वा दलित
-महिला सदस्य र २–३ जना वडा सदस्य रहनेछन्। अध्यक्ष र उपाध्यक्षज्यूले "गाउँ सभाका सदस्य"
-का रूपमा टोलीहरूलाई प्रश्न सोध्नुहुनेछ।</p>
-<h2 id="plan-मलयङकन-र-अनगमन">मूल्याङ्कन र अनुगमन</h2>
-<h3 id="plan-मलयङकन">मूल्याङ्कन</h3>
-<div class="scroll"><table style="width:100%;">
-<colgroup>
-<col style="width: 9%" />
-<col style="width: 67%" />
-<col style="width: 22%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th><strong>तह</strong></th>
-<th><strong>साधन</strong></th>
-<th><strong>कहिले</strong></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>प्रतिक्रिया</td>
-<td>पृष्ठपोषण फाराम (सामग्री १२)</td>
-<td>बेलुका ३:५०</td>
-</tr>
-<tr class="even">
-<td>सिकाइ</td>
-<td>पूर्व र उत्तर–प्रश्नावली (सामग्री ११); औसत ३०% सुधारको लक्ष्य</td>
-<td>बिहान १०:०० र बेलुका ३:५०</td>
-</tr>
-<tr class="odd">
-<td>व्यवहार</td>
-<td>३० दिने कार्ययोजनाको भाइबरमार्फत अनुगमन: कति काम AI बाट गरिए</td>
-<td>३० दिनपछि</td>
-</tr>
-<tr class="even">
-<td>नतिजा</td>
-<td>AI को सहयोगमा तयार भएका सूचना, माइन्युट, भाषण र वडा आयोजना सूचीका नमूना
-संकलन</td>
-<td>३० देखि ६० दिनभित्र</td>
-</tr>
-</tbody>
-</table></div>
-<h3 id="plan-अनगमन-र-नरनतरत">अनुगमन र निरन्तरता</h3>
-<ul>
-<li>सूचना प्रविधि अधिकृतको संचालनमा "………… AI सहायता" भाइबर समूह, जहाँ राम्रा
-प्रम्प्ट साटासाट गर्ने र समस्या समाधान गरिनेछ।</li>
-<li>३० दिनपछि कार्यपालिका बैठकको समयमा एक घण्टाको पुनर्ताजगी कार्यक्रम, जहाँ
-टोलीहरूले आयोजना छनौट अभ्यासको गृहकार्य प्रस्तुत गर्नेछन्।</li>
-<li>योजना तर्जुमाको याम (फागुन देखि वैशाख) मा वास्तविक टोल भेलाका मागमा यही
-विधि प्रयोग गर्ने (व्यक्तिगत विवरण हटाएर)।</li>
-<li>आवश्यकता अनुसार शाखा प्रमुख र वडा सचिवहरूका लागि छुट्टै कार्यशाला।</li>
-</ul>
-<h2 id="plan-सनदरभ-सरत">सन्दर्भ स्रोत</h2>
-<ul>
-<li><a
-href="https://ekantipur.com/news/2025/08/14/cabinet-meeting-national-ai-policy-2082-approved-11-38.html">राष्ट्रिय
-कृत्रिम बुद्धिमत्ता नीति, २०८२ स्वीकृत (कान्तिपुर)</a></li>
-<li><a
-href="https://dhunibeshimun.gov.np/sites/dhunibeshimun.gov.np/files/15%20%E0%A4%B8%E0%A5%8D%E0%A4%A5%E0%A4%BE%E0%A4%A8%E0%A5%80%E0%A4%AF%20%E0%A4%A4%E0%A4%B9%E0%A4%95%E0%A5%8B%20%E0%A4%B5%E0%A4%BE%E0%A4%B0%E0%A5%8D%E0%A4%B7%E0%A4%BF%E0%A4%95%20%E0%A4%AF%E0%A5%8B%E0%A4%9C%E0%A4%A8%E0%A4%BE%20%E0%A4%A4%E0%A4%A5%E0%A4%BE%20%E0%A4%B5%E0%A4%9C%E0%A5%87%E0%A4%9F%20%E0%A4%A4%E0%A4%B0%E0%A5%8D%E0%A4%9C%E0%A5%81%E0%A4%AE%E0%A4%BE%20%E0%A4%A6%E0%A4%BF%E0%A4%97%E0%A5%8D%E0%A4%A6%E0%A4%B0%E0%A5%8D%E0%A4%B6%E0%A4%A8%20%E0%A5%A8%E0%A5%A6%E0%A5%AD%E0%A5%AA.pdf">स्थानीय
-तहको वार्षिक योजना तथा बजेट तर्जुमा दिग्दर्शन, २०७४ (परिमार्जित)</a></li>
-</ul>
-</section>
-    <section class="doc" id="materials"><h1 id="m-जनपरतनधक-लग-ai-परयग-समबनध-करयशल-सकइ-समगर">जनप्रतिनिधिका लागि AI
-प्रयोग सम्बन्धी कार्यशाला: सिकाइ सामग्री:</h1>
-<p>यो पुस्तिका मिति ……….. हुने कार्यशालाका सहभागीहरूका लागि तयार गरिएको हो।
-सामग्री ३, ४ र ७ देखि १२ सम्म सबै सहभागीलाई छापेर दिइनेछ। सामग्री ३ र ७
-कार्यशालाको भाइबर समूहमा पनि पठाइनेछ, ताकि सहभागीले टाइप नगरी सिधै AI मा टाँस्न
-सकून्।</p>
-<h2 id="m-समगर-१-ai-भनक-क-ह">सामग्री १: AI भनेको के हो?</h2>
-<p>AI च्याट उपकरणलाई धेरै कुरा पढेको, निकै छिटो काम गर्ने एउटा सहायकका रूपमा बुझ्न
-सकिन्छ। यसले नेपालीमा फटाफट लेखिदिन्छ, तर कहिलेकाहीँ ढुक्कसँग गलत कुरा पनि भनिदिन्छ।
-<strong>त्यसैले AI ले गरेको काम सधैं आफैं जाँच्नुपर्छ।</strong></p>
-<div class="scroll"><table>
-<colgroup>
-<col style="width: 41%" />
-<col style="width: 58%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th><strong>AI ले राम्रोसँग गर्ने काम</strong></th>
-<th><strong>AI कमजोर हुने ठाउँ</strong></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>सूचना, चिठी, भाषण र पोस्टको मस्यौदा</td>
-<td>तपाईंको वडाका स्थानीय तथ्य</td>
-</tr>
-<tr class="even">
-<td>लामो कागजातको सारांश</td>
-<td>भर्खरका घटना र नयाँ निर्णय</td>
-</tr>
-<tr class="odd">
-<td>अनुवाद र भाषा सरल बनाउने</td>
-<td>ऐन, दफा नम्बर र बजेटका ठ्याक्कै अङ्क</td>
-</tr>
-<tr class="even">
-<td>सूची, तालिका र विचार मिलाउने</td>
-<td>सही–गलत छुट्याउने; कहिलेकाहीँ आफैं कुरा बनाइदिन्छ</td>
-</tr>
-<tr class="odd">
-<td>प्रश्न र विकल्प सुझाउने</td>
-<td>निर्णय गर्ने; यो काम तपाईंकै हो</td>
-</tr>
-</tbody>
-</table></div>
-<p><strong>नेपालको नीति:</strong> नेपाल सरकार मन्त्रिपरिषद्ले २०८२ साउन २६ गते
-राष्ट्रिय कृत्रिम बुद्धिमत्ता नीति, २०८२ स्वीकृत गरेको छ। यस नीतिले AI को नैतिक,
-सुरक्षित र समावेशी प्रयोगमा जोड दिएको छ।</p>
-<p><strong>भ्रम कि तथ्य? (तथ्य भए हरियो, भ्रम भए रातो कार्ड
-उठाउनुहोस्)</strong></p>
-<ol type="1">
-<li>AI ले सधैं सत्य कुरा भन्छ।</li>
-<li>AI ले एकै मिनेटमा नेपालीमा चिठी लेखिदिन सक्छ।</li>
-<li>AI प्रयोग गरेपछि विषयवस्तुको जिम्मा मेरो हुँदैन।</li>
-<li>AI लाई हाम्रो गाउँपालिकाका पछिल्ला निर्णयहरू थाहा छन्।</li>
-<li>म नेपालीमा बोलें भने मोबाइलले आफैं टाइप गर्छ।</li>
-<li>AI ले लामो कागजातलाई मुख्य बुँदामा सारांश गर्न सक्छ।</li>
-<li>नागरिकको व्यक्तिगत विवरण AI मा हाल्नु ठिकै हो।</li>
-<li>वडाले कुन आयोजनामा बजेट दिने भन्ने निर्णय AI ले गर्न सक्छ।</li>
-</ol>
-<h2 id="m-समगर-२-मबइल-तयर-नरदशक">सामग्री २: मोबाइल तयारी निर्देशिका</h2>
-<p>सहजकर्तासँगै एक–एक चरण गर्नुहोस्। काम सकिएपछि वा अड्किनुभयो भने हात
-उठाउनुहोस्।</p>
-<ol type="1">
-<li><strong>AI एप खोल्नुहोस्:</strong> कार्यशालाका लागि रोजिएको एप (वा
-Chrome मा त्यसको वेबसाइट) खोलेर <em>Sign in</em> थिच्नुहोस् र Google खाता वा
-इमेलबाट लगइन गर्नुहोस्।</li>
-<li><strong>नेपाली किबोर्ड थप्नुहोस्:</strong> Settings → System वा General
-management → Languages and input → Gboard → Languages मा गएर
-<em>Nepali</em> थप्नुहोस्। (मोबाइल अनुसार मेनु फरक हुन सक्छ; सहयोगीले
-सघाउनुहुनेछ।)</li>
-<li><strong>बोलेर टाइप गर्ने सुविधा खोल्नुहोस्:</strong> जुनसुकै लेख्ने ठाउँमा
-किबोर्डको माइक्रोफोन चिन्ह थिचेर नेपालीमा बोल्नुहोस्।</li>
-<li><strong>पहिलो प्रम्प्ट (बोलेर दिनुहोस्):</strong> मेरो वडाका बासिन्दाहरूलाई
-तिहारको ३ लाइनको शुभकामना सन्देश लेखिदिनुहोस्।</li>
-<li><strong>उत्तर कपी गर्नुहोस्:</strong> उत्तरमा केही बेर थिचेर वा कपी चिन्ह
-थिचेर भाइबरमा टाँस्नुहोस्।</li>
-<li><strong>भाइबर समूहमा जोडिनुहोस्:</strong> “AI सहायता"।</li>
-</ol>
-<p><strong>केही समस्या आयो भने:</strong> इन्टरनेट छैन भने सभाहलको Wi-Fi वा
-सहयोगीको हटस्पट प्रयोग गर्नुहोस्; पासवर्ड बिर्सनुभयो भने अर्को इमेल प्रयोग गर्नुहोस् वा
-अहिलेलाई छेउको साथीसँग मिलेर अभ्यास गर्नुहोस्; उत्तर अङ्ग्रेजीमा आयो भने प्रम्प्टको
-अन्त्यमा "नेपालीमा लेख्नुहोस्" थप्नुहोस्।</p>
-<h2 id="m-समगर-३-परमपट-लखन-सतर-र-नमन-परमपट-सगरह">सामग्री ३: प्रम्प्ट लेख्ने सूत्र र
-नमूना प्रम्प्ट संग्रह</h2>
-<p>AI लाई दिइने निर्देशनलाई प्रम्प्ट भनिन्छ। जति स्पष्ट निर्देशन दिइन्छ, उत्तर त्यति नै
-राम्रो आउँछ।</p>
-<p><strong>सूत्र: भूमिका + काम + सन्दर्भ + ढाँचा</strong></p>
-<div class="scroll"><table>
-<colgroup>
-<col style="width: 9%" />
-<col style="width: 44%" />
-<col style="width: 46%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th><strong>भाग</strong></th>
-<th><strong>अर्थ</strong></th>
-<th><strong>उदाहरण</strong></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>भूमिका</td>
-<td>AI लाई कसको रूपमा काम गर्न लगाउने?</td>
-<td>तपाईं ………….को सञ्चार अधिकृत हो।</td>
-</tr>
-<tr class="even">
-<td>काम</td>
-<td>के गर्नुपर्ने हो?</td>
-<td>सरसफाइ अभियानको सूचना लेखिदिनुहोस्।</td>
-</tr>
-<tr class="odd">
-<td>सन्दर्भ</td>
-<td>चाहिने तथ्यहरू</td>
-<td>वडा नं. [ ], मिति [ ], स्थान [ ]</td>
-</tr>
-<tr class="even">
-<td>ढाँचा</td>
-<td>लम्बाइ, शैली, रूप</td>
-<td>१०० शब्दभित्र, सरल भाषामा।</td>
-</tr>
-</tbody>
-</table></div>
-<p><strong>नमूना प्रम्प्टहरू:</strong> [ ] कोष्ठकमा आफ्नो विवरण राख्नुहोस्।
-नागरिकको नाम, फोन वा नागरिकता नम्बर कहिल्यै AI मा नहाल्नुहोस्।</p>
-<div class="scroll"><table style="width:100%;">
-<colgroup>
-<col style="width: 17%" />
-<col style="width: 60%" />
-<col style="width: 21%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th><strong>काम</strong></th>
-<th><strong>प्रम्प्ट</strong></th>
-<th><strong>कसका लागि बढी उपयोगी</strong></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>सूचना</td>
-<td>………….. पालिका वडा नं. [ ] कार्यालयको तर्फबाट [विषय] सम्बन्धी सूचना
-लेखिदिनुहोस्। मिति [ ], समय [ ], स्थान [ ]। सरकारी ढाँचामा, १२० शब्दभित्र।</td>
-<td>वडाध्यक्ष, वडा सदस्य</td>
-</tr>
-<tr class="even">
-<td>भाषण</td>
-<td>म [पद] हुँ। [कार्यक्रम] मा बोल्न २ मिनेटको भाषण सरल नेपालीमा लेखिदिनुहोस्।
-धन्यवाद, योजनाको महत्त्व र जनतालाई आह्वान समेट्नुहोस्।</td>
-<td>अध्यक्ष, उपाध्यक्ष, वडाध्यक्ष</td>
-</tr>
-<tr class="odd">
-<td>सारांश</td>
-<td>तलको कागजातको मुख्य कुरा ५ बुँदामा लेखिदिनुहोस्, र निर्णय गर्नुपर्ने कुरा छुट्टै
-देखाउनुहोस्: [पाठ वा फोटो]</td>
-<td>बैठकअघि सबैलाई</td>
-</tr>
-<tr class="even">
-<td>माइन्युट</td>
-<td>यी टिपोटका आधारमा बैठकको माइन्युट तयार पारिदिनुहोस्: उपस्थिति, प्रस्ताव,
-निर्णय र जिम्मेवार व्यक्ति। [टिपोट]</td>
-<td>वडा समिति, कार्यपालिका</td>
-</tr>
-<tr class="odd">
-<td>सामाजिक सञ्जाल पोस्ट</td>
-<td>यो सूचनालाई फेसबुकका लागि ५० शब्दको आकर्षक पोस्ट बनाइदिनुहोस्। दलगत प्रचार
-नहोस्। [सूचना]</td>
-<td>सबै</td>
-</tr>
-<tr class="even">
-<td>कार्यालयको चिठी</td>
-<td>…………… लिकाको तर्फबाट [कार्यालय] लाई [विषय] मा सहयोग माग गर्ने औपचारिक
-चिठीको मस्यौदा तयार पारिदिनुहोस्।</td>
-<td>अध्यक्ष, वडाध्यक्ष</td>
-</tr>
-<tr class="odd">
-<td>मागको प्राथमिकीकरण</td>
-<td>वडा भेलाबाट आएका यी मागहरूलाई क्षेत्र अनुसार तालिकामा मिलाइदिनुहोस् र प्रति
-घरधुरी लागत निकालिदिनुहोस्। [मागको सूची]</td>
-<td>वडाध्यक्ष, योजना तर्जुमा</td>
-</tr>
-<tr class="even">
-<td>मेलमिलाप (उपाध्यक्ष)</td>
-<td>नाम नखुलाई यो विवादको तटस्थ सारांश लेखिदिनुहोस् र मेलमिलापका ३ विकल्प
-सुझाउनुहोस्। [विवरण]</td>
-<td>उपाध्यक्ष, न्यायिक समिति</td>
-</tr>
-<tr class="odd">
-<td>अधिकारीलाई सोध्ने प्रश्न</td>
-<td>[योजना] को प्रगति बारे प्रमुख प्रशासकीय अधिकृतलाई सोध्ने ५ वटा स्पष्ट प्रश्न
-तयार पारिदिनुहोस्।</td>
-<td>अध्यक्ष, कार्यपालिका सदस्य, सभा सदस्य</td>
-</tr>
-<tr class="even">
-<td>अनुगमन जाँचसूची</td>
-<td>[सडक/खानेपानी] आयोजनामा उपभोक्ता समितिले गरेको काम अनुगमन गर्न १० बुँदे
-जाँचसूची बनाइदिनुहोस्।</td>
-<td>वडा सदस्य, अनुगमन समिति</td>
-</tr>
-</tbody>
-</table></div>
-<p><strong>उत्तर सुधार्न काम लाग्ने थप निर्देशन:</strong> अझ छोटो बनाइदिनुहोस् ·
-अलि औपचारिक भाषामा लेख्नुहोस् · गाउँलेलाई बुझ्ने गरी लेख्नुहोस् · तालिकामा देखाइदिनुहोस्
-· यसमा मैले के–के कुरा जाँच्नुपर्छ?</p>
-<h2 id="m-समगर-४-नरदशत-अभयस-पन-सहजकरतसग-चरणबदध-रपम-गरन">सामग्री ४: निर्देशित
-अभ्यास पाना (सहजकर्तासँगै चरणबद्ध रूपमा गर्ने)</h2>
-<h3 id="m-अभयस-१-वडक-सचन-तयर-परन">अभ्यास १: वडाको सूचना तयार पार्ने</h3>
-<ol type="1">
-<li>AI एप र नेपाली किबोर्ड खोल्नुहोस्।</li>
-<li>टाइप गर्नुहोस् वा बोल्नुहोस्: तपाईं गाउँपालिकाको सञ्चार अधिकृत हो। …………...
-पालिका वडा नं. [ ] मा [मिति] मा हुने सरसफाइ अभियानको सूचना १०० शब्दभित्र सरल
-भाषामा लेखिदिनुहोस्।</li>
-<li>आएको उत्तर पढ्नुहोस्।</li>
-<li>थप निर्देशन दिनुहोस्: अझ छोटो र औपचारिक बनाइदिनुहोस्। ज्येष्ठ नागरिकका लागि
-एउटा वाक्य थपिदिनुहोस्।</li>
-<li><strong>जाँच्नुहोस्:</strong> मिति, समय र स्थान ठीक छ कि छैन।</li>
-</ol>
-<h3 id="m-अभयस-२-बलक-टपटबट-मइनयट-बनउन">अभ्यास २: बोलेका टिपोटबाट माइन्युट
-बनाउने</h3>
-<ol type="1">
-<li>नेपाली किबोर्डको माइक्रोफोन थिच्नुहोस्।</li>
-<li>तलको नमूना ठूलो स्वरमा पढ्दै मोबाइलमा बोल्नुहोस्:</li>
-</ol>
-<blockquote>
-<p>आज वडा समितिको बैठक वडाध्यक्षज्यूको अध्यक्षतामा बस्यो। बैठकमा पाँच जना उपस्थित
-हुनुहुन्थ्यो। पहिलो प्रस्ताव खानेपानी ट्याङ्की मर्मतसम्बन्धी थियो; अर्को हप्ता उपभोक्ता
-समिति गठन गर्ने निर्णय भयो। दोस्रो प्रस्ताव सरसफाइ अभियानसम्बन्धी थियो; मङ्सिर १५
-गते अभियान सञ्चालन गर्ने र वडा सदस्यले समन्वय गर्ने निर्णय भयो।</p>
-</blockquote>
-<ol start="3" type="1">
-<li>प्रम्प्ट: यी टिपोटका आधारमा वडा समिति बैठकको माइन्युट तयार पारिदिनुहोस्:
-उपस्थिति, प्रस्ताव, निर्णय र जिम्मेवार व्यक्ति।</li>
-<li>थप निर्देशन: निर्णयहरू तालिकामा देखाइदिनुहोस्।</li>
-<li><strong>जाँच्नुहोस्:</strong> बैठकमा नभएको कुनै निर्णय AI ले थपेको छ कि?
-(नमूनामा जम्मा दुईवटा निर्णय मात्र छन्।)</li>
-</ol>
-<h3 id="m-अभयस-३-कगजतक-फटबट-सरश-नकलन">अभ्यास ३: कागजातको फोटोबाट सारांश
-निकाल्ने</h3>
-<ol type="1">
-<li>तल दिइएको नमूना कागजात (वा सहजकर्ताले दिएको पाना) लिनुहोस्।</li>
-<li>AI एपमा क्यामेरा वा फाइल जोड्ने चिन्ह थिचेर कागजातको फोटो खिच्नुहोस्।</li>
-<li>प्रम्प्ट: यो कागजातका मुख्य कुरा ५ बुँदामा लेखिदिनुहोस्, र वडाध्यक्षले गर्नुपर्ने काम
-छुट्टै देखाइदिनुहोस्।</li>
-<li>थप निर्देशन: यस कागजातका बारेमा बैठकमा सोध्नुपर्ने ३ वटा प्रश्न
-सुझाइदिनुहोस्।</li>
-<li><strong>जाँच्नुहोस्:</strong> AI ले दिएको कुनै एउटा बुँदा कागजमा साँच्चै लेखिएको
-छ कि छैन, खोज्नुहोस्।</li>
-</ol>
-<p><strong>नमूना कागजात (काल्पनिक): कृषक बीउ अनुदान कार्यक्रम सञ्चालन
-कार्यविधि</strong></p>
-<blockquote>
-<p>१. यस कार्यक्रममा गाउँपालिकामा दर्ता भएका कृषक समूह र सहकारीले मात्र आवेदन दिन
-पाउनेछन्। २. बीउ खरिदमा ५० प्रतिशत अनुदान दिइनेछ; बाँकी रकम कृषक समूह आफैँले
-बेहोर्नुपर्नेछ। ३. आवेदन वडा कार्यालयमार्फत पेश गर्नुपर्नेछ र वडाध्यक्षले १५ दिनभित्र
-सिफारिस गर्नुपर्नेछ। ४. महिला तथा दलित कृषकलाई प्राथमिकता दिइनेछ। ५. अनुदान
-पाएका समूहले उत्पादनको विवरण कृषि शाखामा बुझाउनुपर्नेछ।</p>
-</blockquote>
-<h3 id="m-अभयस-४-सरवजनक-करयकरमक-लग-भषण">अभ्यास ४: सार्वजनिक कार्यक्रमका लागि
-भाषण</h3>
-<ol type="1">
-<li>प्रम्प्ट: म [पद] हुँ। [कार्यक्रम, जस्तै: स्वास्थ्य चौकीको उद्घाटन] मा बोल्न २
-मिनेटको भाषण लेखिदिनुहोस्। धन्यवाद, योजनाको महत्त्व र जनतालाई आह्वान
-समेट्नुहोस्।</li>
-<li>थप निर्देशन: स्थानीय उदाहरण थपिदिनुहोस् र भाषा अझ सरल बनाइदिनुहोस्।</li>
-<li>एपमा स्पिकर चिन्ह छ भने थिचेर भाषण सुन्नुहोस्।</li>
-<li><strong>जाँच्नुहोस्:</strong> भाषणमा आएका सबै अङ्क, लागत र नाममा रेखा
-तान्नुहोस्; ती ठाउँमा वास्तविक तथ्य राख्नुहोस्।</li>
-<li>एक जना स्वयंसेवकले भाषणको सुरुका ३० सेकेन्ड कोठामा सुनाउनुहोस्।</li>
-</ol>
-<h3 id="m-अभयस-५-दई-भषम-समजक-सञजल-पसट">अभ्यास ५: दुई भाषामा सामाजिक सञ्जाल
-पोस्ट</h3>
-<ol type="1">
-<li>अभ्यास १ मा बनाएको सूचना कपी गरेर AI मा टाँस्नुहोस्।</li>
-<li>प्रम्प्ट: यो सूचनालाई फेसबुकका लागि ५० शब्दको आकर्षक पोस्ट बनाइदिनुहोस्। दलगत
-प्रचार नहोस्।</li>
-<li>थप निर्देशन: यसलाई [मगर / अङ्ग्रेजी / अन्य स्थानीय भाषा] मा पनि अनुवाद
-गरिदिनुहोस्।</li>
-<li><strong>जाँच्नुहोस्:</strong> नजिकै बसेका सो भाषा बोल्ने साथीलाई अनुवाद पढ्न
-लगाउनुहोस्।</li>
-<li>पोस्ट कपी गरेर भाइबरमा आफैँलाई मात्र पठाउनुहोस्।</li>
-</ol>
-<h2 id="m-समगर-५-पदअनसर-नयमत-कमहर">सामग्री ५: पदअनुसार नियमित कामहरू</h2>
-<p>हरेक पदमा बारम्बार गर्नुपर्ने १० वटा काम र तिनमा AI ले कसरी सघाउन सक्छ भन्ने
-विवरण। कामको प्रकार: <strong>का</strong> = कार्यालयको काम,
-<strong>सा</strong> = सार्वजनिक कार्यक्रम, <strong>सं</strong> = सामाजिक
-सञ्जाल।</p>
-<h3 id="m-समह-क-अधयकष-र-उपधयकष">समूह (क): अध्यक्ष र उपाध्यक्ष</h3>
-<div class="scroll"><table>
-<colgroup>
-<col style="width: 7%" />
-<col style="width: 42%" />
-<col style="width: 7%" />
-<col style="width: 42%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th><strong>क्र.सं.</strong></th>
-<th><strong>काम</strong></th>
-<th><strong>प्रकार</strong></th>
-<th><strong>AI ले कसरी सघाउँछ</strong></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>१</td>
-<td>गाउँ कार्यपालिका र गाउँ सभाको बैठक सञ्चालन</td>
-<td>का</td>
-<td>कार्यसूचीको सारांश, स्वागत मन्तव्य, निर्णयको मस्यौदा</td>
-</tr>
-<tr class="even">
-<td>२</td>
-<td>वार्षिक नीति, कार्यक्रम तथा बजेट प्रस्तुति</td>
-<td>का</td>
-<td>बजेटको सरल नागरिक सारांश, मन्तव्य, सम्भावित प्रश्नोत्तर</td>
-</tr>
-<tr class="odd">
-<td>३</td>
-<td>प्रदेश, संघ र साझेदार निकायमा पत्राचार</td>
-<td>का</td>
-<td>औपचारिक पत्र र बजेट माग पत्रको मस्यौदा</td>
-</tr>
-<tr class="even">
-<td>४</td>
-<td>उपाध्यक्ष: न्यायिक समितिको सुनुवाइ र मेलमिलाप</td>
-<td>का</td>
-<td>नाम नखुलाई विवादको तटस्थ सारांश, सूचना, मेलमिलापका विकल्प</td>
-</tr>
-<tr class="odd">
-<td>५</td>
-<td>उपाध्यक्ष: अनुगमन, राजस्व परामर्श र बजेट सीमा निर्धारण समिति</td>
-<td>का</td>
-<td>अनुगमन जाँचसूची, स्थलगत प्रतिवेदन, कर र शुल्कको सरल व्याख्या</td>
-</tr>
-<tr class="even">
-<td>६</td>
-<td>उद्घाटन, शिलान्यास र आयोजना हस्तान्तरण</td>
-<td>सा</td>
-<td>छोटो मन्तव्य, कार्यक्रम सञ्चालन क्रम</td>
-</tr>
-<tr class="odd">
-<td>७</td>
-<td>चाडपर्व र राष्ट्रिय दिवस</td>
-<td>सा</td>
-<td>शुभकामना सन्देश, मन्तव्य, कार्यक्रमको सूचना</td>
-</tr>
-<tr class="even">
-<td>८</td>
-<td>नागरिक, प्रतिनिधिमण्डलसँग भेटघाट; सार्वजनिक सुनुवाइ</td>
-<td>सा</td>
-<td>भेटअघिको टिपोट, प्रतिबद्धताको अनुगमन सूची</td>
-</tr>
-<tr class="odd">
-<td>९</td>
-<td>सञ्चारमाध्यमसँग अन्तर्वार्ता र प्रेस विज्ञप्ति</td>
-<td>सं</td>
-<td>प्रेस विज्ञप्ति, बोल्ने मुख्य बुँदा</td>
-</tr>
-<tr class="even">
-<td>१०</td>
-<td>गाउँपालिकाको फेसबुक पेज सञ्चालन</td>
-<td>सं</td>
-<td>नेपाली र स्थानीय भाषामा पोस्ट, साप्ताहिक सामग्री योजना</td>
-</tr>
-</tbody>
-</table></div>
-<h3 id="m-समह-ख-वडधयकषहर">समूह (ख): वडाध्यक्षहरू</h3>
-<div class="scroll"><table>
-<colgroup>
-<col style="width: 7%" />
-<col style="width: 37%" />
-<col style="width: 7%" />
-<col style="width: 47%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th><strong>क्र.सं.</strong></th>
-<th><strong>काम</strong></th>
-<th><strong>प्रकार</strong></th>
-<th><strong>AI ले कसरी सघाउँछ</strong></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>१</td>
-<td>वडा समितिको बैठक सञ्चालन</td>
-<td>का</td>
-<td>कार्यसूची, बोलेका टिपोटबाट माइन्युट</td>
-</tr>
-<tr class="even">
-<td>२</td>
-<td>सिफारिस दिने काम</td>
-<td>का</td>
-<td>आधिकारिक ढाँचासँग मिल्ने नमूना, नागरिकलाई चाहिने कागजातको सूची</td>
-</tr>
-<tr class="odd">
-<td>३</td>
-<td>व्यक्तिगत घटना दर्ता र सामाजिक सुरक्षा भत्ता</td>
-<td>का</td>
-<td>नागरिकका लागि सरल जानकारी, नवीकरणको सम्झना सूचना</td>
-</tr>
-<tr class="even">
-<td>४</td>
-<td>वार्षिक योजनाका लागि टोल तथा वडा भेला</td>
-<td>सा</td>
-<td>भेलाको सूचना, आएका माग क्षेत्र र लागत अनुसार मिलाउने</td>
-</tr>
-<tr class="odd">
-<td>५</td>
-<td>उपभोक्ता समितिका आयोजनाको अनुगमन</td>
-<td>का</td>
-<td>जाँचसूची, स्थलगत प्रतिवेदन</td>
-</tr>
-<tr class="even">
-<td>६</td>
-<td>गाउँपालिकामा वडाको प्रगति प्रतिवेदन</td>
-<td>का</td>
-<td>टिपोटबाट व्यवस्थित प्रतिवेदन</td>
-</tr>
-<tr class="odd">
-<td>७</td>
-<td>स्थानीय विवाद र गुनासो</td>
-<td>का</td>
-<td>तटस्थ सारांश, न्यायिक समितिमा पठाउने पत्र</td>
-</tr>
-<tr class="even">
-<td>८</td>
-<td>विपद् पूर्वतयारी र प्रतिकार्य</td>
-<td>सा</td>
-<td>सचेतना सन्देश, माइकिङको पाठ, क्षति विवरण फाराम</td>
-</tr>
-<tr class="odd">
-<td>९</td>
-<td>स्वास्थ्य शिविर, सरसफाइ अभियान, विद्यालय कार्यक्रम</td>
-<td>सा</td>
-<td>सूचना, मन्तव्य, स्वयंसेवकको कार्य विभाजन</td>
-</tr>
-<tr class="even">
-<td>१०</td>
-<td>वडाको फेसबुक पेज र भाइबर समूह</td>
-<td>सं</td>
-<td>दैनिक सूचना, अनुवाद, बारम्बार सोधिने प्रश्नको जवाफ</td>
-</tr>
-</tbody>
-</table></div>
-<h3 id="m-समह-ग-गउ-करयपलक-सदसयहर">समूह (ग): गाउँ कार्यपालिका सदस्यहरू</h3>
-<div class="scroll"><table>
-<colgroup>
-<col style="width: 7%" />
-<col style="width: 39%" />
-<col style="width: 7%" />
-<col style="width: 45%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th><strong>क्र.सं.</strong></th>
-<th><strong>काम</strong></th>
-<th><strong>प्रकार</strong></th>
-<th><strong>AI ले कसरी सघाउँछ</strong></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>१</td>
-<td>कार्यपालिका बैठकका प्रस्ताव अध्ययन</td>
-<td>का</td>
-<td>प्रस्तावको उद्देश्य, लागत, फाइदा, जोखिम र प्रश्नसहितको सारांश</td>
-</tr>
-<tr class="even">
-<td>२</td>
-<td>विषयगत समितिको काम</td>
-<td>का</td>
-<td>कार्यसूची, माइन्युट, सिफारिस प्रतिवेदन</td>
-</tr>
-<tr class="odd">
-<td>३</td>
-<td>वार्षिक बजेटका लागि आयोजना छनौट</td>
-<td>का</td>
-<td>आधार तय गरेर विकल्पहरूको तुलनात्मक तालिका</td>
-</tr>
-<tr class="even">
-<td>४</td>
-<td>ऐन, कार्यविधि र निर्देशिकाको मस्यौदा अध्ययन</td>
-<td>का</td>
-<td>सरल व्याख्या, संशोधन गर्नुपर्ने बुँदा</td>
-</tr>
-<tr class="odd">
-<td>५</td>
-<td>आफ्नो क्षेत्रको स्थलगत अनुगमन</td>
-<td>का</td>
-<td>जाँचसूची, बोलेका टिपोटबाट प्रतिवेदन</td>
-</tr>
-<tr class="even">
-<td>६</td>
-<td>स्वास्थ्य चौकी, विद्यालय, कृषि शाखासँग समन्वय</td>
-<td>का</td>
-<td>पत्र, बैठकको अनुरोध, काम गर्नुपर्ने सूची</td>
-</tr>
-<tr class="odd">
-<td>७</td>
-<td>क्षेत्रगत कार्यक्रम: कृषक तालिम, स्वास्थ्य सचेतना</td>
-<td>सा</td>
-<td>अवधारणा पत्र, निमन्त्रणा, मन्तव्य</td>
-</tr>
-<tr class="even">
-<td>८</td>
-<td>उपभोक्ता समूह, सहकारी, गैरसरकारी संस्थासँग बैठक</td>
-<td>सा</td>
-<td>बैठकअघिको टिपोट, सहमतिको अभिलेख</td>
-</tr>
-<tr class="odd">
-<td>९</td>
-<td>कार्यपालिका र सभामा प्रतिवेदन</td>
-<td>का</td>
-<td>छोटो प्रगति प्रतिवेदन</td>
-</tr>
-<tr class="even">
-<td>१०</td>
-<td>क्षेत्रगत जानकारी सामाजिक सञ्जालमा</td>
-<td>सं</td>
-<td>योजना र समयसीमाबारे पोस्ट, पोस्टरका लागि पाठ</td>
-</tr>
-</tbody>
-</table></div>
-<h3 id="m-समह-घ-महल-तथ-दलत-महल-सदसयसहत-वड-सदसयहर">समूह (घ): महिला तथा दलित
-महिला सदस्यसहित वडा सदस्यहरू</h3>
-<div class="scroll"><table>
-<colgroup>
-<col style="width: 7%" />
-<col style="width: 48%" />
-<col style="width: 8%" />
-<col style="width: 35%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th><strong>क्र.सं.</strong></th>
-<th><strong>काम</strong></th>
-<th><strong>प्रकार</strong></th>
-<th><strong>AI ले कसरी सघाउँछ</strong></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>१</td>
-<td>वडा समितिको बैठकमा सहभागिता</td>
-<td>का</td>
-<td>उठाउनुपर्ने बुँदा, कार्यसूचीको सरल सारांश</td>
-</tr>
-<tr class="even">
-<td>२</td>
-<td>टोलका समस्या सङ्कलन</td>
-<td>का</td>
-<td>बोलेरै समस्या टिप्ने, व्यवस्थित सूची बनाउने</td>
-</tr>
-<tr class="odd">
-<td>३</td>
-<td>महिला, दलित, ज्येष्ठ नागरिक र अपाङ्गता भएका व्यक्तिको प्रतिनिधित्व</td>
-<td>का / सा</td>
-<td>तथ्यमा आधारित तर्क, छोटो मन्तव्य</td>
-</tr>
-<tr class="even">
-<td>४</td>
-<td>भेलाका लागि नागरिक परिचालन</td>
-<td>सा</td>
-<td>निमन्त्रणा, माइकिङको पाठ</td>
-</tr>
-<tr class="odd">
-<td>५</td>
-<td>उपभोक्ता समितिको कामको अनुगमन</td>
-<td>का</td>
-<td>सरल जाँचसूची, वडाध्यक्षलाई छोटो प्रतिवेदन</td>
-</tr>
-<tr class="even">
-<td>६</td>
-<td>नागरिकलाई सेवा लिन सहयोग</td>
-<td>का</td>
-<td>आवश्यक कागजात र प्रक्रियाको सरल जानकारी</td>
-</tr>
-<tr class="odd">
-<td>७</td>
-<td>सचेतना अभियान: स्वास्थ्य, बालविवाह, बचत</td>
-<td>सा</td>
-<td>सन्देश, माइकिङ पाठ, स्थानीय भाषामा अनुवाद</td>
-</tr>
-<tr class="even">
-<td>८</td>
-<td>आमा समूह, महिला समूह र सहकारीलाई सहयोग</td>
-<td>सा</td>
-<td>माइन्युट, सानो प्रस्ताव</td>
-</tr>
-<tr class="odd">
-<td>९</td>
-<td>बस्तीमा विपद्का बेला सहयोग</td>
-<td>सा</td>
-<td>सचेतना सन्देश (घरधुरीको सूची AI मा नहाल्ने)</td>
-</tr>
-<tr class="even">
-<td>१०</td>
-<td>फेसबुक र भाइबरमा वडाको सूचना</td>
-<td>सं</td>
-<td>छोटो र स्पष्ट पोस्ट</td>
-</tr>
-</tbody>
-</table></div>
-<h2 id="m-समगर-६-पदअनसर-अभयस-करड-सतर-४">सामग्री ६: पदअनुसार अभ्यास कार्ड (सत्र
-४)</h2>
-<p>कम्तीमा ३ वटा कार्ड पूरा गर्नुहोस्। त्यसपछि छेउको साथीसँग मोबाइल साटेर एकअर्काको
-काम जाँच्नुहोस्।</p>
-<p><strong>समूह (क): अध्यक्ष र उपाध्यक्ष</strong></p>
-<ul class="task-list">
-<li><label><input type="checkbox" />क१. कुनै वडामा नयाँ बर्थिङ सेन्टर उद्घाटन
-गर्दा बोल्ने ३ मिनेटको मन्तव्य तयार पार्नुहोस्।</label></li>
-<li><label><input type="checkbox" />क२. कार्यक्रमको कागजातका २ पानाको फोटो
-खिचेर कार्यपालिका बैठकका लागि ५ मुख्य बुँदा निकाल्नुहोस्।</label></li>
-<li><label><input type="checkbox" />क३. (उपाध्यक्ष) दुई छिमेकीबीचको काल्पनिक
-सिमाना विवादको तटस्थ सारांश र मेलमिलापका ३ विकल्प तयार पार्नुहोस्। वास्तविक नाम
-प्रयोग नगर्नुहोस्।</label></li>
-<li><label><input type="checkbox" />क४. ढिलो भइरहेको सडक आयोजनाबारे प्रमुख
-प्रशासकीय अधिकृतलाई सोध्ने ५ प्रश्न तयार पार्नुहोस्।</label></li>
-</ul>
-<p><strong>समूह (ख): वडाध्यक्षहरू</strong></p>
-<ul class="task-list">
-<li><label><input type="checkbox" />ख१. आगामी वर्षको योजना छलफलका लागि
-टोल भेलाको सूचना लेख्नुहोस्।</label></li>
-<li><label><input type="checkbox" />ख२. यी मागलाई क्षेत्र अनुसार तालिकामा
-मिलाउनुहोस्: खानेपानी ट्याङ्की, विद्यालयको शौचालय, कृषि सडक, सिँचाइ कुलो, महिला
-तालिम, मन्दिर पर्खाल, गोरेटो मर्मत।</label></li>
-<li><label><input type="checkbox" />ख३. वर्षायाममा पहिरोबाट सजग रहन फेसबुक
-पोस्ट र ३० सेकेन्डको माइकिङ पाठ तयार पार्नुहोस्।</label></li>
-<li><label><input type="checkbox" />ख४. बसोबास सिफारिसको नमूना तयार
-पार्नुहोस् र आधिकारिक ढाँचासँग भिडाउनुपर्ने कुराको सूची बनाउनुहोस्।</label></li>
-</ul>
-<p><strong>समूह (ग): गाउँ कार्यपालिका सदस्यहरू</strong></p>
-<ul class="task-list">
-<li><label><input type="checkbox" />ग१. सहजकर्ताले दिएको प्रस्तावको सारांश
-बनाउनुहोस्: फाइदा, जोखिम र लागतसम्बन्धी प्रश्न।</label></li>
-<li><label><input type="checkbox" />ग२. काल्पनिक स्थलगत भ्रमणको टिपोट बोलेर
-समितिको प्रतिवेदन तयार पार्नुहोस्।</label></li>
-<li><label><input type="checkbox" />ग३. कृषि सडक ग्राभेल र खानेपानी योजनाबीच
-५ आधारमा तुलना गर्ने तालिका बनाउनुहोस्।</label></li>
-</ul>
-<p><strong>समूह (घ): वडा सदस्यहरू</strong></p>
-<ul class="task-list">
-<li><label><input type="checkbox" />घ१. आफ्नो टोलका ३ समस्या नेपालीमा बोलेर
-वडाध्यक्षलाई बुझाउने लिखित प्रतिवेदन बनाउनुहोस्।</label></li>
-<li><label><input type="checkbox" />घ२. महिला उद्यमशीलता तालिमका लागि बजेट
-माग गर्ने २ मिनेटको मन्तव्य तयार पार्नुहोस्।</label></li>
-<li><label><input type="checkbox" />घ३. ज्येष्ठ नागरिक भत्ताबारे सरल नेपाली र
-एउटा स्थानीय भाषामा सचेतना सन्देश तयार पार्नुहोस्।</label></li>
-<li><label><input type="checkbox" />घ४. उपभोक्ता समितिले बनाउँदै गरेको सडकको
-अनुगमनका लागि १० बुँदे जाँचसूची बनाउनुहोस्।</label></li>
-</ul>
-<h2 id="m-समगर-७-आयजन-छनट-अभयस-पसतक">सामग्री ७: आयोजना छनौट अभ्यास
-पुस्तिका</h2>
-<p>तपाईंको टोलीले <strong>…………….. पालिका, वडा नं. ४</strong> को वडा समितिको
-भूमिका निर्वाह गर्नेछ। यसमा उल्लेखित नाम, अङ्क र नियम <strong>काल्पनिक हुन्,
-अभ्यासका लागि मात्र तयार गरिएका हुन्।</strong></p>
-<h3 id="m-पषठभम">पृष्ठभूमि</h3>
-<p>अहिले २०८३ फागुन महिना हो। स्रोत अनुमान तथा बजेट सीमा निर्धारण समितिले आर्थिक
-वर्ष २०८४/८५ का लागि वडालाई बजेट सीमा पठाइसकेको छ। टोल भेलाहरू सम्पन्न भइसकेका
-छन्। अब वडा समितिले १० दिनभित्र प्राथमिकता क्रमसहितको आयोजना सूची गाउँपालिकामा
-पठाउनुपर्नेछ।</p>
-<p><strong>योजना तर्जुमाका ७ चरण</strong> (स्थानीय तहको वार्षिक योजना तथा
-बजेट तर्जुमा दिग्दर्शन अनुसार): (१) स्रोत अनुमान तथा बजेट सीमा निर्धारण, (२)
-बस्ती/टोल स्तरबाट योजना छनौट, (३) वडास्तरीय योजना प्राथमिकीकरण, (४) बजेट तथा
-कार्यक्रम तर्जुमा समितिमा छलफल, (५) गाउँ कार्यपालिकाबाट स्वीकृति, (६) गाउँ सभामा
-पेश र (७) गाउँ सभाबाट स्वीकृति। <strong>आजको अभ्यासमा तपाईंहरूले चरण २, ३ र ६ को
-काम गर्नुहुनेछ।</strong></p>
-<h3 id="m-बजट-परपतर-कलपनक">बजेट परिपत्र (काल्पनिक)</h3>
-<ul>
-<li>वडास्तरीय पूँजीगत बजेटको सीमा: <strong>रु. ९० लाख</strong>।</li>
-<li>लक्षित कार्यक्रमबाहेक रु. ३ लाखभन्दा साना आयोजना नराख्ने (टुक्रे योजना
-नहुने)।</li>
-<li>रु. ५० लाखभन्दा बढी लागतका वा एकभन्दा बढी वडालाई समेट्ने आयोजना गाउँपालिका
-स्तरमा पठाउने।</li>
-<li>वडाको बजेटको कम्तीमा <strong>१५ प्रतिशत</strong> लक्षित कार्यक्रम (महिला,
-दलित, अपाङ्गता भएका व्यक्ति, ज्येष्ठ नागरिक, बालबालिका) मा छुट्याउनुपर्ने।</li>
-<li>पूर्वाधार आयोजनामा उपभोक्ता समितिको कम्तीमा १० प्रतिशत नगद वा श्रमदान
-योगदान हुनुपर्ने।</li>
-<li>वडाको आवधिक योजनाका प्राथमिकता: खानेपानी, कृषि तथा सिँचाइ, र विपद्
-सुरक्षा।</li>
-</ul>
-<h3 id="m-टल-भलबट-आएक-मगहर">टोल भेलाबाट आएका मागहरू</h3>
-<div class="scroll"><table>
-<colgroup>
-<col style="width: 7%" />
-<col style="width: 20%" />
-<col style="width: 10%" />
-<col style="width: 18%" />
-<col style="width: 9%" />
-<col style="width: 12%" />
-<col style="width: 20%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th><strong>क्र.सं.</strong></th>
-<th><strong>माग</strong></th>
-<th><strong>टोल</strong></th>
-<th><strong>क्षेत्र</strong></th>
-<th><strong>लागत (रु. लाख)</strong></th>
-<th><strong>लाभान्वित घरधुरी</strong></th>
-<th><strong>भेलामा आएको कुरा</strong></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>१</td>
-<td>भन्ज्याङसम्मको २.५ कि.मि. कृषि सडक ग्राभेल</td>
-<td>कालिका टोल</td>
-<td>सडक</td>
-<td>३२</td>
-<td>१४०</td>
-<td>लागत अनुमान तयार; उपभोक्ताले १०% श्रमदान गर्ने</td>
-</tr>
-<tr class="even">
-<td>२</td>
-<td>खानेपानी ट्याङ्की र पाइपलाइन मर्मत</td>
-<td>सिद्धबाबा टोल</td>
-<td>खानेपानी</td>
-<td>१४</td>
-<td>४८ (३२ दलित)</td>
-<td>गएको सुख्खा याममा मुहान सुकेको; महिला ४० मिनेट हिँडेर पानी ल्याउँछन्</td>
-</tr>
-<tr class="odd">
-<td>३</td>
-<td>खोलामा मोटरबाटो झोलुङ्गे पुल</td>
-<td>दोभान</td>
-<td>पुल</td>
-<td>१२०</td>
-<td>४०० (३ वटा वडा)</td>
-<td>धेरै वर्षदेखिको माग; डिजाइन बनेको छैन</td>
-</tr>
-<tr class="even">
-<td>४</td>
-<td>वडा कार्यालय भवन विस्तार</td>
-<td>वडा केन्द्र</td>
-<td>कार्यालय</td>
-<td>२५</td>
-<td>(कार्यालय)</td>
-<td>कर्मचारीलाई ठाउँ अपुग</td>
-</tr>
-<tr class="odd">
-<td>५</td>
-<td>मन्दिर परिसरको पर्खाल र पाटी</td>
-<td>देउराली</td>
-<td>धार्मिक/सांस्कृतिक</td>
-<td>८</td>
-<td>६०</td>
-<td>मन्दिर समितिले ३०% नगद लगाउने</td>
-</tr>
-<tr class="even">
-<td>६</td>
-<td>३० जना महिलालाई सिलाई तालिम र विउ अनुदान</td>
-<td>सबै टोल</td>
-<td>लक्षित (महिला)</td>
-<td>६</td>
-<td>३०</td>
-<td>महिला समूहको माग; सहकारीले बजारीकरणमा सघाउने</td>
-</tr>
-<tr class="odd">
-<td>७</td>
-<td>८०० मिटर सिँचाइ कुलो (ठूलो कुलो) लाइनिङ</td>
-<td>फाँट टोल</td>
-<td>सिँचाइ</td>
-<td>१८</td>
-<td>८५</td>
-<td>कृषक समूह दर्ता; रिसावटले २५% पानी खेर जान्छ</td>
-</tr>
-<tr class="even">
-<td>८</td>
-<td>फुटबल मैदान समतलीकरण</td>
-<td>विद्यालय क्षेत्र</td>
-<td>खेलकुद</td>
-<td>१२</td>
-<td>युवा क्लब (१२० सदस्य)</td>
-<td>जग्गा विद्यालयको</td>
-</tr>
-<tr class="odd">
-<td>९</td>
-<td>पहिरो नियन्त्रणका लागि ग्याविन पर्खाल</td>
-<td>बजार बस्ती</td>
-<td>विपद् सुरक्षा</td>
-<td>१५</td>
-<td>२२ (जोखिममा)</td>
-<td>२०८३ को वर्षामा दुई घर चर्किए</td>
-</tr>
-<tr class="even">
-<td>१०</td>
-<td>बजारको ३०० मिटर सडक कालोपत्रे</td>
-<td>वडा केन्द्र</td>
-<td>सडक</td>
-<td>३०</td>
-<td>७०</td>
-<td>पसलेहरूको जोडदार दबाब</td>
-</tr>
-<tr class="odd">
-<td>११</td>
-<td>स्वास्थ्य चौकीमा र्याम्प, रेलिङ र ज्येष्ठ नागरिकका लागि प्रतीक्षालय</td>
-<td>वडा केन्द्र</td>
-<td>लक्षित (अपाङ्गता, ज्येष्ठ)</td>
-<td>४</td>
-<td>सिंगो वडा</td>
-<td>स्वास्थ्य चौकी प्रमुखको माग</td>
-</tr>
-<tr class="even">
-<td>१२</td>
-<td>रु. १ लाखका दरले १० वटा गोरेटो र खुड्किला मर्मत</td>
-<td>विभिन्न टोल</td>
-<td>गोरेटो</td>
-<td>१०</td>
-<td>करिब १५०</td>
-<td>हरेक टोलले आफ्नै योजना चाहने</td>
-</tr>
-<tr class="odd">
-<td>१३</td>
-<td>वडा हुँदै जाने रणनीतिक सडकको स्तरोन्नति</td>
-<td>मुख्य सडक</td>
-<td>सडक</td>
-<td>अनुमान नभएको</td>
-<td>सिंगो वडा</td>
-<td>सडक प्रदेश/संघको क्षेत्राधिकारमा पर्छ</td>
-</tr>
-</tbody>
-</table></div>
-<p><strong>जम्मा माग:</strong> करिब रु. २९४ लाख (माग १३ बाहेक), जबकि बजेट
-सीमा रु. ९० लाख मात्र छ।</p>
-<h3 id="m-टलभतरक-भमक-बडफट">टोलीभित्रको भूमिका बाँडफाँट</h3>
-<p>नेतृत्व र प्रस्तुति (वडाध्यक्ष) · प्रम्प्ट टाइप गर्ने · क्याल्कुलेटरमा हिसाब जाँच्ने ·
-लैङ्गिक समानता तथा सामाजिक समावेशीकरण हेर्ने (महिला वा दलित महिला सदस्य) ·
-आयोजनाको संक्षिप्त विवरण लेख्ने (कार्यपालिका सदस्य)।</p>
-<h3 id="m-कम-र-परमपट">काम र प्रम्प्ट</h3>
-<div class="scroll"><table>
-<colgroup>
-<col style="width: 18%" />
-<col style="width: 58%" />
-<col style="width: 23%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th><strong>काम</strong></th>
-<th><strong>प्रम्प्ट</strong></th>
-<th><strong>टोलीले गर्नुपर्ने निर्णय</strong></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>१. माग मिलाउने</td>
-<td>यो मागको सूचीलाई क्षेत्र अनुसार तालिकामा मिलाइदिनुहोस् र प्रति घरधुरी लागत
-निकालिदिनुहोस्। [तालिका]</td>
-<td>कुनै अङ्क गलत छ कि?</td>
-</tr>
-<tr class="even">
-<td>२. नियम जाँच्ने</td>
-<td>तलका नियम अनुसार कुन माग वडाले गर्न नमिल्ने, कुन गाउँपालिका/प्रदेश/संघमा
-पठाउनुपर्ने र कुन टुक्रे योजना हुन्? कारणसहित भन्नुहोस्। [नियम] [तालिका]</td>
-<td>कुन माग अर्को तहमा पठाउने, गाभ्ने वा हटाउने?</td>
-</tr>
-<tr class="odd">
-<td>३. अङ्क दिने</td>
-<td>यी मापदण्ड र भारका आधारमा बाँकी आयोजनालाई १०० मध्ये अङ्क दिनुहोस् र हरेक
-अङ्कको कारण लेख्नुहोस्। [मापदण्ड]</td>
-<td>स्थानीय जानकारीका आधारमा कम्तीमा २ अङ्क परिवर्तन गर्ने</td>
-</tr>
-<tr class="even">
-<td>४. छनौट गर्ने</td>
-<td>अङ्कको क्रममा रु. ९० लाखभित्र पर्ने आयोजना सूची बनाइदिनुहोस्। लक्षित कार्यक्रममा
-कम्तीमा १५% पुग्यो कि पुगेन, जाँचिदिनुहोस्।</td>
-<td>जम्मा क्याल्कुलेटरमा आफैँ जोड्ने, AI को भर नपर्ने</td>
-</tr>
-<tr class="odd">
-<td>५. आयोजनाको संक्षिप्त विवरण (गृहकार्य)</td>
-<td>यस आयोजनाको एक पृष्ठको संक्षिप्त विवरण तयार पारिदिनुहोस्: उद्देश्य, स्थान,
-लाभान्वित, लागत र स्रोत, समयावधि, अपेक्षित नतिजा र मर्मतसम्भार।</td>
-<td>कुनै अङ्क AI ले आफैँ बनाएको नहोस्</td>
-</tr>
-<tr class="even">
-<td>६. समर्थन र जानकारी</td>
-<td>(क) यो सूची किन छानियो भनेर गाउँ सभामा बोल्ने २ मिनेटको तर्कसंगत मन्तव्य तयार
-पारिदिनुहोस्। (ख, गृहकार्य) छनौट नभएका माग किन रोकिए वा कहाँ पठाइयो भन्ने बारे
-नागरिकले बुझ्ने सूचना लेखिदिनुहोस्।</td>
-<td>सबै टोलप्रति न्यायोचित; दलगत भाषा नहोस्</td>
-</tr>
-</tbody>
-</table></div>
-<h3 id="m-अङक-दन-मपदणड">अङ्क दिने मापदण्ड</h3>
-<div class="scroll"><table>
-<colgroup>
-<col style="width: 35%" />
-<col style="width: 14%" />
-<col style="width: 49%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th><strong>मापदण्ड</strong></th>
-<th><strong>अधिकतम अङ्क</strong></th>
-<th><strong>बढी अङ्क कहिले</strong></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>आवश्यकता, तात्कालिकता र सुरक्षा</td>
-<td>२०</td>
-<td>जीउधनको जोखिम; आधारभूत सेवा नभएको</td>
-</tr>
-<tr class="even">
-<td>लाभान्वित संख्या र प्रति घरधुरी लागत</td>
-<td>१५</td>
-<td>धेरै घरधुरी, कम लागत</td>
-</tr>
-<tr class="odd">
-<td>लैङ्गिक समानता तथा सामाजिक समावेशीकरण</td>
-<td>१५</td>
-<td>महिला, दलित, अपाङ्गता, ज्येष्ठ नागरिक वा बालबालिकालाई प्रत्यक्ष लाभ</td>
-</tr>
-<tr class="even">
-<td>आवधिक योजना र दिगो विकास लक्ष्यसँग तालमेल</td>
-<td>१०</td>
-<td>खानेपानी, सिँचाइ, विपद् सुरक्षा</td>
-</tr>
-<tr class="odd">
-<td>तयारीको अवस्था</td>
-<td>१०</td>
-<td>लागत अनुमान, जग्गा र उपभोक्ता समिति तयार</td>
-</tr>
-<tr class="even">
-<td>सामुदायिक योगदान</td>
-<td>१०</td>
-<td>१०% भन्दा बढी योगदान</td>
-</tr>
-<tr class="odd">
-<td>जलवायु र विपद् उत्थानशीलता</td>
-<td>१०</td>
-<td>पहिरो, खडेरी वा बाढीको जोखिम घटाउने</td>
-</tr>
-<tr class="even">
-<td>दिगोपन (सञ्चालन र मर्मत)</td>
-<td>१०</td>
-<td>स्पष्ट जिम्मेवारी र मर्मत योजना</td>
-</tr>
-</tbody>
-</table></div>
-<h3 id="m-करयपन-हमर-अनतम-सच">कार्यपाना: हाम्रो अन्तिम सूची</h3>
-<div class="scroll"><table>
-<colgroup>
-<col style="width: 19%" />
-<col style="width: 13%" />
-<col style="width: 7%" />
-<col style="width: 20%" />
-<col style="width: 39%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th><strong>प्राथमिकता क्रम</strong></th>
-<th><strong>आयोजना</strong></th>
-<th><strong>अङ्क</strong></th>
-<th><strong>लागत (रु. लाख)</strong></th>
-<th><strong>लक्षित? (हो/होइन)</strong></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>१</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td>२</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="odd">
-<td>३</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td>४</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="odd">
-<td>५</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td>६</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="odd">
-<td>७</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td><strong>जम्मा</strong></td>
-<td></td>
-<td></td>
-<td><strong>९० भन्दा नबढी</strong></td>
-<td><strong>लक्षित प्रतिशत: ___ (१५% वा बढी)</strong></td>
-</tr>
-</tbody>
-</table></div>
-<p><strong>अर्को तहमा पठाइएका, गाभिएका वा हटाइएका माग
-(कारणसहित):</strong> ______________________________</p>
-</section>
-    
-<section class="tool" id="calc">
-  <h3>सामग्री ७ को क्याल्कुलेटर: आयोजना छनौट</h3>
+</header>
+<div class="shell">
+  <nav class="side" id="side" aria-label="कार्यतालिका"></nav>
+  <main id="main"><div class="wrap" id="view"></div></main>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="data.js"></script>
+<script src="../account.js"></script>
+<script>
+/* Same shell as the employee materials (../index.html): running order on the left, the selected session's materials on the right. */
+const DATA = window.D_REP;
+const DEV = '०१२३४५६७८९';
+const dn = s => String(s).replace(/[0-9]/g, d => DEV[d]);
+const tm = (a, b) => dn(a) + '–' + dn(b);
+const toMin = s => { const [h, m] = s.split(':').map(Number); return h * 60 + m; };
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const S = Object.fromEntries(DATA.SESS.map(s => [s.id, s]));
+const M = Object.fromEntries(DATA.MATS.map(m => [m.id, m]));
+const store = {
+  get(k, d) { try { const v = localStorage.getItem('ai-rep-' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem('ai-rep-' + k, JSON.stringify(v)); } catch (e) {} },
+};
+let done = new Set(store.get('done', []));
+const DAY = DATA.DAYS[0];
+const ASSESS = '../assessment/index.html';
+
+function itemOf(id) { for (const it of DAY.items) if (it.id === id) return it; return null; }
+function nkTime() {
+  try {
+    const p = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kathmandu', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(new Date());
+    return +p.find(x => x.type === 'hour').value * 60 + +p.find(x => x.type === 'minute').value;
+  } catch (e) { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); }
+}
+function nowNext() {
+  const t = nkTime(); let now = null, next = null;
+  for (const it of DAY.items) {
+    if (toMin(it.start) <= t && t < toMin(it.end)) now = it;
+    else if (toMin(it.start) > t && !next) next = it;
+  }
+  return { now, next, t };
+}
+function titleOf(it) { return it.kind === 'session' ? 'सत्र ' + S[it.id].n + ': ' + S[it.id].title : it.kind === 'other' ? DATA.OTHER[it.id].title : it.title; }
+const matCard = id => `<a class="card" href="#${id}"><span class="k">${M[id].short}</span><b>${M[id].title}</b><span class="s">${M[id].use}</span></a>`;
+const TOOLS = {
+  calc: { k: 'सामग्री ७', t: 'आयोजना छनौट क्याल्कुलेटर', s: 'बजेट सीमा, नियम र अङ्कका आधारमा सूची' },
+  feedback: { k: 'सामग्री १२', t: 'पृष्ठपोषण फाराम', s: 'अनलाइन पठाउनुहोस्' },
+};
+const toolCard = k => `<a class="card" href="#${k}"><span class="k">${TOOLS[k].k}</span><b>${TOOLS[k].t}</b><span class="s">${TOOLS[k].s}</span></a>`;
+const assessCard = kind => `<a class="card" href="${ASSESS}"><span class="k">${kind === 'pre' ? 'पूर्व–परीक्षा' : 'पश्च–परीक्षा'}</span><b>AI ज्ञान परीक्षा</b><span class="s">इभेन्ट कोड प्रशिक्षकबाट पाउनुहोस्</span></a>`;
+
+/* ---------- sidebar ---------- */
+function renderSide(cur) {
+  const nn = nowNext();
+  const on = ids => ids.includes(cur) ? 'aria-current="page"' : '';
+  let h = `<div class="nav-links">
+    <a href="#home" ${on(['home'])}>ड्यासबोर्ड</a>
+    <a href="#agenda" ${on(['agenda'])}>कार्यशाला कार्ययोजना</a>
+    <a href="#resources" ${on(['resources', ...Object.keys(M)])}>सिकाइ सामग्री (१–१२)</a>
+    <a href="#calc" ${on(['calc'])}>आयोजना छनौट क्याल्कुलेटर</a>
+    <a href="#feedback" ${on(['feedback'])}>पृष्ठपोषण फाराम</a>
+    <a href="#handbook" ${on(['handbook'])}>पूरा पुस्तिका (छाप्न / PDF)</a>
+    <a href="${ASSESS}">AI ज्ञान परीक्षा</a></div>`;
+  h += `<p class="day-h"><b>कार्यशालाको दिन</b><span>${DAY.date}</span></p><ul class="tl">`;
+  for (const it of DAY.items) {
+    const isNow = nn.now === it;
+    if (it.kind === 'break') { h += `<li><span class="brk"><span class="t">${dn(it.start)}</span><span>${it.title}</span><span></span></span></li>`; continue; }
+    const chip = isNow ? '<span class="chip now">अहिले</span>' : (done.has(it.id) ? '<span class="chip done">पूरा</span>' : '<span></span>');
+    h += `<li><a href="#${it.id}" class="${isNow ? 'is-now' : ''}" ${cur === it.id ? 'aria-current="page"' : ''}><span class="t">${dn(it.start)}</span><span>${titleOf(it)}</span>${chip}</a></li>`;
+  }
+  $('#side').innerHTML = h + '</ul>';
+}
+
+/* ---------- views ---------- */
+function vHome() {
+  const nn = nowNext();
+  const sessDone = DATA.SESS.filter(s => done.has(s.id)).length, total = DATA.SESS.length;
+  const slot = (lbl, it, live) => it ? `<a class="slot ${live ? 'live' : ''}" href="#${it.kind === 'break' ? '' : it.id}"><span class="lbl">${lbl}</span><span class="tt">${titleOf(it)}</span><span class="tm">${tm(it.start, it.end)}</span></a>`
+    : `<div class="slot"><span class="lbl">${lbl}</span><span class="tt">${live ? (nn.t >= toMin('16:00') ? 'आजको कार्यक्रम सकियो' : 'अहिले कुनै सत्र चलिरहेको छैन') : 'आज थप सत्र छैन'}</span></div>`;
+  const dayCol = `<section class="daycol"><h3>कार्यशालाको दिन · ${DAY.date}</h3><p class="th">${DAY.theme}</p>` +
+    DAY.items.map(it => it.kind === 'break' ? `<div class="block b"><span class="t">${tm(it.start, it.end)}</span><span>${it.title}</span></div>`
+      : `<a class="block" href="#${it.id}"><span class="t">${tm(it.start, it.end)}</span><span>${it.kind === 'session' ? `<span class="n">${S[it.id].n}</span>${S[it.id].title}` : DATA.OTHER[it.id].title}${done.has(it.id) ? ' ✓' : ''}</span></a>`).join('') + '</section>';
+  return `<div class="hero"><p class="eyebrow">पालिका · जनप्रतिनिधिहरूका लागि</p>
+    <h1>जनप्रतिनिधिका लागि कृत्रिम बुद्धिमत्ता (AI): कार्यदक्षता र प्रभावकारिता अभिवृद्धि कार्यशाला</h1>
+    <div class="factline"><span>मिति <b>२०८३ कात्तिक २७ गते</b></span><span>समय <b>बिहान १०:०० देखि बेलुका ४:००</b></span><span>सहभागी <b>अध्यक्ष, उपाध्यक्ष, वडाध्यक्ष, कार्यपालिका तथा वडा सदस्य</b></span></div></div>
+  <section class="nowcard" aria-live="polite">
+    <div class="nowtop"><b>आजको कार्यक्रम</b><span class="clock">नेपाल समय ${dn(String(Math.floor(nn.t / 60)).padStart(2, '0'))}:${dn(String(nn.t % 60).padStart(2, '0'))}</span></div>
+    <div class="nowgrid">${slot('अहिले चलिरहेको', nn.now, true)}${slot('त्यसपछि', nn.next, false)}</div>
+    <div class="progress"><span>पूरा भएका सत्र: ${dn(sessDone)}/${dn(total)}</span><span class="bar"><i style="width:${Math.round(sessDone / total * 100)}%"></i></span></div>
+  </section>
+  <h2 class="section-title">दिनभरको कार्यतालिका</h2>
+  <div class="days one">${dayCol}</div>
+  <h2 class="section-title">छिटो पहुँच</h2>
+  <div class="quick">
+    <a class="card" href="#m3"><span class="k">सामग्री ३</span><b>प्रम्प्ट सूत्र र नमूना प्रम्प्ट</b><span class="s">भूमिका + काम + सन्दर्भ + ढाँचा; प्रतिलिपि गर्न मिल्ने</span></a>
+    <a class="card" href="#m8"><span class="k">सामग्री ८</span><b>जिम्मेवार प्रयोग</b><span class="s">गोपनीयता, शुद्धता र जवाफदेहिता</span></a>
+    ${toolCard('calc')}
+    <a class="card" href="#resources"><span class="k">सामग्री १–१२</span><b>सबै सिकाइ सामग्री</b><span class="s">अभ्यास पाना, कार्ड, प्रतिबद्धता पत्र, प्रश्नावली</span></a>
+  </div>`;
+}
+
+function planDl(p, it, mats) {
+  return `<dl class="plan"><div><dt>समय</dt><dd>${tm(it.start, it.end)} (${dn(toMin(it.end) - toMin(it.start))} मिनेट)</dd></div><div><dt>सामग्री</dt><dd>${mats.map(id => M[id].short).join(', ')}</dd></div>
+    <div><dt>विधि तथा क्रियाकलाप</dt><dd>${p.method}</dd></div><div><dt>अपेक्षित उपलब्धि</dt><dd>${p.outcome}</dd></div></dl>`;
+}
+const matBody = ids => ids.map(id => `<h2 class="sec-h">${M[id].short}: ${M[id].title}</h2>${M[id].html}`).join('');
+
+function vSession(s) {
+  const it = itemOf(s.id), idx = DATA.SESS.indexOf(s);
+  const prev = DATA.SESS[idx - 1], next = DATA.SESS[idx + 1];
+  const rel = [...s.mats, ...(s.refs || [])].map(matCard).join('') + (s.tool ? toolCard(s.tool) : '');
+  return `<p class="eyebrow">कार्यशालाको दिन · ${tm(s.start, s.end)} · ${s.mats.map(id => M[id].short).join(', ')}</p>
+    <h1>सत्र ${s.n}: ${s.title}</h1>
+    <div class="actions"><button class="btn toggle-done" data-sess="${s.id}" aria-pressed="${done.has(s.id)}">${done.has(s.id) ? '✓ सत्र पूरा भयो' : 'सत्र पूरा भएको चिनो लगाउनुहोस्'}</button></div>
+    ${planDl(s.plan, it, s.mats)}
+    <h3>यो सत्रका लागि सामग्री</h3><div class="related">${rel}</div>
+    <div class="prose">${matBody(s.mats)}</div>
+    ${s.tool === 'calc' ? calcHtml() : ''}
+    <nav class="pager">${prev ? `<a class="card" href="#${prev.id}"><span class="s">← अघिल्लो</span><b>सत्र ${prev.n}: ${prev.title}</b></a>` : '<span></span>'}${next ? `<a class="card" href="#${next.id}" style="text-align:right"><span class="s">अर्को →</span><b>सत्र ${next.n}: ${next.title}</b></a>` : ''}</nav>`;
+}
+function vOther(id) {
+  const o = DATA.OTHER[id], it = itemOf(id);
+  const rel = o.mats.map(matCard).join('') + (o.assess ? assessCard(o.assess) : '') + (o.tool ? toolCard(o.tool) : '');
+  return `<p class="eyebrow">कार्यशालाको दिन · ${tm(it.start, it.end)}</p><h1>${o.title}</h1>
+    ${planDl(o.plan, it, o.mats)}
+    <h3>यो सत्रका लागि सामग्री</h3><div class="related">${rel}</div>
+    ${o.tool === 'feedback' ? fbHtml() : ''}
+    <div class="prose">${matBody(o.mats)}</div>`;
+}
+function usersOf(id) {
+  const u = DATA.SESS.filter(s => s.mats.includes(id) || (s.refs || []).includes(id)).map(s => `<a href="#${s.id}">सत्र ${s.n}: ${s.title}</a>`);
+  Object.entries(DATA.OTHER).forEach(([k, o]) => { if (o.mats.includes(id)) u.push(`<a href="#${k}">${o.title}</a>`); });
+  return u.join(' · ');
+}
+function vResources() {
+  return `<p class="eyebrow">सिकाइ सामग्री</p><h1>जनप्रतिनिधिका लागि AI: सिकाइ सामग्री</h1>
+  <p class="meta">${DATA.INTRO}</p>
+  <h2 class="section-title">सामग्री १ देखि १२</h2><div class="related">${DATA.MATS.map(m => matCard(m.id)).join('')}</div>
+  <h2 class="section-title">अनलाइन औजार</h2><div class="related">${toolCard('calc')}${toolCard('feedback')}${assessCard('pre')}</div>
+  <h2 class="section-title">कार्ययोजना र पूरा पुस्तिका</h2><div class="related"><a class="card" href="#agenda"><span class="k">प्रशिक्षक र आयोजकका लागि</span><b>कार्यशाला कार्ययोजना</b><span class="s">परिचय, उद्देश्य, कार्यतालिका, मूल्याङ्कन</span></a><a class="card" href="#handbook"><span class="k">छाप्न / PDF</span><b>पूरा सहभागी पुस्तिका</b><span class="s">सामग्री १–१२ एकै पानामा</span></a></div>`;
+}
+function vMat(m) {
+  const tools = { m7: toolCard('calc'), m12: toolCard('feedback'), m11: assessCard('pre') }[m.id] || '';
+  return `<p class="eyebrow">सिकाइ सामग्री · ${m.short}</p><h1>${m.title}</h1>
+  <p class="meta">${usersOf(m.id)}</p>
+  ${tools ? `<div class="related">${tools}</div>` : ''}
+  <div class="prose">${m.html}</div>
+  ${m.id === 'm7' ? calcHtml() : ''}`;
+}
+function vAgenda() {
+  return `<p class="eyebrow">प्रशिक्षक, आयोजक र सहभागीका लागि</p><h1>कार्यशाला कार्ययोजना</h1>
+  <div class="actions"><button class="btn" data-print>छाप्नुहोस् / PDF</button></div><div class="prose">${DATA.AGENDA_HTML}</div>`;
+}
+function vHandbook() {
+  return `<p class="eyebrow">पूरा पुस्तिका</p><h1>जनप्रतिनिधिका लागि AI: सिकाइ सामग्री</h1>
+  <p class="meta">${DATA.INTRO}</p>
+  <div class="actions"><button class="btn primary" data-print>छाप्नुहोस् / PDF बनाउनुहोस्</button><span class="note">छाप्ने विन्डोमा "Save as PDF" छान्दा PDF बन्छ।</span></div>
+  <div class="prose">${DATA.MATS.map(m => `<section class="hb-mat"><h2 class="sec-h">${m.short}: ${m.title}</h2>${m.html}</section>`).join('')}</div>`;
+}
+function vCalc() {
+  return `<p class="eyebrow">सामग्री ७ · सत्र ६</p><h1>आयोजना छनौट क्याल्कुलेटर</h1>
+  <p class="meta">पृष्ठभूमि, माग, मापदण्ड र प्रम्प्टका लागि <a href="#m7">सामग्री ७: आयोजना छनौट अभ्यास पुस्तिका</a> हेर्नुहोस्।</p>${calcHtml()}`;
+}
+function vFeedback() {
+  return `<p class="eyebrow">सामग्री १२ · समापन</p><h1>पृष्ठपोषण फाराम</h1>${fbHtml()}`;
+}
+
+/* ---------- सामग्री ७ calculator ---------- */
+const BUDGET = 90, MIN_SMALL = 3, UPPER = 50, TARGET_MIN_PCT = 15;
+const DEM = [
+  { n: 1, name: 'भन्ज्याङसम्मको २.५ कि.मि. कृषि सडक ग्राभेल', cost: 32, hh: 140, t: false, route: false },
+  { n: 2, name: 'खानेपानी ट्याङ्की र पाइपलाइन मर्मत', cost: 14, hh: 48, t: false, route: false },
+  { n: 3, name: 'खोलामा मोटरबाटो झोलुङ्गे पुल (३ वटा वडा)', cost: 120, hh: 400, t: false, route: true },
+  { n: 4, name: 'वडा कार्यालय भवन विस्तार', cost: 25, hh: 0, t: false, route: false },
+  { n: 5, name: 'मन्दिर परिसरको पर्खाल र पाटी', cost: 8, hh: 60, t: false, route: false },
+  { n: 6, name: '३० जना महिलालाई सिलाई तालिम र विउ अनुदान', cost: 6, hh: 30, t: true, route: false },
+  { n: 7, name: '८०० मिटर सिँचाइ कुलो लाइनिङ', cost: 18, hh: 85, t: false, route: false },
+  { n: 8, name: 'फुटबल मैदान समतलीकरण', cost: 12, hh: 120, t: false, route: false },
+  { n: 9, name: 'पहिरो नियन्त्रणका लागि ग्याविन पर्खाल', cost: 15, hh: 22, t: false, route: false },
+  { n: 10, name: 'बजारको ३०० मिटर सडक कालोपत्रे', cost: 30, hh: 70, t: false, route: false },
+  { n: 11, name: 'स्वास्थ्य चौकीमा र्याम्प, रेलिङ र ज्येष्ठ नागरिकका लागि प्रतीक्षालय', cost: 4, hh: 0, t: true, route: false },
+  { n: 12, name: 'विभिन्न टोलका १० वटा गोरेटो र खुड्किला मर्मत', cost: 10, hh: 150, t: false, route: false },
+  { n: 13, name: 'वडा हुँदै जाने रणनीतिक सडकको स्तरोन्नति (प्रदेश/संघको क्षेत्राधिकार)', cost: null, hh: 0, t: false, route: true },
+];
+let scores = store.get('calc', {});
+function calcHtml() {
+  return `<section class="tool" id="calcTool"><h3>सामग्री ७ को क्याल्कुलेटर: आयोजना छनौट</h3>
   <p class="note">यो औजारले नियम र अङ्कका आधारमा सूची बनाउँछ। प्रत्येक माग (१३ वटा) को अङ्क टोलीले मापदण्ड अनुसार आफैँ दिनुहोस् (०–१००)। तपाईंको अन्तिम निर्णय र स्थानीय जानकारी नै प्रमुख हुन्।</p>
-  <div class="scroll"><table class="calc" id="calcTable">
-    <thead><tr><th>क्र.सं.</th><th>माग</th><th>लागत (रु. लाख)</th><th>लाभान्वित घरधुरी</th><th>लक्षित?</th><th>अङ्क (०–१००)</th><th>स्थिति</th></tr></thead>
-    <tbody id="calcBody"></tbody>
-  </table></div>
+  <div class="tbl"><table><thead><tr><th>क्र.सं.</th><th>माग</th><th>लागत (रु. लाख)</th><th>लाभान्वित घरधुरी</th><th>लक्षित?</th><th>अङ्क (०–१००)</th><th>स्थिति</th></tr></thead><tbody id="calcBody"></tbody></table></div>
   <div class="calc-sum">
-    <div><span>बजेट सीमा</span><strong>रु. <span id="cBudget">90</span> लाख</strong></div>
-    <div><span>छानिएको जम्मा</span><strong>रु. <span id="cTotal">0</span> लाख</strong></div>
-    <div><span>बाँकी</span><strong>रु. <span id="cLeft">90</span> लाख</strong></div>
-    <div><span>लक्षित कार्यक्रम</span><strong>रु. <span id="cTarget">0</span> लाख (<span id="cTargetPct">0</span>%)</strong></div>
+    <div><span class="l">बजेट सीमा</span><b>रु. ${dn(BUDGET)} लाख</b></div>
+    <div><span class="l">छानिएको जम्मा</span><b>रु. <span id="cTotal">०</span> लाख</b></div>
+    <div><span class="l">बाँकी</span><b>रु. <span id="cLeft">${dn(BUDGET)}</span> लाख</b></div>
+    <div><span class="l">लक्षित कार्यक्रम</span><b>रु. <span id="cTarget">०</span> लाख (<span id="cTargetPct">०</span>%)</b></div>
   </div>
   <p id="calcMsg" class="msg"></p>
-  <p class="small">नियम: रु. ३ लाखभन्दा सानो गैर-लक्षित आयोजना छैन। रु. ५० लाखभन्दा बढी वा एकभन्दा बढी वडा समेट्ने आयोजना र प्रदेश/संघको क्षेत्राधिकारका माग गाउँपालिका स्तरमा पठाइन्छ। लक्षित कार्यक्रम बजेटको कम्तीमा १५% (रु. १३.५ लाख) हुनुपर्छ।</p>
-  <div class="row"><button type="button" id="calcReset">रिसेट गर्नुहोस्</button></div>
-</section>
+  <p class="note">नियम: रु. ३ लाखभन्दा सानो गैर-लक्षित आयोजना छैन। रु. ५० लाखभन्दा बढी वा एकभन्दा बढी वडा समेट्ने आयोजना र प्रदेश/संघको क्षेत्राधिकारका माग गाउँपालिका स्तरमा पठाइन्छ। लक्षित कार्यक्रम बजेटको कम्तीमा १५% (रु. १३.५ लाख) हुनुपर्छ।</p>
+  <div class="actions"><button type="button" class="btn" id="calcReset">रिसेट गर्नुहोस्</button></div></section>`;
+}
+function num(v) { const x = parseFloat(v); return isNaN(x) ? null : x; }
+function compute() {
+  const rows = DEM.map(d => { const sc = num((scores[d.n] || {}).score); let tgt = (scores[d.n] || {}).t; if (tgt === undefined) tgt = d.t; return { d, score: sc, t: tgt, status: '' }; });
+  const pool = [];
+  rows.forEach(r => {
+    const d = r.d;
+    if (d.route || d.cost === null || d.cost > UPPER) { r.status = 'गाउँपालिका/माथिल्लो तहमा पठाउने'; return; }
+    if (!r.t && d.cost < MIN_SMALL) { r.status = 'रु. ३ लाखभन्दा सानो (टुक्रे)'; return; }
+    if (r.score === null) { r.status = 'अङ्क दिनुहोस्'; return; }
+    pool.push(r);
+  });
+  pool.sort((x, y) => y.score - x.score || x.d.n - y.d.n);
+  let used = 0;
+  pool.forEach(r => { if (used + r.d.cost <= BUDGET) { used += r.d.cost; r.status = 'छानियो'; } else r.status = 'बजेट बाहिर'; });
+  const tgtSum = rows.filter(r => r.status === 'छानियो' && r.t).reduce((s, r) => s + r.d.cost, 0);
+  return { rows, used, tgtSum };
+}
+function calcSummary() {
+  const c = compute();
+  c.rows.forEach(r => { const el = document.querySelector(`[data-st="${r.d.n}"]`); if (el) { el.textContent = r.status; el.className = r.status === 'छानियो' ? 'st-sel' : 'st-no'; } });
+  $('#cTotal').textContent = dn(c.used); $('#cLeft').textContent = dn(BUDGET - c.used);
+  $('#cTarget').textContent = dn(c.tgtSum); $('#cTargetPct').textContent = dn(Math.round(c.tgtSum / BUDGET * 100));
+  const msg = []; let bad = false;
+  if (c.tgtSum < BUDGET * TARGET_MIN_PCT / 100) { msg.push('लक्षित कार्यक्रम अपुग छ: कम्तीमा १५% (रु. १३.५ लाख) पुर्‍याउनुहोस्।'); bad = true; }
+  if (c.rows.some(r => r.score === null && !r.d.route && r.d.cost !== null && r.d.cost <= UPPER)) msg.push('सबै मागमा अङ्क दिनुहोस्।');
+  if (!msg.length) msg.push('सबै नियम पूरा भयो। जम्मा अङ्क आफैँ जोडेर पुष्टि गर्नुहोस्।');
+  $('#calcMsg').className = 'msg ' + (bad ? 'bad' : 'ok'); $('#calcMsg').textContent = msg.join(' ');
+}
+function mountCalc() {
+  const body = $('#calcBody'); if (!body) return;
+  const c = compute();
+  body.innerHTML = c.rows.map(r => { const d = r.d; return `<tr><td>${dn(d.n)}</td><td>${esc(d.name)}</td><td>${d.cost === null ? 'अनुमान नभएको' : dn(d.cost)}</td><td>${d.hh ? dn(d.hh) : '—'}</td>
+    <td><input type="checkbox" data-t="${d.n}" aria-label="लक्षित"${r.t ? ' checked' : ''}></td>
+    <td><input type="number" min="0" max="100" data-s="${d.n}" aria-label="अङ्क" value="${r.score === null ? '' : r.score}"></td><td data-st="${d.n}"></td></tr>`; }).join('');
+  calcSummary();
+}
+document.addEventListener('input', e => { const n = e.target.dataset && e.target.dataset.s; if (n) { scores[n] = scores[n] || {}; scores[n].score = e.target.value; store.set('calc', scores); calcSummary(); } });
+document.addEventListener('change', e => { const n = e.target.dataset && e.target.dataset.t; if (n) { scores[n] = scores[n] || {}; scores[n].t = e.target.checked; store.set('calc', scores); calcSummary(); } });
 
-    <section class="doc" id="s8"><h2 id="m-समगर-८-सरवजनक-पदम-रहर-ai-क-जममवर-परयग">सामग्री ८: सार्वजनिक पदमा
-रहेर AI को जिम्मेवार प्रयोग</h2>
-<p><strong>मूल मन्त्र: AI ले मस्यौदा गर्छ; निर्णय र हस्ताक्षर
-जनप्रतिनिधिकै।</strong></p>
-<div class="scroll"><table>
-<colgroup>
-<col style="width: 51%" />
-<col style="width: 48%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th><strong>गर्नुहोस्</strong></th>
-<th><strong>नगर्नुहोस्</strong></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>हरेक मिति, अङ्क, नाम र ऐनको उल्लेख आधिकारिक कागजातसँग भिडाउनुहोस्</td>
-<td>AI ले लेखेको कुरा पूरा नपढी सार्वजनिक नगर्नुहोस्, हस्ताक्षर नगर्नुहोस्</td>
-</tr>
-<tr class="even">
-<td>पाठ टाँस्नुअघि नाम, नागरिकता नम्बर, फोन नम्बर र ठेगाना हटाउनुहोस्</td>
-<td>नागरिकको व्यक्तिगत विवरण, गुनासो वा कार्यपालिकाको गोप्य निर्णय AI मा
-नहाल्नुहोस्</td>
-</tr>
-<tr class="odd">
-<td>चिठी र सिफारिसमा आधिकारिक ढाँचाकै प्रयोग गर्नुहोस्</td>
-<td>कसलाई सिफारिस, अनुदान वा आयोजना दिने भन्ने निर्णय AI लाई नसुम्पिनुहोस्</td>
-</tr>
-<tr class="even">
-<td>AI लाई "यसमा मैले के–के कुरा जाँच्नुपर्छ?" भनेर सोध्नुहोस्</td>
-<td>भर्खरका घटना, स्थानीय तथ्य वा बजेटका ठ्याक्कै अङ्कमा AI को भर नपर्नुहोस्</td>
-</tr>
-<tr class="odd">
-<td>महत्त्वपूर्ण मस्यौदा कर्मचारी, साथी वा प्रमुख प्रशासकीय अधिकृतलाई एकपटक हेर्न
-लगाउनुहोस्</td>
-<td>कसैको नक्कली तस्बिर, नक्कली भनाइ वा भ्रमपूर्ण पोस्ट नबनाउनुहोस्</td>
-</tr>
-<tr class="even">
-<td>सरल र स्थानीय भाषामा धेरै नागरिकसम्म पुग्न AI प्रयोग गर्नुहोस्</td>
-<td>कार्यालयको काममा गरिएको AI प्रयोग दलगत प्रचारमा नलगाउनुहोस्</td>
-</tr>
-<tr class="odd">
-<td>साझा मोबाइलमा AI खाताबाट लगआउट गर्नुहोस्</td>
-<td>पासवर्ड अरूसँग साट्नुहोस्</td>
-</tr>
-</tbody>
-</table></div>
-<p><strong>कानुनी आधार:</strong> नेपालको संविधानको धारा २८ (गोपनीयताको हक)
-· वैयक्तिक गोपनीयता ऐन, २०७५ · विद्युतीय कारोबार ऐन, २०६३ · स्थानीय सरकार
-सञ्चालन ऐन, २०७४ · राष्ट्रिय कृत्रिम बुद्धिमत्ता नीति, २०८२</p>
-<h3 id="m-घटन-छलफल-जडम">घटना छलफल (जोडीमा)</h3>
-<ol type="1">
-<li>एक जना वडाध्यक्षले सिफारिस लेखाउन नागरिकको पूरा नाम, नागरिकता नम्बर र जग्गा
-विवादको विवरण AI मा हाल्नुभयो। कहाँ चुक भयो? यसको सट्टा के गर्नुपर्थ्यो?</li>
-<li>AI ले लेखेको प्रेस विज्ञप्तिमा गाउँपालिकाको बजेटको अङ्क गलत आयो र फेसबुकमा पनि
-राखियो। अब जिम्मेवार को? तुरुन्त के गर्नुपर्छ?</li>
-</ol>
-<h3 id="m-गलत-पतत-लगउनहस-ai-ल-लखक-य-सचनम-३-वट-गलत-छन">गल्ती पत्ता लगाउनुहोस्:
-AI ले लेखेको यो सूचनामा ३ वटा गल्ती छन्</h3>
-<blockquote>
-<p><strong>सूचना</strong></p>
-<p>……………… पालिका, वडा नं. ४ कार्यालयको आयोजनामा राष्ट्रिय सरसफाइ अभियान
-अन्तर्गत २०८३ कार्तिक ३२ गते बिहान ८ बजेदेखि वडाका सबै टोलमा सरसफाइ कार्यक्रम
-सञ्चालन गरिने भएकोले सम्पूर्ण बासिन्दाहरूलाई सहभागी हुन अनुरोध गरिन्छ। स्थानीय
-सरसफाइ ऐन, २०८० अनुसार सहभागी नहुने घरधुरीलाई जरिवाना हुनेछ।</p>
-<p>वडाध्यक्ष</p>
-</blockquote>
-<p>गल्ती १: ______________ गल्ती २: ______________ गल्ती ३:
-______________</p>
-<h2 id="m-समगर-९-ai-परयग-परतबदधत-पतर">सामग्री ९: AI प्रयोग प्रतिबद्धता
-पत्र</h2>
-<p>हामी जनप्रतिनिधिहरू आफ्नो सार्वजनिक जिम्मेवारी निर्वाह गर्दा AI प्रयोग गर्ने
-क्रममा देहायका कुराहरू पालना गर्ने प्रतिबद्धता व्यक्त गर्दछौं:</p>
-<ol type="1">
-<li>AI ले तयार पारेको हरेक मस्यौदा प्रयोग, हस्ताक्षर वा प्रकाशन गर्नुअघि राम्रोसँग
-पढ्ने र जाँच्नेछौं।</li>
-<li>नागरिकको व्यक्तिगत वा गोप्य विवरण कहिल्यै AI मा हाल्ने छैनौं।</li>
-<li>सबै निर्णय हामी आफैं गर्नेछौं; AI लाई तयारीका लागि सहयोगीका रूपमा मात्र प्रयोग
-गर्नेछौं।</li>
-<li>आधिकारिक ढाँचा प्रयोग गर्नेछौं र ऐन, मिति तथा अङ्क आधिकारिक स्रोतबाट भिडाएर
-मात्र प्रयोग गर्नेछौं।</li>
-<li>महिला, दलित, पछाडि परेका वर्ग र स्थानीय भाषा बोल्ने नागरिकसहित सबैलाई समान
-रूपमा सेवा पुर्याउन AI प्रयोग गर्नेछौं।</li>
-<li>कसैका बारेमा गलत वा भ्रमपूर्ण सामग्री बनाउन AI प्रयोग गर्ने छैनौं।</li>
-<li>"………… AI सहायता" समूहमार्फत साथीहरूसँग राम्रा अभ्यास साटासाट गर्नेछौं।</li>
-</ol>
-<p>मिति: २०८३ कात्तिक २७</p>
-<div class="scroll"><table>
-<colgroup>
-<col style="width: 19%" />
-<col style="width: 23%" />
-<col style="width: 30%" />
-<col style="width: 26%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th><strong>क्र.सं.</strong></th>
-<th><strong>नामथर</strong></th>
-<th><strong>पद र वडा</strong></th>
-<th><strong>हस्ताक्षर</strong></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>१</td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td>२</td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="odd">
-<td>३</td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-</tbody>
-</table></div>
-<p><em>(छाप्दा सहभागी संख्या अनुसार तालिकाको लहर थप्नुहोस्।)</em></p>
-<h2 id="m-समगर-१०-मर-३०-दन-ai-करययजन">सामग्री १०: मेरो ३० दिने AI
-कार्ययोजना</h2>
-<p>नाम: ____________ पद र वडा: ____________</p>
-<div class="scroll"><table>
-<colgroup>
-<col style="width: 31%" />
-<col style="width: 16%" />
-<col style="width: 26%" />
-<col style="width: 25%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th><strong>AI प्रयोग गरेर गर्ने काम</strong></th>
-<th><strong>कति पटक</strong></th>
-<th><strong>नतिजा कसले जाँच्ने</strong></th>
-<th><strong>कहिलेसम्म (मिति)</strong></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>१.</td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td>२.</td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="odd">
-<td>३.</td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-</tbody>
-</table></div>
-<p>मैले AI मा कहिल्यै नहाल्ने एउटा कुरा: ______________________________</p>
-<p>३० दिनपछिको पुनर्ताजगी बैठकअघि आफूले गरेको एउटा काम भाइबर समूहमा साझा
-गर्नुहोस्।</p>
-<h2 id="m-समगर-११-परशनवल-करयशलअघ-र-पछ">सामग्री ११: प्रश्नावली (कार्यशालाअघि र
-पछि)</h2>
-<p>सहभागी नम्बर: ______ ☐ कार्यशालाअघि ☐ कार्यशालापछि</p>
-<ol type="1">
-<li>AI च्याट उपकरणले सधैं सही उत्तर दिन्छ। ☐ ठिक ☐ गलत</li>
-<li>तलकामध्ये AI मा हाल्न सुरक्षित कुन हो?
-<ol type="1">
-<li>(क) नागरिकको नाम र नागरिकता नम्बर</li>
-<li>(ख) व्यक्तिगत विवरण नभएको सार्वजनिक सूचनाको मस्यौदा</li>
-<li>(ग) गाउँ कार्यपालिकाको गोप्य निर्णय</li>
-</ol></li>
-<li>कुन प्रम्प्टले राम्रो उत्तर दिन्छ?
-<ol type="1">
-<li>(क) सूचना लेख।</li>
-<li>(ख) तपाईं गाउँपालिकाको सञ्चार अधिकृत हो। वडा नं. ४ मा हुने सरसफाइ अभियानको
-सूचना मिति र स्थानसहित १०० शब्दभित्र सरल भाषामा लेखिदिनुहोस्।</li>
-</ol></li>
-<li>AI ले लेखेको सूचनामा गलत मिति छापियो भने जिम्मेवार को हुन्छ?
-<ol type="1">
-<li>(क) AI बनाउने कम्पनी</li>
-<li>(ख) सूचना जारी गर्ने जनप्रतिनिधि वा कार्यालय</li>
-<li>(ग) कोही पनि होइन</li>
-</ol></li>
-<li>आफ्नो पदको कुन काममा AI ले समय बचाउन सक्छ? एउटा उदाहरण लेख्नुहोस्:
-______________________</li>
-</ol>
-<h2 id="m-समगर-१२-पषठपषण-फरम">सामग्री १२: पृष्ठपोषण फाराम</h2>
-<p>हरेक पङ्क्तिमा एउटा कोठामा ठिक चिन्ह लगाउनुहोस् (१ = कमजोर, ५ = धेरै
-राम्रो)।</p>
-<div class="scroll"><table>
-<colgroup>
-<col style="width: 70%" />
-<col style="width: 5%" />
-<col style="width: 5%" />
-<col style="width: 5%" />
-<col style="width: 6%" />
-<col style="width: 5%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th><strong>प्रश्न</strong></th>
-<th><strong>१</strong></th>
-<th><strong>२</strong></th>
-<th><strong>३</strong></th>
-<th><strong>४</strong></th>
-<th><strong>५</strong></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>कार्यशाला मेरो कामका लागि उपयोगी थियो</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td>सिकाइको गति मलाई ठिक्क थियो</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="odd">
-<td>भाषा बुझ्न सजिलो थियो</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td>आफैँ गरेर सिक्ने पर्याप्त अवसर मिल्यो</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="odd">
-<td>आयोजना छनौट अभ्यास वास्तविक जस्तो लाग्यो</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td>सहजकर्ता र सहयोगीबाट राम्रो सहयोग मिल्यो</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-</tbody>
-</table></div>
-<ol type="1">
-<li>कुन सत्र सबैभन्दा उपयोगी लाग्यो, र किन? ______________________</li>
-<li>अर्को पटक के सुधार गर्नुपर्छ? ______________________</li>
-<li>तपाईं सबैभन्दा पहिले कुन काम AI बाट गर्नुहुन्छ? ______________________</li>
-<li>यो कार्यशाला अरू जनप्रतिनिधिलाई पनि सिफारिस गर्नुहुन्छ? ☐ गर्छु ☐ गर्दिनँ</li>
-</ol>
-</section>
-    
-<section class="tool" id="feedback">
-  <h3>सामग्री १२: पृष्ठपोषण फाराम</h3>
+/* ---------- सामग्री १२ feedback form ---------- */
+const QS = ['कार्यशाला मेरो कामका लागि उपयोगी थियो', 'सिकाइको गति मलाई ठिक्क थियो', 'भाषा बुझ्न सजिलो थियो', 'आफैँ गरेर सिक्ने पर्याप्त अवसर मिल्यो', 'आयोजना छनौट अभ्यास वास्तविक जस्तो लाग्यो', 'सहजकर्ता र सहयोगीबाट राम्रो सहयोग मिल्यो'];
+function fbHtml() {
+  const rates = QS.map((q, i) => `<tr><td>${esc(q)}</td>${[1, 2, 3, 4, 5].map(k => `<td><input type="radio" name="q${i}" value="${k}" aria-label="${dn(k)}" required></td>`).join('')}</tr>`).join('');
+  return `<section class="tool" id="fbTool"><h3>सामग्री १२: पृष्ठपोषण फाराम (अनलाइन)</h3>
   <p class="note">हरेक पङ्क्तिमा एउटा मात्र विकल्प छान्नुहोस् (१ = कमजोर, ५ = धेरै राम्रो)। इभेन्ट कोड प्रशिक्षकबाट पाउनुहोस्।</p>
   <form id="fbForm">
     <label class="f">इभेन्ट कोड<input id="fbCode" type="text" required maxlength="20" autocomplete="off"></label>
-    <div class="scroll"><table class="rate">
-      <thead><tr><th>प्रश्न</th><th>१</th><th>२</th><th>३</th><th>४</th><th>५</th></tr></thead>
-      <tbody id="fbRates"></tbody>
-    </table></div>
+    <div class="tbl"><table class="rate"><thead><tr><th>प्रश्न</th><th>१</th><th>२</th><th>३</th><th>४</th><th>५</th></tr></thead><tbody>${rates}</tbody></table></div>
     <label class="f">कुन सत्र सबैभन्दा उपयोगी लाग्यो, र किन?<textarea id="fbBest" rows="2" maxlength="600"></textarea></label>
     <label class="f">अर्को पटक के सुधार गर्नुपर्छ?<textarea id="fbImprove" rows="2" maxlength="600"></textarea></label>
     <label class="f">तपाईं सबैभन्दा पहिले कुन काम AI बाट गर्नुहुन्छ?<textarea id="fbFirst" rows="2" maxlength="600"></textarea></label>
     <label class="chk"><input id="fbRec" type="checkbox"> यो कार्यशाला अरू जनप्रतिनिधिलाई सिफारिस गर्छु</label>
-    <div class="row"><button class="ok" type="submit" id="fbSend">पठाउनुहोस्</button></div>
-    <p id="fbMsg" class="msg hide"></p>
-  </form>
-</section>
-
-  </div>
-</main>
-<script src="../account.js"></script>
-<script>
-(function () {
-  function $(id) { return document.getElementById(id); }
-  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
-  var BUDGET = 90, MIN_SMALL = 3, UPPER = 50, TARGET_MIN_PCT = 15;
-  var DEM = [
-    {n:1,  name:"भन्ज्याङसम्मको २.५ कि.मि. कृषि सडक ग्राभेल", cost:32, hh:140, t:false, route:false},
-    {n:2,  name:"खानेपानी ट्याङ्की र पाइपलाइन मर्मत", cost:14, hh:48, t:false, route:false},
-    {n:3,  name:"खोलामा मोटरबाटो झोलुङ्गे पुल (३ वटा वडा)", cost:120, hh:400, t:false, route:true},
-    {n:4,  name:"वडा कार्यालय भवन विस्तार", cost:25, hh:0, t:false, route:false},
-    {n:5,  name:"मन्दिर परिसरको पर्खाल र पाटी", cost:8, hh:60, t:false, route:false},
-    {n:6,  name:"३० जना महिलालाई सिलाई तालिम र विउ अनुदान", cost:6, hh:30, t:true, route:false},
-    {n:7,  name:"८०० मिटर सिँचाइ कुलो लाइनिङ", cost:18, hh:85, t:false, route:false},
-    {n:8,  name:"फुटबल मैदान समतलीकरण", cost:12, hh:120, t:false, route:false},
-    {n:9,  name:"पहिरो नियन्त्रणका लागि ग्याविन पर्खाल", cost:15, hh:22, t:false, route:false},
-    {n:10, name:"बजारको ३०० मिटर सडक कालोपत्रे", cost:30, hh:70, t:false, route:false},
-    {n:11, name:"स्वास्थ्य चौकीमा र्याम्प, रेलिङ र ज्येष्ठ नागरिकका लागि प्रतीक्षालय", cost:4, hh:0, t:true, route:false},
-    {n:12, name:"विभिन्न टोलका १० वटा गोरेटो र खुड्किला मर्मत", cost:10, hh:150, t:false, route:false},
-    {n:13, name:"वडा हुँदै जाने रणनीतिक सडकको स्तरोन्नति (प्रदेश/संघको क्षेत्राधिकार)", cost:null, hh:0, t:false, route:true}
-  ];
-  var scores = {};
-  function num(v) { var x = parseFloat(v); return isNaN(x) ? null : x; }
-  function compute() {
-    var rows = DEM.map(function (d) {
-      var sc = num((scores[d.n] || {}).score), tgt = (scores[d.n] || {}).t;
-      if (tgt === undefined) tgt = d.t;
-      return { d: d, score: sc, t: tgt, status: "" };
-    });
-    var pool = [];
-    rows.forEach(function (r) {
-      var d = r.d;
-      if (d.route || d.cost === null || d.cost > UPPER) { r.status = "गाउँपालिका/माथिल्लो तहमा पठाउने"; return; }
-      if (!r.t && d.cost < MIN_SMALL) { r.status = "रु. ३ लाखभन्दा सानो (टुक्रे)"; return; }
-      if (r.score === null) { r.status = "अङ्क दिनुहोस्"; return; }
-      pool.push(r);
-    });
-    pool.sort(function (x, y) { return y.score - x.score || x.d.n - y.d.n; });
-    var used = 0;
-    pool.forEach(function (r) {
-      if (used + r.d.cost <= BUDGET) { used += r.d.cost; r.status = "छानियो"; }
-      else { r.status = "बजेट बाहिर"; }
-    });
-    var tgtSum = rows.filter(function (r) { return r.status === "छानियो" && r.t; })
-      .reduce(function (s, r) { return s + r.d.cost; }, 0);
-    return { rows: rows, used: used, tgtSum: tgtSum };
+    <div class="actions"><button class="btn primary" type="submit" id="fbSend">पठाउनुहोस्</button></div>
+    <p id="fbMsg" class="msg" hidden></p>
+  </form></section>`;
+}
+function fbMsg(text, ok) { const m = $('#fbMsg'); m.textContent = text; m.className = 'msg ' + (ok ? 'ok' : 'bad'); m.hidden = false; }
+document.addEventListener('submit', async e => {
+  if (e.target.id !== 'fbForm') return;
+  e.preventDefault();
+  const ratings = [];
+  for (let i = 0; i < QS.length; i++) {
+    const r = document.querySelector(`input[name="q${i}"]:checked`);
+    if (!r) { fbMsg('सबै प्रश्नमा एउटा विकल्प छान्नुहोस्।', false); return; }
+    ratings.push(parseInt(r.value, 10));
   }
-  function render() {
-    var c = compute();
-    $("calcBody").innerHTML = c.rows.map(function (r) {
-      var d = r.d, sel = r.status === "छानियो";
-      return '<tr><td>' + d.n + '</td><td>' + esc(d.name) + '</td><td>' + (d.cost === null ? "अनुमान नभएको" : d.cost) +
-        '</td><td>' + (d.hh || "—") + '</td>' +
-        '<td><input type="checkbox" data-t="' + d.n + '"' + (r.t ? " checked" : "") + '></td>' +
-        '<td><input type="number" min="0" max="100" data-s="' + d.n + '" value="' + (r.score === null ? "" : r.score) + '"></td>' +
-        '<td class="' + (sel ? "st-sel" : "st-no") + '">' + esc(r.status) + '</td></tr>';
-    }).join("");
-    var tPct = Math.round(c.tgtSum / BUDGET * 100);
-    $("cTotal").textContent = c.used;
-    $("cLeft").textContent = BUDGET - c.used;
-    $("cTarget").textContent = c.tgtSum;
-    $("cTargetPct").textContent = tPct;
-    var msg = [], bad = false;
-    if (c.tgtSum < BUDGET * TARGET_MIN_PCT / 100) { msg.push("लक्षित कार्यक्रम अपुग छ: कम्तीमा १५% (रु. १३.५ लाख) पुर्‍याउनुहोस्।"); bad = true; }
-    if (c.rows.some(function (r) { return r.score === null && !r.d.route && r.d.cost !== null && r.d.cost <= UPPER; })) msg.push("सबै मागमा अङ्क दिनुहोस्।");
-    if (!msg.length) msg.push("सबै नियम पूरा भयो। जम्मा अङ्क आफैँ जोडेर पुष्टि गर्नुहोस्।");
-    $("calcMsg").className = "msg " + (bad ? "bad" : "ok");
-    $("calcMsg").textContent = msg.join(" ");
-  }
-  $("calcBody").addEventListener("input", function (e) {
-    var n = e.target.dataset.s;
-    if (n) { scores[n] = scores[n] || {}; scores[n].score = e.target.value; render(); }
-  });
-  $("calcBody").addEventListener("change", function (e) {
-    var n = e.target.dataset.t;
-    if (n) { scores[n] = scores[n] || {}; scores[n].t = e.target.checked; render(); }
-  });
-  $("calcReset").addEventListener("click", function () { scores = {}; render(); });
+  const btn = $('#fbSend'); btn.disabled = true;
+  try {
+    await WS.init();
+    const res = await WS.submitFeedback({
+      event_code: $('#fbCode').value.trim().toUpperCase(), ratings,
+      best_session: $('#fbBest').value.trim(), improve: $('#fbImprove').value.trim(),
+      first_ai_use: $('#fbFirst').value.trim(), recommend: $('#fbRec').checked,
+    });
+    if (res.error) { fbMsg('पठाउन सकिएन: ' + res.error.message, false); btn.disabled = false; return; }
+    $('#fbForm').reset();
+    fbMsg('धन्यवाद! तपाईंको पृष्ठपोषण सुरक्षित भयो।', true);
+  } catch (err) { fbMsg('पठाउन सकिएन। इन्टरनेट जाँच गरी फेरि प्रयास गर्नुहोस्।', false); }
+  btn.disabled = false;
+});
 
-  render();
+/* ---------- routing (same access rule as the employee materials) ---------- */
+let MATERIALS_OK = false;
+function gateView() {
+  return `<div class="wrap" style="padding-top:20px"><p class="eyebrow">सामग्री निजी छ</p><h1>सामग्री हेर्न खाता चाहिन्छ</h1>
+  <p class="meta">यो सामग्री अहिले प्रशिक्षकले सार्वजनिक गरेका छैनन्। स्वीकृत सहभागीहरूले साइन इन गरेर हेर्न सक्छन्।</p>
+  <p><a class="btn primary" href="../login.html?next=${encodeURIComponent(location.pathname + location.hash)}">साइन इन / नयाँ दर्ता</a></p></div>`;
+}
+function route() {
+  if (!MATERIALS_OK) { $('#view').innerHTML = gateView(); renderSide('home'); return; }
+  const id = (location.hash || '#home').slice(1) || 'home';
+  let html, cur = id;
+  if (S[id]) html = vSession(S[id]);
+  else if (DATA.OTHER[id]) html = vOther(id);
+  else if (M[id]) html = vMat(M[id]);
+  else if (id === 'resources') html = vResources();
+  else if (id === 'agenda') html = vAgenda();
+  else if (id === 'handbook') html = vHandbook();
+  else if (id === 'calc') html = vCalc();
+  else if (id === 'feedback') html = vFeedback();
+  else { html = vHome(); cur = 'home'; }
+  $('#view').innerHTML = html;
+  mountCalc();
+  renderSide(cur);
+  closeSide();
+  window.scrollTo({ top: 0 });
+  store.set('last', cur);
+}
 
-  // Feedback form (section 12)
-  var QS = ["कार्यशाला मेरो कामका लागि उपयोगी थियो","सिकाइको गति मलाई ठिक्क थियो","भाषा बुझ्न सजिलो थियो","आफैँ गरेर सिक्ने पर्याप्त अवसर मिल्यो","आयोजना छनौट अभ्यास वास्तविक जस्तो लाग्यो","सहजकर्ता र सहयोगीबाट राम्रो सहयोग मिल्यो"];
-  $("fbRates").innerHTML = QS.map(function (q, i) {
-    var cells = ""; for (var k = 1; k <= 5; k++) cells += '<td><input type="radio" name="q' + i + '" value="' + k + '" required></td>';
-    return '<tr><td>' + esc(q) + '</td>' + cells + '</tr>';
-  }).join("");
-  function fbMsg(text, ok) { var m = $("fbMsg"); m.textContent = text; m.className = "msg " + (ok ? "ok" : "bad"); m.classList.remove("hide"); }
-  $("fbForm").addEventListener("submit", async function (e) {
-    e.preventDefault();
-    var ratings = [];
-    for (var i = 0; i < QS.length; i++) {
-      var r = document.querySelector('input[name="q' + i + '"]:checked');
-      if (!r) { fbMsg("सबै प्रश्नमा एउटा विकल्प छान्नुहोस्।", false); return; }
-      ratings.push(parseInt(r.value, 10));
-    }
-    var btn = $("fbSend"); btn.disabled = true;
-    try {
-      await WS.init();
-      var res = await WS.submitFeedback({
-        event_code: $("fbCode").value.trim().toUpperCase(),
-        ratings: ratings,
-        best_session: $("fbBest").value.trim(),
-        improve: $("fbImprove").value.trim(),
-        first_ai_use: $("fbFirst").value.trim(),
-        recommend: $("fbRec").checked
-      });
-      if (res.error) { fbMsg("पठाउन सकिएन: " + res.error.message, false); btn.disabled = false; return; }
-      $("fbForm").reset();
-      fbMsg("धन्यवाद! तपाईंको पृष्ठपोषण सुरक्षित भयो।", true);
-    } catch (err) { fbMsg("पठाउन सकिएन। इन्टरनेट जाँच गरी फेरि प्रयास गर्नुहोस्।", false); }
-    btn.disabled = false;
-  });
+/* ---------- interactions ---------- */
+function toast(t) { const el = $('#toast'); el.textContent = t; el.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => el.hidden = true, 2200); }
+function selectText(el) { const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+async function copyText(text, el) {
+  try { await navigator.clipboard.writeText(text); toast('प्रतिलिपि भयो'); }
+  catch (e) { if (el) selectText(el); toast('पाठ छानिएको छ; लामो थिचेर Copy गर्नुहोस्'); }
+}
+document.addEventListener('click', e => {
+  const c = e.target.closest('.copy');
+  if (c) { const pre = document.getElementById(c.dataset.copyId); copyText(pre.textContent, pre); return; }
+  const m = e.target.closest('.mini-copy');
+  if (m) { copyText(m.dataset.copy, m.previousElementSibling); return; }
+  const t = e.target.closest('.toggle-done');
+  if (t) { const id = t.dataset.sess; done.has(id) ? done.delete(id) : done.add(id); store.set('done', [...done]); route(); return; }
+  if (e.target.closest('[data-print]')) { window.print(); return; }
+  if (e.target.closest('#calcReset')) { scores = {}; store.set('calc', scores); mountCalc(); return; }
+  if (!e.target.closest('.search')) $('#results').hidden = true;
+});
 
-  // Gate: same rule as the employee materials (public toggle, approved participant, or trainer).
-  (async function () {
-    var ok = false;
-    try { await WS.init(); ok = (await WS.materialsPublic()) || WS.isApproved() || WS.isTrainer(); } catch (e) { ok = false; }
-    $("gate").classList.toggle("hide", ok);
-    $("content").classList.toggle("hide", !ok);
-  })();
+/* search */
+const INDEX = [];
+(function buildIndex() {
+  const strip = h => { const d = document.createElement('div'); d.innerHTML = h; return d.textContent.replace(/\s+/g, ' '); };
+  DATA.SESS.forEach(s => INDEX.push({ id: s.id, title: 'सत्र ' + s.n + ': ' + s.title, text: strip(s.plan.method + ' ' + s.plan.outcome) }));
+  DATA.MATS.forEach(m => INDEX.push({ id: m.id, title: m.short + ': ' + m.title, text: strip(m.html) }));
+  Object.entries(DATA.OTHER).forEach(([id, o]) => INDEX.push({ id, title: o.title, text: strip(o.plan.method + ' ' + o.plan.outcome) }));
+  INDEX.push({ id: 'agenda', title: 'कार्यशाला कार्ययोजना', text: strip(DATA.AGENDA_HTML) });
+  INDEX.push({ id: 'calc', title: 'आयोजना छनौट क्याल्कुलेटर', text: DEM.map(d => d.name).join(' ') });
+  INDEX.push({ id: 'feedback', title: 'पृष्ठपोषण फाराम', text: QS.join(' ') });
 })();
+$('#q').addEventListener('input', e => {
+  const q = e.target.value.trim().toLowerCase(), box = $('#results');
+  if (q.length < 2) { box.hidden = true; return; }
+  const hits = [];
+  for (const it of INDEX) {
+    const i = it.text.toLowerCase().indexOf(q), inT = it.title.toLowerCase().includes(q);
+    if (i < 0 && !inT) continue;
+    hits.push({ ...it, snip: i < 0 ? '' : '…' + it.text.slice(Math.max(0, i - 40), i + 70) + '…', score: inT ? 0 : 1 });
+  }
+  hits.sort((a, b) => a.score - b.score);
+  box.innerHTML = hits.length ? hits.slice(0, 12).map(h => `<a href="#${h.id}"><b>${h.title}</b><small></small></a>`).join('') : '<p style="padding:8px 10px;margin:0;color:var(--muted)">केही भेटिएन।</p>';
+  box.querySelectorAll('small').forEach((s, k) => s.textContent = hits[k].snip);
+  box.hidden = false;
+});
+$('#results').addEventListener('click', e => { if (e.target.closest('a')) { $('#results').hidden = true; $('#q').value = ''; } });
+
+/* drawer */
+function closeSide() { $('#side').classList.remove('open'); $('#menuBtn').setAttribute('aria-expanded', 'false'); }
+$('#menuBtn').addEventListener('click', () => { const o = $('#side').classList.toggle('open'); $('#menuBtn').setAttribute('aria-expanded', String(o)); });
+
+window.addEventListener('hashchange', route);
+(async () => {
+  try { await WS.init(); MATERIALS_OK = (await WS.materialsPublic()) || WS.isApproved() || WS.isTrainer(); }
+  catch (e) { MATERIALS_OK = false; }
+  route();
+})();
+setInterval(() => {
+  if (!MATERIALS_OK) return;
+  const id = (location.hash || '#home').slice(1);
+  renderSide(S[id] || DATA.OTHER[id] || M[id] ? id : (id || 'home'));
+  if (!location.hash || id === 'home') { const y = scrollY; $('#view').innerHTML = vHome(); scrollTo(0, y); }
+}, 60000);
 </script>
 </body>
 </html>
