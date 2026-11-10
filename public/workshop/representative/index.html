@@ -211,7 +211,7 @@ td.st-sel { color: var(--ok); font-weight: 700 } td.st-no { color: var(--accent)
 </header>
 <div class="shell">
   <nav class="side" id="side" aria-label="कार्यतालिका"></nav>
-  <main id="main"><div class="wrap" id="view"></div></main>
+  <main id="main"><div class="wrap" id="view"><p class="eyebrow" style="margin-top:20px">लोड हुँदैछ…</p></div></main>
 </div>
 <div class="toast" id="toast" hidden></div>
 
@@ -599,12 +599,36 @@ function closeSide() { $('#side').classList.remove('open'); $('#menuBtn').setAtt
 $('#menuBtn').addEventListener('click', () => { const o = $('#side').classList.toggle('open'); $('#menuBtn').setAttribute('aria-expanded', String(o)); });
 
 window.addEventListener('hashchange', route);
-(async () => {
-  try { await WS.init(); MATERIALS_OK = (await WS.materialsPublic()) || WS.isApproved() || WS.isTrainer(); }
-  catch (e) { MATERIALS_OK = false; }
-  try { await applyEvent(); } catch (e) {}
+/* Start-up. Never leave the page blank: show "loading" at once, give the database a few seconds,
+   and if it does not answer, say so with a retry button. Event details (organiser, place, dates)
+   are filled in after the first draw so they never hold the page back. */
+const withTimeout = (pr, ms) => Promise.race([pr, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
+const LOADING = '<p class="eyebrow" style="margin-top:20px">लोड हुँदैछ…</p>';
+function slowView() {
+  return `<div class="wrap" style="padding-top:20px"><p class="eyebrow">जडानमा ढिलाइ</p><h1>सामग्री लोड हुन सकेन</h1>
+  <p class="meta">सर्भरसँगको जडान ढिलो छ वा टुटेको छ। इन्टरनेट जाँचेर फेरि प्रयास गर्नुहोस्।</p>
+  <p><button class="btn primary" data-retry>फेरि प्रयास गर्नुहोस्</button></p></div>`;
+}
+let EVENT_DONE = false;
+async function start() {
+  $('#view').innerHTML = LOADING;
+  let ok;
+  try {
+    await withTimeout(WS.init(), 7000);
+    ok = (await withTimeout(WS.materialsPublic(), 7000)) || WS.isApproved() || WS.isTrainer();
+  } catch (e) { ok = e && e.message === 'timeout' ? null : false; }
+  if (ok === null) { $('#view').innerHTML = slowView(); renderSide('home'); return; }
+  MATERIALS_OK = ok;
   route();
-})();
+  if (EVENT_DONE) return;
+  try {
+    await withTimeout(applyEvent(), 7000);
+    EVENT_DONE = true;
+    const y = scrollY; route(); scrollTo(0, y);
+  } catch (e) {}
+}
+document.addEventListener('click', e => { if (e.target.closest('[data-retry]')) start(); });
+start();
 setInterval(() => {
   if (!MATERIALS_OK) return;
   const id = (location.hash || '#home').slice(1);
