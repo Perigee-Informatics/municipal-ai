@@ -14,6 +14,21 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_settings: {
+        Row: {
+          key: string
+          value: boolean
+        }
+        Insert: {
+          key: string
+          value?: boolean
+        }
+        Update: {
+          key?: string
+          value?: boolean
+        }
+        Relationships: []
+      }
       assessment_results: {
         Row: {
           age_group: string | null
@@ -23,11 +38,13 @@ export type Database = {
           gender: string | null
           id: string
           max_score: number | null
+          question_ids: number[] | null
           score: number | null
           seconds: number | null
           session_code: string | null
           submitted_at: string | null
           test: string
+          user_id: string | null
         }
         Insert: {
           age_group?: string | null
@@ -37,11 +54,13 @@ export type Database = {
           gender?: string | null
           id?: string
           max_score?: number | null
+          question_ids?: number[] | null
           score?: number | null
           seconds?: number | null
           session_code?: string | null
           submitted_at?: string | null
           test: string
+          user_id?: string | null
         }
         Update: {
           age_group?: string | null
@@ -51,11 +70,137 @@ export type Database = {
           gender?: string | null
           id?: string
           max_score?: number | null
+          question_ids?: number[] | null
           score?: number | null
           seconds?: number | null
           session_code?: string | null
           submitted_at?: string | null
           test?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      events: {
+        Row: {
+          address: string | null
+          code: string
+          created_at: string
+          event_dates: string[]
+          id: string
+          name: string
+          organized_by: string | null
+          package_id: string | null
+          post_answers: boolean
+          post_open: boolean
+          pre_answers: boolean
+          pre_open: boolean
+          question_ids: number[]
+        }
+        Insert: {
+          address?: string | null
+          code: string
+          created_at?: string
+          event_dates?: string[]
+          id?: string
+          name: string
+          organized_by?: string | null
+          package_id?: string | null
+          post_answers?: boolean
+          post_open?: boolean
+          pre_answers?: boolean
+          pre_open?: boolean
+          question_ids?: number[]
+        }
+        Update: {
+          address?: string | null
+          code?: string
+          created_at?: string
+          event_dates?: string[]
+          id?: string
+          name?: string
+          organized_by?: string | null
+          package_id?: string | null
+          post_answers?: boolean
+          post_open?: boolean
+          pre_answers?: boolean
+          pre_open?: boolean
+          question_ids?: number[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "training_packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          age_group: string | null
+          created_at: string
+          education: string | null
+          event_id: string | null
+          full_name: string
+          gender: string | null
+          id: string
+          office: string | null
+          role: string
+          status: string
+        }
+        Insert: {
+          age_group?: string | null
+          created_at?: string
+          education?: string | null
+          event_id?: string | null
+          full_name: string
+          gender?: string | null
+          id: string
+          office?: string | null
+          role?: string
+          status?: string
+        }
+        Update: {
+          age_group?: string | null
+          created_at?: string
+          education?: string | null
+          event_id?: string | null
+          full_name?: string
+          gender?: string | null
+          id?: string
+          office?: string | null
+          role?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      training_packages: {
+        Row: {
+          created_at: string
+          id: string
+          key: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key?: string
+          name?: string
         }
         Relationships: []
       }
@@ -86,12 +231,79 @@ export type Database = {
         }
         Relationships: []
       }
+      workshop_feedback: {
+        Row: {
+          best_session: string | null
+          created_at: string
+          event_code: string
+          first_ai_use: string | null
+          id: string
+          improve: string | null
+          ratings: number[]
+          recommend: boolean
+        }
+        Insert: {
+          best_session?: string | null
+          created_at?: string
+          event_code: string
+          first_ai_use?: string | null
+          id?: string
+          improve?: string | null
+          ratings: number[]
+          recommend?: boolean
+        }
+        Update: {
+          best_session?: string | null
+          created_at?: string
+          event_code?: string
+          first_ai_use?: string | null
+          id?: string
+          improve?: string | null
+          ratings?: number[]
+          recommend?: boolean
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      event_exists: { Args: { p_code: string }; Returns: boolean }
+      event_question_ids: { Args: { p_code: string }; Returns: number[] }
+      event_test_open: {
+        Args: { p_code: string; p_test: string }
+        Returns: boolean
+      }
+      is_approved: { Args: never; Returns: boolean }
+      is_trainer: { Args: never; Returns: boolean }
+      public_event_info: {
+        Args: { p_code: string }
+        Returns: {
+          address: string
+          event_dates: string[]
+          name: string
+          post_answers: boolean
+          post_ok: boolean
+          pre_answers: boolean
+          pre_ok: boolean
+          question_ids: number[]
+        }[]
+      }
+      public_review: {
+        Args: { p_code: string; p_participant: string; p_test: string }
+        Returns: Json
+      }
+      save_my_profile: {
+        Args: {
+          p_age_group: string
+          p_education: string
+          p_full_name: string
+          p_gender: string
+          p_office: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
