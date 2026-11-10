@@ -56,18 +56,14 @@ function AuthPage() {
     setError(null);
     setNotice(null);
 
-    const parsed =
-      mode === "in"
-        ? signInSchema.safeParse({ email, password })
-        : signUpSchema.safeParse({ email, password, fullName });
-    if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? "विवरण जाँच्नुहोस्");
-      return;
-    }
-
     setBusy(true);
     try {
       if (mode === "in") {
+        const parsed = signInSchema.safeParse({ email, password });
+        if (!parsed.success) {
+          setError(parsed.error.issues[0]?.message ?? "विवरण जाँच्नुहोस्");
+          return;
+        }
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email: parsed.data.email,
           password: parsed.data.password,
@@ -78,11 +74,16 @@ function AuthPage() {
         }
         navigate({ to: "/account" });
       } else {
+        const parsed = signUpSchema.safeParse({ email, password, fullName });
+        if (!parsed.success) {
+          setError(parsed.error.issues[0]?.message ?? "विवरण जाँच्नुहोस्");
+          return;
+        }
         const { error: signUpError } = await supabase.auth.signUp({
           email: parsed.data.email,
           password: parsed.data.password,
           options: {
-            data: { full_name: (parsed.data as { fullName: string }).fullName },
+            data: { full_name: parsed.data.fullName },
             emailRedirectTo: window.location.origin,
           },
         });
