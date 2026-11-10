@@ -124,8 +124,8 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
   </section>
 </div>
 
-<script src="/workshop/account.js"></script>
-<script src="/workshop/event-info.js"></script>
+<script src="/workshop/account.js?v=20261110b"></script>
+<script src="/workshop/event-info.js?v=20261110b"></script>
 <script>
 (function () {
   function $(id) { return document.getElementById(id); }
@@ -210,12 +210,21 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
 
   $("activeBtn").addEventListener("click", async function () {
     var btn = $("activeBtn"), m = $("activeMsg");
+    var makeActive = !EV.is_active, r;
     btn.disabled = true;
-    var makeActive = !EV.is_active;
-    var r = await WS.setActiveEvent(makeActive ? EV.code : "");
+    m.textContent = "सुरक्षित हुँदैछ…"; m.className = "msg";
+    try {
+      if (typeof WS.setActiveEvent !== "function") throw new Error("पुरानो account.js लोड भयो। पृष्ठ Ctrl+Shift+R गरेर फेरि लोड गर्नुहोस्।");
+      r = await WS.setActiveEvent(makeActive ? EV.code : "");
+    } catch (err) {
+      r = { error: { message: (err && err.message) || String(err) } };
+    }
     btn.disabled = false;
-    if (r.error) { m.textContent = "बदल्न सकिएन: " + r.error.message; m.className = "msg bad"; return; }
-    EV.is_active = makeActive;
+    if (r && r.error) { m.textContent = "बदल्न सकिएन: " + r.error.message + (r.error.code ? " (" + r.error.code + ")" : ""); m.className = "msg bad"; return; }
+    // Read it back, so the badge shows what the database actually holds.
+    try { var fresh = await WS.loadEventByCode(EV.code); if (fresh) EV.is_active = !!fresh.is_active; else EV.is_active = makeActive; }
+    catch (e) { EV.is_active = makeActive; }
+    if (EV.is_active !== makeActive) { m.textContent = "बदल्न सकिएन: डाटाबेसमा परिवर्तन देखिएन।"; m.className = "msg bad"; renderHead(); return; }
     m.textContent = EV.is_active ? "यो अब सक्रिय इभेन्ट हो। अरू इभेन्ट स्वतः निष्क्रिय भए।" : "अब कुनै इभेन्ट सक्रिय छैन।";
     m.className = "msg ok";
     renderHead();
