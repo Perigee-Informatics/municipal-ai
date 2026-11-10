@@ -127,6 +127,15 @@
       return client.from("workshop_feedback").insert(row);
     },
 
+    updatePackage: function (id, patch) {
+      return client.from("training_packages").update(patch).eq("id", id);
+    },
+
+    /* Feedback rows (trainer only; RLS enforces this). */
+    listFeedback: function () {
+      return client.from("workshop_feedback").select("*").order("created_at", { ascending: false });
+    },
+
     listEvents: function () {
       return client.from("events").select("*").order("created_at", { ascending: false });
     },
