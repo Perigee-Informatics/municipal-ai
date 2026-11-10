@@ -124,8 +124,8 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
   </section>
 </div>
 
-<script src="/workshop/account.js?v=20261110b"></script>
-<script src="/workshop/event-info.js?v=20261110b"></script>
+<script src="/workshop/account.js?v=20261110c"></script>
+<script src="/workshop/event-info.js?v=20261110c"></script>
 <script>
 (function () {
   function $(id) { return document.getElementById(id); }
@@ -208,14 +208,29 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
     } catch (e) {}
   }
 
+  /* Set (or clear, with "") the active event by calling the database API directly with the
+     trainer's session, so this does not depend on which copy of account.js the browser has.
+     If the API does not know the function yet (PGRST202), do the same with two updates. */
+  async function setActive(code) {
+    var h = { apikey: WS.SB_KEY, Authorization: "Bearer " + WS.token(), "Content-Type": "application/json" };
+    var res = await fetch(WS.SB_URL + "/rest/v1/rpc/set_active_event", { method: "POST", headers: h, body: JSON.stringify({ p_code: code || "" }) });
+    if (res.ok) return {};
+    var err = await res.json().catch(function () { return { message: "HTTP " + res.status }; });
+    if (!(err.code === "PGRST202" || /schema cache|could not find the function/i.test(err.message || ""))) return { error: err };
+    var off = await fetch(WS.SB_URL + "/rest/v1/events?is_active=eq.true", { method: "PATCH", headers: h, body: JSON.stringify({ is_active: false }) });
+    if (!off.ok) return { error: await off.json().catch(function () { return { message: "HTTP " + off.status }; }) };
+    if (!code) return {};
+    var on = await fetch(WS.SB_URL + "/rest/v1/events?code=eq." + encodeURIComponent(code), { method: "PATCH", headers: h, body: JSON.stringify({ is_active: true }) });
+    return on.ok ? {} : { error: await on.json().catch(function () { return { message: "HTTP " + on.status }; }) };
+  }
+
   $("activeBtn").addEventListener("click", async function () {
     var btn = $("activeBtn"), m = $("activeMsg");
     var makeActive = !EV.is_active, r;
     btn.disabled = true;
     m.textContent = "सुरक्षित हुँदैछ…"; m.className = "msg";
     try {
-      if (typeof WS.setActiveEvent !== "function") throw new Error("पुरानो account.js लोड भयो। पृष्ठ Ctrl+Shift+R गरेर फेरि लोड गर्नुहोस्।");
-      r = await WS.setActiveEvent(makeActive ? EV.code : "");
+      r = await setActive(makeActive ? EV.code : "");
     } catch (err) {
       r = { error: { message: (err && err.message) || String(err) } };
     }
