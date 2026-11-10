@@ -59,7 +59,7 @@ details.card>summary{cursor:pointer;font-weight:700}
 </head>
 <body>
 <div class="wrap">
-  <p class="muted" style="margin:0">सन्धिखर्क नगरपालिका · AI तालिम</p>
+  <p class="muted" style="margin:0" id="orgLine">AI तालिम</p>
   <div class="row"><h1>प्रशिक्षक नियन्त्रण</h1><button id="signOut">साइन आउट</button></div>
 
   <section id="needLogin" class="card hide">
@@ -197,17 +197,21 @@ details.card>summary{cursor:pointer;font-weight:700}
         <section class="card">
           <h3 style="margin:0 0 4px">जनप्रतिनिधिका लागि AI (AI for Municipal Representative)</h3>
           <p class="small muted">कार्ययोजना, सामग्री १–१२, आयोजना छनौट क्याल्कुलेटर र पृष्ठपोषण फाराम।</p>
+          <label class="f">कुन इभेन्टका लागि? (आयोजक, स्थान र मिति यही इभेन्टबाट आउँछ)<select data-mat-ev="representative"><option value="">लोड हुँदैछ…</option></select></label>
+          <p class="small muted" data-mat-info="representative"></p>
           <div class="row" style="justify-content:flex-start">
-            <button type="button" class="pri" data-show="representative/index.html" data-title="जनप्रतिनिधिका लागि AI">यहीँ देखाउनुहोस्</button>
-            <a href="representative/index.html" target="_blank" rel="noopener">नयाँ ट्याबमा खोल्नुहोस्</a>
+            <button type="button" class="pri" data-show="representative/index.html" data-base="representative/index.html" data-title="जनप्रतिनिधिका लागि AI">यहीँ देखाउनुहोस्</button>
+            <a href="representative/index.html" data-base="representative/index.html" target="_blank" rel="noopener">नयाँ ट्याबमा खोल्नुहोस्</a>
           </div>
         </section>
         <section class="card">
           <h3 style="margin:0 0 4px">कर्मचारीका लागि AI (AI for Municipal Employee)</h3>
           <p class="small muted">कर्मचारीका लागि तालिम सामग्री, प्रम्प्ट र अभ्यास।</p>
+          <label class="f">कुन इभेन्टका लागि? (आयोजक, स्थान र मिति यही इभेन्टबाट आउँछ)<select data-mat-ev="employee"><option value="">लोड हुँदैछ…</option></select></label>
+          <p class="small muted" data-mat-info="employee"></p>
           <div class="row" style="justify-content:flex-start">
-            <button type="button" class="pri" data-show="index.html" data-title="कर्मचारीका लागि AI">यहीँ देखाउनुहोस्</button>
-            <a href="index.html" target="_blank" rel="noopener">नयाँ ट्याबमा खोल्नुहोस्</a>
+            <button type="button" class="pri" data-show="index.html" data-base="index.html" data-title="कर्मचारीका लागि AI">यहीँ देखाउनुहोस्</button>
+            <a href="index.html" data-base="index.html" target="_blank" rel="noopener">नयाँ ट्याबमा खोल्नुहोस्</a>
           </div>
         </section>
       </div>
@@ -238,6 +242,7 @@ details.card>summary{cursor:pointer;font-weight:700}
 <script src="assessment/pool-employee.js"></script>
 <script src="assessment/pool-representative.js"></script>
 <script src="account.js"></script>
+<script src="event-info.js"></script>
 <script>
 (function () {
   function $(id) { return document.getElementById(id); }
@@ -310,7 +315,7 @@ details.card>summary{cursor:pointer;font-weight:700}
       return '<div class="ev"><div class="row"><div><strong>' + esc(e.name) + '</strong> <span class="small">[' + esc(e.code) + ']</span>' +
         '<div class="small muted">' + esc(pkgName(e.package_id)) + '</div>' +
         '<div class="small muted">' + esc(e.organized_by || "") + ' · ' + esc(e.address || "") + '</div>' +
-        '<div class="small muted">मितिहरू: ' + esc((e.event_dates || []).join(", ")) + '</div></div>' +
+        '<div class="small muted">मितिहरू: ' + esc(EVI.info(e).dateRange || "—") + ' <span class="muted">(' + esc((e.event_dates || []).join(", ")) + ')</span></div></div>' +
         '<div><button type="button" data-edit-ev="' + id + '">सम्पादन</button></div></div>' +
         '<div class="row" style="justify-content:flex-start;margin-top:8px;gap:8px">' +
         '<button type="button" data-flag="pre_open" data-ev="' + id + '" data-val="' + (!e.pre_open) + '">पूर्व परीक्षा: ' + (e.pre_open ? "खुला ✔" : "बन्द ✘") + '</button>' +
@@ -625,6 +630,44 @@ details.card>summary{cursor:pointer;font-weight:700}
     if (name === "overview") loadOverview();
     if (name === "packages") loadPackages();
     if (name === "results") loadFeedback();
+    if (name === "materials") loadMaterials();
+  }
+
+  /* तालिम सामग्री: choose the event to present; the page then shows that event's organiser, place and dates. */
+  var matEvents = [];
+  function matLink(key) {
+    var sel = document.querySelector('[data-mat-ev="' + key + '"]'), code = sel ? sel.value : "";
+    var ev = matEvents.filter(function (e) { return e.code === code; })[0];
+    var card = sel.closest("section");
+    card.querySelectorAll("[data-base]").forEach(function (el) {
+      var url = el.dataset.base + (code ? "?event=" + encodeURIComponent(code) : "");
+      if (el.tagName === "A") el.href = url; else el.dataset.show = url;
+    });
+    var i = ev && EVI.info(ev);
+    card.querySelector('[data-mat-info="' + key + '"]').textContent = i ? [i.org, i.place, i.dateRange].filter(Boolean).join(" · ") : "";
+  }
+  async function loadMaterials() {
+    var pk = await WS.listPackages(), ev = await WS.listEvents();
+    var packages = pk.data || [];
+    matEvents = ev.data || [];
+    ["representative", "employee"].forEach(function (key) {
+      var p = packages.filter(function (x) { return x.key === key; })[0];
+      var list = matEvents.filter(function (e) { return p && e.package_id === p.id; });
+      var sel = document.querySelector('[data-mat-ev="' + key + '"]'), cur = sel.value;
+      sel.innerHTML = list.length ? list.map(function (e) { return '<option value="' + esc(e.code) + '">' + esc(e.name) + ' [' + esc(e.code) + ']' + (e.organized_by ? ' · ' + esc(e.organized_by) : '') + '</option>'; }).join("")
+        : '<option value="">यो प्याकेजको इभेन्ट छैन</option>';
+      if (cur && list.some(function (e) { return e.code === cur; })) sel.value = cur;
+      matLink(key);
+    });
+  }
+  document.addEventListener("change", function (e) { if (e.target.dataset && e.target.dataset.matEv) matLink(e.target.dataset.matEv); });
+
+  /* Header line: organiser of the newest event. */
+  async function loadOrgLine() {
+    try {
+      var r = await WS.listEvents(), e = (r.data || []).filter(function (x) { return x.organized_by; })[0];
+      if (e) $("orgLine").textContent = EVI.info(e).org + " · AI तालिम";
+    } catch (err) {}
   }
   document.addEventListener("click", function (e) {
     var b = e.target.closest("button");
@@ -728,7 +771,7 @@ details.card>summary{cursor:pointer;font-weight:700}
   var tries = 0, t = setInterval(function () {
     if (!$("panel").classList.contains("hide") || ++tries > 80) {
       clearInterval(t);
-      if (!$("panel").classList.contains("hide")) showTab(location.hash.slice(1) || "overview");
+      if (!$("panel").classList.contains("hide")) { loadOrgLine(); showTab(location.hash.slice(1) || "overview"); }
     }
   }, 250);
 })();

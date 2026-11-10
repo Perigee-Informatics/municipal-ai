@@ -81,7 +81,7 @@ th{background:var(--soft);font-size:13px}
   <header class="top">
     <div>
       <h1>AI ज्ञान परीक्षा</h1>
-      <p class="sub" id="subLine">सन्धिखर्क नगरपालिका · दुई दिनको तालिमका सबै सत्रमा आधारित · पूर्व-तालिम र पश्च-तालिम (एउटै ३० प्रश्न)</p>
+      <p class="sub" id="subLine">तालिमका सबै सत्रमा आधारित · पूर्व-तालिम र पश्च-तालिम</p>
     </div>
     <nav class="tabs" aria-label="मुख्य मेनु">
       <button id="tabExam" class="on" data-action="tab" data-tab="exam">सहभागी परीक्षा</button>
@@ -107,6 +107,7 @@ th{background:var(--soft);font-size:13px}
 </div>
 
 <script src="../account.js"></script>
+<script src="../event-info.js"></script>
 <script src="pool-employee.js"></script>
 <script src="pool-representative.js"></script>
 <script>
@@ -280,7 +281,8 @@ async function checkSession(){
     if(!open.length){ err.textContent="यो इभेन्टका परीक्षा अहिले खुला छैनन्। प्रशिक्षकसँग सम्पर्क गर्नुहोस्।"; err.classList.remove("hide"); return; }
     CUR_EVENT=ev;
     SESSION=ev.code;
-    SESSION_INFO={client:ev.name, location:ev.address, session_date:(ev.event_dates||[]).join(", ")};
+    var evi=EVI.info(ev);
+    SESSION_INFO={client:evi.org||ev.name, location:ev.address, session_date:evi.dateRange||(ev.event_dates||[]).join(", ")};
     SESSION_TEST=open.length===1?open[0].v:"";
     var line=sessionLine(); var sub=document.getElementById("subLine");
     if(sub && line){ sub.textContent=line; }
@@ -311,8 +313,9 @@ function viewPublic(){
     return '<section class="card">'+head+'<p>'+(PUB_ERR?'जडानमा समस्या। इन्टरनेट जाँचेर फेरि प्रयास गर्नुहोस्।':'यो लिङ्क मिलेन वा इभेन्ट फेला परेन। प्रशिक्षकसँग सम्पर्क गर्नुहोस्।')+'</p></section>';
   }
   var open = PUB_TEST==="post" ? PUB.post_ok : PUB.pre_ok;
+  var pubDates=PUB.event_dates&&PUB.event_dates.length?(EVI.info(PUB).dateRange||neNum(PUB.event_dates.join(", "))):"";
   var info='<p class="muted small">'+esc(PUB.name)+(PUB.address?' · '+esc(PUB.address):'')
-    +(PUB.event_dates&&PUB.event_dates.length?' · '+esc(neNum(PUB.event_dates.join(", "))):'')+'</p>';
+    +(pubDates?' · '+esc(pubDates):'')+'</p>';
   var body;
   if(!(PUB.question_ids&&PUB.question_ids.length)) body='<p>इभेन्टको प्रश्न सेट अझै बनेको छैन।</p>';
   else if(!open) body='<p>यो परीक्षा अहिले खुला छैन।</p>';
@@ -633,7 +636,7 @@ function unlock(){
 
 async function loadSessions(){
   var res=await fetch(SB_URL+"/rest/v1/events?select=code,name,address,event_dates&order=created_at.desc",{headers:sbHeaders()});
-  if(res.ok){ sessionList=(await res.json()).map(function(e){ return {code:e.code, client:e.name, location:e.address, session_date:(e.event_dates||[])[0]||""}; }); }
+  if(res.ok){ sessionList=(await res.json()).map(function(e){ return {code:e.code, client:e.name, location:e.address, session_date:EVI.info(e).dateRange||(e.event_dates||[])[0]||""}; }); }
 }
 
 function applySessionFilter(){

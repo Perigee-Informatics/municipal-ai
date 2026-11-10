@@ -347,3 +347,15 @@ grant execute on function public.save_my_profile(text, text, text, text, text) t
 -- Anonymous visitors (the QR survey) never read these tables directly. Row-level security also applies.
 revoke all on public.profiles, public.events, public.training_packages from anon;
 grant select on public.training_packages to authenticated;
+
+-- 14. Organiser, place and dates for an event code, so the workshop pages can show them to
+--     visitors who are not signed in (a link with ?event=CODE). Only non-sensitive columns.
+create or replace function public.public_event_brand(p_code text)
+returns table(organized_by text, address text, event_dates date[])
+language sql stable security definer set search_path = public as $$
+  select e.organized_by, e.address, e.event_dates
+  from public.events e
+  where e.code = upper(p_code)
+  limit 1;
+$$;
+grant execute on function public.public_event_brand(text) to anon, authenticated;

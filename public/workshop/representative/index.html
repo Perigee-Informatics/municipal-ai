@@ -203,7 +203,7 @@ td.st-sel { color: var(--ok); font-weight: 700 } td.st-no { color: var(--accent)
 <body style="margin:0">
 <header class="top">
   <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="side">कार्यतालिका</button>
-  <a class="brand" href="#home"><b>AI तालिम</b><span>जनप्रतिनिधिका लागि · २०८३ कात्तिक २७</span></a>
+  <a class="brand" href="#home"><b>AI तालिम</b><span id="brandSub">जनप्रतिनिधिका लागि · २०८३ कात्तिक २७</span></a>
   <div class="search">
     <input id="q" type="search" placeholder="खोज्नुहोस्: सूचना, माइन्युट, आयोजना छनौट…" autocomplete="off" aria-label="सामग्री खोज्नुहोस्">
     <div class="results" id="results" hidden></div>
@@ -217,6 +217,7 @@ td.st-sel { color: var(--ok); font-weight: 700 } td.st-no { color: var(--accent)
 
 <script src="data.js"></script>
 <script src="../account.js"></script>
+<script src="../event-info.js"></script>
 <script>
 /* Same shell as the employee materials (../index.html): running order on the left, the selected session's materials on the right. */
 const DATA = window.D_REP;
@@ -293,7 +294,7 @@ function vHome() {
       : `<a class="block" href="#${it.id}"><span class="t">${tm(it.start, it.end)}</span><span>${it.kind === 'session' ? `<span class="n">${S[it.id].n}</span>${S[it.id].title}` : DATA.OTHER[it.id].title}${done.has(it.id) ? ' ✓' : ''}</span></a>`).join('') + '</section>';
   return `<div class="hero"><p class="eyebrow">${ORG ? esc(ORG) : 'पालिका'} · जनप्रतिनिधिहरूका लागि</p>
     <h1>जनप्रतिनिधिका लागि कृत्रिम बुद्धिमत्ता (AI): कार्यदक्षता र प्रभावकारिता अभिवृद्धि कार्यशाला</h1>
-    <div class="factline">${ORG ? `<span>आयोजक <b>${esc(ORG)}</b></span>` : ''}<span>मिति <b>२०८३ कात्तिक २७ गते</b></span><span>समय <b>बिहान १०:०० देखि बेलुका ४:००</b></span><span>सहभागी <b>अध्यक्ष, उपाध्यक्ष, वडाध्यक्ष, कार्यपालिका तथा वडा सदस्य</b></span></div></div>
+    <div class="factline">${ORG ? `<span>आयोजक <b>${esc(ORG)}</b></span>` : ''}<span>मिति <b>${fillEv('२०८३ कात्तिक २७')} गते</b></span>${PLACE ? `<span>स्थान <b>${esc(PLACE)}</b></span>` : ''}<span>समय <b>बिहान १०:०० देखि बेलुका ४:००</b></span><span>सहभागी <b>अध्यक्ष, उपाध्यक्ष, वडाध्यक्ष, कार्यपालिका तथा वडा सदस्य</b></span></div></div>
   <section class="nowcard" aria-live="polite">
     <div class="nowtop"><b>आजको कार्यक्रम</b><span class="clock">नेपाल समय ${dn(String(Math.floor(nn.t / 60)).padStart(2, '0'))}:${dn(String(nn.t % 60).padStart(2, '0'))}</span></div>
     <div class="nowgrid">${slot('अहिले चलिरहेको', nn.now, true)}${slot('त्यसपछि', nn.next, false)}</div>
@@ -536,39 +537,18 @@ document.addEventListener('click', e => {
   if (!e.target.closest('.search')) $('#results').hidden = true;
 });
 
-/* ---------- organiser name from the event ("Organized by") ----------
-   Which event: ?event=CODE in the URL (remembered), else the signed-in participant's own event,
-   else (trainer) the newest AI for Municipal Representative event. Visitors who are not signed in
-   cannot read the events table, so they keep the blank lines. */
-let ORG = '';
-async function findEvent() {
-  if (!WS.session) return null;
-  const qs = (new URLSearchParams(location.search).get('event') || '').trim().toUpperCase();
-  if (qs) store.set('event', qs);
-  const code = qs || store.get('event', '');
-  if (code) { const ev = await WS.loadEventByCode(code); if (ev) return ev; }
-  if (WS.profile && WS.profile.event_id) { const ev = await WS.loadEventForProfile(); if (ev) return ev; }
-  if (WS.isTrainer()) {
-    const [pk, evs] = await Promise.all([WS.listPackages(), WS.listEvents()]);
-    const rep = (pk.data || []).find(p => p.key === 'representative');
-    return (evs.data || []).find(e => rep && e.package_id === rep.id) || null;
-  }
-  return null;
-}
-function applyOrg(ev) {
-  let org = ev && (ev.organized_by || '').trim();
-  if (!org) return;
-  if (!/पालिका/.test(org)) org += ' पालिका';
-  ORG = org;
-  const safe = esc(org);
-  const BL = '[…][…\\.]*';
-  const fill = h => h
-    .replace(new RegExp(BL + '\\s*(?:पालिका|लिका)', 'g'), safe)
-    .replace(new RegExp(BL + '(?=को सञ्चार अधिकृत)', 'g'), safe)
-    .replace(new RegExp(BL + '(?= AI सहायता)', 'g'), safe);
-  DATA.INTRO = fill(DATA.INTRO);
-  DATA.AGENDA_HTML = fill(DATA.AGENDA_HTML);
-  DATA.MATS.forEach(m => { m.html = fill(m.html); });
+/* ---------- organiser, place and dates from the event (../event-info.js) ---------- */
+let ORG = '', PLACE = '', EV_RULES = null;
+const fillEv = t => EV_RULES ? EVI.fill(t, EV_RULES) : t;
+async function applyEvent() {
+  const ev = await EVI.resolve('representative');
+  if (!ev) return;
+  const info = EVI.info(ev);
+  ORG = info.org; PLACE = info.place;
+  EV_RULES = EVI.representativeRules(info);
+  EVI.fillDeep(DATA, EV_RULES, ['SESS', 'OTHER']);
+  $('#brandSub').textContent = EVI.fill('जनप्रतिनिधिका लागि · २०८३ कात्तिक २७', EV_RULES);
+  if (ORG) document.title = 'जनप्रतिनिधिका लागि AI · ' + ORG;
   buildIndex();
 }
 
@@ -609,7 +589,7 @@ window.addEventListener('hashchange', route);
 (async () => {
   try { await WS.init(); MATERIALS_OK = (await WS.materialsPublic()) || WS.isApproved() || WS.isTrainer(); }
   catch (e) { MATERIALS_OK = false; }
-  try { applyOrg(await findEvent()); } catch (e) {}
+  try { await applyEvent(); } catch (e) {}
   route();
 })();
 setInterval(() => {
