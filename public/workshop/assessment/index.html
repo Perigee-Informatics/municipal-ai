@@ -163,6 +163,10 @@ function openTests(ev){
 var sessionList = [];
 var allRecords = [];
 var sessionFilter = "all";
+/* ?dash=CODE (from the trainer's event page): open the trainer dashboard filtered to that event. */
+var DASH_CODE = "";
+try { DASH_CODE = String(new URLSearchParams(location.search).get("dash") || "").trim().toUpperCase().slice(0, 40); } catch (e) {}
+if (DASH_CODE) sessionFilter = DASH_CODE;
 var SB_URL = "https://htcfpqfqkskchdwjnoqo.supabase.co";
 var SB_KEY = "sb_publishable_-eezpn3nkJBKeNZ2lyINsg_g-pdsuLc";
 var TESTS = [
@@ -1043,6 +1047,7 @@ document.addEventListener("ws-auth",function(){ renderApp(); if(window.WS&&WS.is
 
 if(PUBLIC) fetchPublicInfo();
 renderApp();
+if(DASH_CODE){ var dt=document.getElementById("tabDash"); if(dt) dt.click(); }
 if(window.WS){
   WS.init().then(function(){ renderApp(); if(WS.isTrainer()) unlock(); }).catch(function(){ renderApp(); });
 }

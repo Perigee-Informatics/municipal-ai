@@ -127,3 +127,29 @@ reset role;
 set role anon;
 select pg_temp.check((select value = false from public.app_settings where key = 'materials_public'), 'materials private by default');
 reset role;
+
+-- ---- 10. active event ----
+insert into public.events (code, name, organized_by, address, event_dates, package_id)
+values ('TST-02', 'Second event', 'मालारानी गाउँपालिका', 'मालारानी', '{2026-12-01}', (select id from public.training_packages where key = 'representative'));
+set role anon;
+select pg_temp.check((select count(*) = 0 from public.active_event_brand()), 'no active event at first');
+select pg_temp.expect_error($q$select public.set_active_event('TST-01')$q$, 'anon cannot choose the active event');
+reset role;
+set role authenticated;
+select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000003', false);
+select pg_temp.expect_error($q$select public.set_active_event('TST-01')$q$, 'participant cannot choose the active event');
+select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000001', false);
+select public.set_active_event('tst-01');
+select public.set_active_event('TST-02');
+select pg_temp.expect_error($q$select public.set_active_event('NOPE')$q$, 'unknown code rejected');
+reset role;
+select pg_temp.check((select count(*) = 1 and bool_and(code = 'TST-02') from public.events where is_active), 'exactly one active event, the last one chosen');
+select pg_temp.expect_error($q$update public.events set is_active = true where code = 'TST-01'$q$, 'a second active event is impossible');
+set role anon;
+select pg_temp.check((select organized_by = 'मालारानी गाउँपालिका' and package_key = 'representative' from public.active_event_brand()), 'visitors see the active event organiser and package');
+reset role;
+set role authenticated;
+select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000001', false);
+select public.set_active_event('');
+reset role;
+select pg_temp.check((select count(*) = 0 from public.events where is_active), 'trainer can clear the active event');

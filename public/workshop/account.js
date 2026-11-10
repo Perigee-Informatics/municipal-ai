@@ -152,6 +152,11 @@
       return client.from("events").delete().eq("id", id);
     },
 
+    /* Make one event the active event (trainer only; the database checks). Empty code clears it. */
+    setActiveEvent: function (code) {
+      return client.rpc("set_active_event", { p_code: code || "" });
+    },
+
     /* One event by its code (signed-in users only; RLS enforces this). */
     loadEventByCode: async function (code) {
       var r = await client.from("events").select("*").eq("code", String(code || "").trim().toUpperCase()).maybeSingle();

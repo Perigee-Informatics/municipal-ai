@@ -59,17 +59,23 @@
 
   function info(ev) {
     if (!ev) return null;
-    var org = String(ev.organized_by || "").trim();
+    /* org: the organiser as entered ("पाणिनी गाउँपालिका, अर्घाखाँची"); orgName: just the
+       municipality ("पाणिनी गाउँपालिका"), used inside the material text; orgShort: "पाणिनी". */
+    var org = String(ev.organized_by || "").trim().replace(/\s+/g, " ");
     if (org && !/पालिका/.test(org)) org += " पालिका";
-    var short = org.replace(/\s*(उपमहानगरपालिका|महानगरपालिका|नगरपालिका|गाउँपालिका|पालिका)\s*$/, "").trim();
+    var m = org.match(/^(.*?)\s*(उपमहानगरपालिका|महानगरपालिका|नगरपालिका|गाउँपालिका|पालिका)/);
+    var orgName = m ? (m[1] ? m[1].trim() + " " : "") + m[2] : org;
+    var short = m ? m[1].replace(/[,\s]+$/, "").trim() : "";
     var iso = (ev.event_dates || []).slice().sort();
     var dates = iso.map(toBS).filter(Boolean);
     return {
       code: ev.code || "",
       name: ev.name || "",
       org: org,
-      orgShort: short || org,
-      rural: /गाउँपालिका/.test(org),
+      orgName: orgName,
+      orgShort: short || orgName,
+      rural: /गाउँपालिका/.test(orgName),
+      active: !!ev.is_active,
       place: String(ev.address || "").trim(),
       iso: iso,
       dates: dates,
@@ -79,57 +85,71 @@
     };
   }
 
-  /* Remembered per package, so previewing one package's event does not change the other package's pages. */
-  function rememberCode(packageKey) {
-    var q = new URLSearchParams(location.search);
-    var key = "ws-event" + (packageKey ? ":" + packageKey : "");
-    var code = String(q.get("event") || "").trim().toUpperCase();
-    try {
-      if (code) { localStorage.setItem(key, code); localStorage.setItem("ws-event", code); }
-      else code = localStorage.getItem(key) || "";
-    } catch (e) {}
+  /* ?event=CODE in the address; remembered per package (and generally) for later visits. */
+  function urlCode(packageKey) {
+    var code = String(new URLSearchParams(location.search).get("event") || "").trim().toUpperCase();
+    if (code) {
+      try {
+        localStorage.setItem("ws-event" + (packageKey ? ":" + packageKey : ""), code);
+        localStorage.setItem("ws-event", code);
+      } catch (e) {}
+    }
     return code;
   }
+  function storedCode(packageKey) {
+    try { return localStorage.getItem("ws-event" + (packageKey ? ":" + packageKey : "")) || ""; } catch (e) { return ""; }
+  }
 
-  async function publicBrand(code) {
+  async function rpc(name, body) {
     try {
-      var res = await fetch(WS.SB_URL + "/rest/v1/rpc/public_event_brand", {
+      var res = await fetch(WS.SB_URL + "/rest/v1/rpc/" + name, {
         method: "POST",
         headers: { apikey: WS.SB_KEY, Authorization: "Bearer " + WS.SB_KEY, "Content-Type": "application/json" },
-        body: JSON.stringify({ p_code: code })
+        body: JSON.stringify(body || {})
       });
       if (!res.ok) return null;
       var rows = await res.json();
-      return rows && rows[0] ? Object.assign({ code: code }, rows[0]) : null;
+      return rows && rows[0] ? rows[0] : null;
     } catch (e) { return null; }
   }
+  async function publicBrand(code) {
+    var row = await rpc("public_event_brand", { p_code: code });
+    return row ? Object.assign({ code: code }, row) : null;
+  }
 
-  /* packageKey: "employee" or "representative" (optional). */
+  /* Which event a page shows. packageKey: "employee" or "representative" (optional).
+     Signed in:  ?event=CODE → the participant's own event → the active event → a remembered code
+                 → (trainer) the newest event; each only if it belongs to the page's package.
+     Not signed in: ?event=CODE → the active event → a remembered code. */
   async function resolve(packageKey) {
-    var code = rememberCode(packageKey);
+    var code = urlCode(packageKey);
     try { if (!WS.ready) await WS.init(); } catch (e) {}
     if (WS.session) {
       var pkgs = null;
-      var pkgIds = async function () {
-        if (!pkgs) pkgs = ((await WS.listPackages()).data || []).filter(function (p) { return !packageKey || p.key === packageKey; }).map(function (p) { return p.id; });
-        return pkgs;
+      var inPkg = async function (ev) {
+        if (!ev) return false;
+        if (!packageKey) return true;
+        if (!pkgs) pkgs = ((await WS.listPackages()).data || []).filter(function (p) { return p.key === packageKey; }).map(function (p) { return p.id; });
+        return pkgs.indexOf(ev.package_id) !== -1;
       };
-      if (code) {
-        var byCode = await WS.loadEventByCode(code);
-        if (byCode && (!packageKey || (await pkgIds()).indexOf(byCode.package_id) !== -1)) return byCode;
-      }
-      if (WS.profile && WS.profile.event_id) {
-        var own = await WS.loadEventForProfile();
-        if (own && (!packageKey || (await pkgIds()).indexOf(own.package_id) !== -1)) return own;
-      }
+      if (code) { var byCode = await WS.loadEventByCode(code); if (await inPkg(byCode)) return byCode; }
+      if (WS.profile && WS.profile.event_id) { var own = await WS.loadEventForProfile(); if (await inPkg(own)) return own; }
+      var all = (await WS.listEvents()).data || [];
+      var active = all.filter(function (e) { return e.is_active; })[0];
+      if (await inPkg(active)) return active;
+      var stored = storedCode(packageKey);
+      var byStored = stored && all.filter(function (e) { return e.code === stored; })[0];
+      if (await inPkg(byStored)) return byStored;
       if (WS.isTrainer()) {
-        var pk = await pkgIds();
-        var evs = ((await WS.listEvents()).data || []).filter(function (e) { return !packageKey || pk.indexOf(e.package_id) !== -1; });
-        return evs[0] || null;
+        for (var k = 0; k < all.length; k++) if (await inPkg(all[k])) return all[k];
       }
       return null;
     }
-    return code ? publicBrand(code) : null;
+    if (code) { var pub = await publicBrand(code); if (pub) return pub; }
+    var act = await rpc("active_event_brand");
+    if (act && (!packageKey || !act.package_key || act.package_key === packageKey)) return Object.assign({ is_active: true }, act);
+    var st = storedCode(packageKey);
+    return st ? publicBrand(st) : null;
   }
 
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
@@ -171,7 +191,7 @@
       ["असोज २४", s1], ["असोज २५", s2],
       ["सन्धिखर्क नगरपालिकाको सभाहल [पुष्टि गर्नुपर्ने]", i.place],
       ["सन्धिखर्क, अर्घाखाँची", i.place],
-      ["सन्धिखर्क नगरपालिका", i.org],
+      ["सन्धिखर्क नगरपालिका", i.orgName],
       ["सन्धिखर्क", i.orgShort]
     ];
     if (i.rural) rules.push(["नगर कार्यपालिका", "गाउँ कार्यपालिका"], ["नगर उपप्रमुख", "उपाध्यक्ष"], ["नगर प्रमुख", "अध्यक्ष"], ["नगरसभा", "गाउँसभा"]);
@@ -182,9 +202,9 @@
   function representativeRules(i) {
     var BL = "[…][…\\.]*";
     return [
-      [new RegExp(BL + "\\s*(?:पालिका|लिका)", "g"), i.org],
-      [new RegExp(BL + "(?=को सञ्चार अधिकृत)", "g"), i.org],
-      [new RegExp(BL + "(?= AI सहायता)", "g"), i.org],
+      [new RegExp(BL + "\\s*(?:पालिका|लिका)", "g"), i.orgName],
+      [new RegExp(BL + "(?=को सञ्चार अधिकृत)", "g"), i.orgName],
+      [new RegExp(BL + "(?= AI सहायता)", "g"), i.orgShort],
       [new RegExp("(, )" + BL + "(?= · मिति)", "g"), i.place ? ", " + i.place : ""],
       [new RegExp("(मिति: )" + BL, "g"), i.dateRange ? "मिति: " + i.dateRange : ""],
       [new RegExp("मिति " + BL + " हुने", "g"), i.dateRange ? "मिति " + i.dateRange + " हुने" : ""],
@@ -194,7 +214,8 @@
   }
 
   /* Where "home" is for this visitor: the trainer console for the trainer, the participant's own
-     course materials for a signed-in participant, otherwise the main materials page. */
+     course materials for a signed-in participant, otherwise the materials of the active event's
+     course (the main materials page when no event is active). */
   var homePromise = null;
   function home() {
     if (homePromise) return homePromise;
@@ -202,14 +223,17 @@
       var fallback = { href: "/workshop/index.html", label: "गृहपृष्ठ" };
       try { if (!WS.ready) await WS.init(); } catch (e) { return fallback; }
       if (WS.isTrainer()) return { href: "/workshop/admin.html", label: "प्रशिक्षक गृहपृष्ठ" };
+      var rep = { href: "/workshop/representative/index.html", label: "गृहपृष्ठ" };
       if (WS.session && WS.profile && WS.profile.event_id) {
         try {
           var ev = await WS.loadEventForProfile();
           var pk = ((await WS.listPackages()).data || []).filter(function (p) { return ev && p.id === ev.package_id; })[0];
-          if (pk && pk.key === "representative") return { href: "/workshop/representative/index.html", label: "गृहपृष्ठ" };
+          if (pk) return pk.key === "representative" ? rep : fallback;
         } catch (e) {}
       }
-      return fallback;
+      // Otherwise home is the course of the active event.
+      var act = await rpc("active_event_brand");
+      return act && act.package_key === "representative" ? rep : fallback;
     })();
     return homePromise;
   }

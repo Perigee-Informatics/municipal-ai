@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="ne">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>इभेन्ट · AI तालिम</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;700;800&display=swap">
+<style>
+:root{--bg:#F5F3EE;--surface:#fff;--ink:#1B2320;--muted:#5D6A65;--line:#DAD6CB;--accent:#1F5C4A;--bad:#B3392F;--ok:#2E7D4F;--soft:#E7EFEA}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0D1420;--surface:#152033;--ink:#E3E9F2;--muted:#9AA8BB;--line:#26344B;--accent:#6FD3A2;--soft:#1B2942;--bad:#F2708C;--ok:#6FD3A2}}
+:root[data-theme="dark"]{--bg:#0D1420;--surface:#152033;--ink:#E3E9F2;--muted:#9AA8BB;--line:#26344B;--accent:#6FD3A2;--soft:#1B2942;--bad:#F2708C;--ok:#6FD3A2}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Mukta',system-ui,sans-serif;font-size:17px;line-height:1.55}
+.wrap{max-width:1000px;margin:0 auto;padding:20px 16px 60px}
+h1{font-size:26px;margin:6px 0 2px}
+h2{font-size:20px;margin:20px 0 8px}
+a{color:var(--accent)}
+.muted{color:var(--muted)} .small{font-size:14px} .hide{display:none}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;margin-top:12px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.between{justify-content:space-between}
+button,.btn{font:inherit;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:6px 12px;cursor:pointer;text-decoration:none;display:inline-block}
+button.pri,.btn.pri{background:var(--accent);color:#fff;border-color:var(--accent)}
+button[disabled]{opacity:.6;cursor:not-allowed}
+.badge{display:inline-block;border-radius:999px;padding:2px 10px;font-size:14px;font-weight:700;background:var(--soft)}
+.badge.on{background:var(--ok);color:#fff}
+.tabs{display:flex;gap:6px;overflow-x:auto;margin:16px 0 4px;padding-bottom:6px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:5}
+.tabs button{white-space:nowrap;border-radius:999px;padding:7px 14px}
+.tabs button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.tabpanel{display:none}.tabpanel.on{display:block}
+dl.facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:0}
+dl.facts div{padding:10px 12px;min-width:0;border-bottom:1px solid var(--line);border-right:1px solid var(--line)}
+dl.facts dt{font-size:13px;font-weight:700;color:var(--muted)}
+dl.facts dd{margin:2px 0 0;overflow-wrap:anywhere}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.stat b{display:block;font-size:24px}
+.scroll{overflow-x:auto}
+table.t{width:100%;border-collapse:collapse;font-size:15px}
+table.t th,table.t td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+table.t th{background:var(--soft)}
+.frame{width:100%;height:78vh;border:1px solid var(--line);border-radius:12px;background:#fff;margin-top:10px}
+.msg{font-weight:700;margin-top:10px}
+.msg.bad{color:var(--bad)} .msg.ok{color:var(--ok)}
+code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anywhere}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="row between small" style="margin:0">
+    <span><a data-home href="/workshop/admin.html" style="font-weight:600;text-decoration:none">⌂ प्रशिक्षक गृहपृष्ठ</a> · <a href="/workshop/admin.html#packages">← प्रशिक्षण प्याकेज</a> · <a href="/workshop/admin.html#events">इभेन्टहरू</a></span>
+    <span class="muted" id="orgLine">AI तालिम</span>
+  </p>
+
+  <section id="needLogin" class="card hide">
+    <p>यो पृष्ठ प्रशिक्षकका लागि हो। <a id="loginLink" href="/workshop/login.html">प्रशिक्षक खातामा साइन इन गर्नुहोस्</a>।</p>
+  </section>
+  <section id="notFound" class="card hide">
+    <p>यो इभेन्ट भेटिएन। <a href="/workshop/admin.html#packages">प्रशिक्षण प्याकेजमा फर्कनुहोस्</a> र इभेन्ट छान्नुहोस्।</p>
+  </section>
+  <p id="loading" class="muted">लोड हुँदैछ…</p>
+
+  <section id="panel" class="hide">
+    <div class="row between">
+      <div>
+        <h1 id="evTitle"></h1>
+        <div class="row small"><code id="evCode"></code><span id="evPkg" class="muted"></span><span id="evActive" class="badge"></span></div>
+      </div>
+      <div class="row">
+        <button type="button" class="pri" id="activeBtn"></button>
+      </div>
+    </div>
+    <p id="activeMsg" class="msg hide"></p>
+
+    <nav class="tabs" id="tabs" aria-label="इभेन्टका ट्याबहरू">
+      <button type="button" data-tab="details" class="on">विवरण</button>
+      <button type="button" data-tab="schedule">कार्यक्रम तालिका</button>
+      <button type="button" data-tab="contents">सामग्री</button>
+      <button type="button" data-tab="results">परीक्षा नतिजा</button>
+      <button type="button" data-tab="people">सहभागी</button>
+      <button type="button" data-tab="feedback">पृष्ठपोषण</button>
+    </nav>
+
+    <div class="tabpanel on" id="tab-details">
+      <div class="stats">
+        <div class="stat"><span class="small muted">स्वीकृत सहभागी</span><b id="stPeople">–</b></div>
+        <div class="stat"><span class="small muted">पूर्व परीक्षा पेश</span><b id="stPre">–</b></div>
+        <div class="stat"><span class="small muted">पश्च परीक्षा पेश</span><b id="stPost">–</b></div>
+        <div class="stat"><span class="small muted">पृष्ठपोषण</span><b id="stFb">–</b></div>
+      </div>
+      <dl class="facts" id="facts"></dl>
+      <section class="card">
+        <h2 style="margin-top:0">परीक्षा</h2>
+        <div id="testInfo"></div>
+        <p class="small muted">परीक्षा खोल्ने/बन्द गर्ने, उत्तर देखाउने, QR र प्रश्न सेट बनाउने काम <a href="/workshop/admin.html#events">इभेन्टहरू</a> ट्याबबाट गर्नुहोस्।</p>
+      </section>
+    </div>
+
+    <div class="tabpanel" id="tab-schedule">
+      <p class="row between small" style="margin:12px 0 0"><span class="muted">यो इभेन्टको आयोजक, स्थान र मितिसहितको कार्यक्रम तालिका।</span><a id="schedOpen" target="_blank" rel="noopener">नयाँ ट्याबमा खोल्नुहोस्</a></p>
+      <iframe class="frame" id="schedFrame" title="कार्यक्रम तालिका"></iframe>
+    </div>
+
+    <div class="tabpanel" id="tab-contents">
+      <p class="row between small" style="margin:12px 0 0"><span class="muted">यो इभेन्टका लागि तालिम सामग्री (प्रशिक्षकले जुनसुकै बेला हेर्न सक्छ)।</span><span><a id="contDash" href="#" data-frame="dashboard">ड्यासबोर्ड</a> · <a id="contRes" href="#" data-frame="resources">सामग्री सूची</a> · <a id="contOpen" target="_blank" rel="noopener">नयाँ ट्याबमा खोल्नुहोस्</a></span></p>
+      <iframe class="frame" id="contFrame" title="तालिम सामग्री"></iframe>
+    </div>
+
+    <div class="tabpanel" id="tab-results">
+      <p class="row between small" style="margin:12px 0 0"><span class="muted">पूर्व र पश्च परीक्षाको विश्लेषण, यही इभेन्टका लागि छानिएको।</span><a id="resOpen" target="_blank" rel="noopener">नयाँ ट्याबमा खोल्नुहोस्</a></p>
+      <iframe class="frame" id="resFrame" title="परीक्षा नतिजा"></iframe>
+    </div>
+
+    <div class="tabpanel" id="tab-people">
+      <h2>स्वीकृत सहभागी</h2>
+      <div id="people" class="muted">लोड हुँदैछ…</div>
+      <p class="small muted">दर्ता स्वीकृत गर्न वा नयाँ खाता बनाउन <a href="/workshop/admin.html#users">प्रयोगकर्ता</a> ट्याबमा जानुहोस्।</p>
+    </div>
+
+    <div class="tabpanel" id="tab-feedback">
+      <h2>पृष्ठपोषण (सामग्री १२)</h2>
+      <div id="fbSummary" class="muted">लोड हुँदैछ…</div>
+    </div>
+  </section>
+</div>
+
+<script src="/workshop/account.js"></script>
+<script src="/workshop/event-info.js"></script>
+<script>
+(function () {
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  var dn = EVI.dn;
+  var CODE = String(new URLSearchParams(location.search).get("event") || "").trim().toUpperCase();
+  var EV = null, PKG = null, PAGE = "/workshop/index.html", loaded = {};
+  var QS = ["कार्यशाला मेरो कामका लागि उपयोगी थियो", "सिकाइको गति मलाई ठिक्क थियो", "भाषा बुझ्न सजिलो थियो", "आफैँ गरेर सिक्ने पर्याप्त अवसर मिल्यो", "आयोजना छनौट अभ्यास वास्तविक जस्तो लाग्यो", "सहजकर्ता र सहयोगीबाट राम्रो सहयोग मिल्यो"];
+  var TABS = ["details", "schedule", "contents", "results", "people", "feedback"];
+  function url(path, hash) { return path + "?event=" + encodeURIComponent(CODE) + (hash ? "#" + hash : ""); }
+  function show(id) { ["needLogin", "notFound", "loading", "panel"].forEach(function (x) { $(x).classList.toggle("hide", x !== id); }); }
+
+  /* ---------- tabs (lazy: frames load when first opened) ---------- */
+  function showTab(name) {
+    if (TABS.indexOf(name) === -1) name = "details";
+    document.querySelectorAll("#tabs button").forEach(function (b) { b.classList.toggle("on", b.dataset.tab === name); });
+    TABS.forEach(function (n) { $("tab-" + n).classList.toggle("on", n === name); });
+    if (location.hash.slice(1) !== name) history.replaceState(null, "", location.pathname + location.search + "#" + name);
+    if (loaded[name]) return;
+    loaded[name] = true;
+    if (name === "schedule") { $("schedFrame").src = url(PAGE, "agenda"); $("schedOpen").href = url(PAGE, "agenda"); }
+    if (name === "contents") { $("contFrame").src = url(PAGE, "resources"); $("contOpen").href = url(PAGE, "home"); }
+    if (name === "results") { var r = "/workshop/assessment/index.html?dash=" + encodeURIComponent(CODE); $("resFrame").src = r; $("resOpen").href = r; }
+    if (name === "people") loadPeople();
+    if (name === "feedback") loadFeedback();
+  }
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-tab]");
+    if (b) { showTab(b.dataset.tab); return; }
+    var f = e.target.closest("a[data-frame]");
+    if (f) { e.preventDefault(); $("contFrame").src = url(PAGE, f.dataset.frame === "dashboard" ? "home" : "resources"); }
+  });
+  window.addEventListener("hashchange", function () { if (EV) showTab(location.hash.slice(1)); });
+
+  /* ---------- details ---------- */
+  function renderHead() {
+    var i = EVI.info(EV);
+    document.title = EV.name + " · AI तालिम";
+    $("evTitle").textContent = EV.name;
+    $("evCode").textContent = EV.code;
+    $("evPkg").textContent = PKG ? PKG.name : "प्याकेज तोकिएको छैन";
+    $("evActive").textContent = EV.is_active ? "सक्रिय इभेन्ट" : "सक्रिय छैन";
+    $("evActive").classList.toggle("on", !!EV.is_active);
+    $("activeBtn").textContent = EV.is_active ? "सक्रियबाट हटाउनुहोस्" : "सक्रिय इभेन्ट बनाउनुहोस्";
+    if (i.org) $("orgLine").textContent = i.org + " · AI तालिम";
+    var fact = function (k, v) { return '<div><dt>' + k + '</dt><dd>' + v + '</dd></div>'; };
+    $("facts").innerHTML =
+      fact("आयोजक", esc(EV.organized_by || "—")) +
+      fact("स्थान", esc(EV.address || "—")) +
+      fact("मिति", esc(i.dateRange || "—") + (i.iso.length ? ' <span class="small muted">(' + esc(i.iso.join(", ")) + ')</span>' : "")) +
+      fact("प्रशिक्षण प्याकेज", esc(PKG ? PKG.name : "—")) +
+      fact("इभेन्ट कोड", '<code>' + esc(EV.code) + '</code>') +
+      fact("सक्रिय?", EV.is_active ? "हो: साइन इन नगरेका आगन्तुकले यही इभेन्टको विवरण देख्छन्" : "होइन");
+    var qn = (EV.question_ids || []).length;
+    var link = function (t) { return location.origin + "/workshop/assessment/index.html?e=" + encodeURIComponent(EV.code) + "&t=" + t; };
+    var yes = function (b, on, off) { return b ? '<span class="badge on">' + on + '</span>' : '<span class="badge">' + off + '</span>'; };
+    $("testInfo").innerHTML =
+      '<p>प्रश्न सेट: ' + (qn ? '<strong>' + dn(qn) + ' प्रश्न</strong>' : '<strong style="color:var(--bad)">बनेको छैन</strong>: <a href="/workshop/admin.html#events">इभेन्टहरू</a> ट्याबमा "प्रश्न सेट बनाउनुहोस्" थिच्नुहोस्।') + '</p>' +
+      '<div class="scroll"><table class="t"><thead><tr><th>परीक्षा</th><th>स्थिति</th><th>सही उत्तर</th><th>सार्वजनिक लिङ्क (QR)</th></tr></thead><tbody>' +
+      '<tr><td>पूर्व-तालिम</td><td>' + yes(EV.pre_open, "खुला", "बन्द") + '</td><td>' + yes(EV.pre_answers, "देखिने", "लुकाइएको") + '</td><td class="small"><a href="' + esc(link("pre")) + '" target="_blank" rel="noopener">' + esc(link("pre")) + '</a></td></tr>' +
+      '<tr><td>पश्च-तालिम</td><td>' + yes(EV.post_open, "खुला", "बन्द") + '</td><td>' + yes(EV.post_answers, "देखिने", "लुकाइएको") + '</td><td class="small"><a href="' + esc(link("post")) + '" target="_blank" rel="noopener">' + esc(link("post")) + '</a></td></tr>' +
+      '</tbody></table></div>';
+  }
+
+  async function loadCounts() {
+    try {
+      var appr = await WS.listByStatus("approved");
+      $("stPeople").textContent = dn((appr.data || []).filter(function (p) { return p.event_id === EV.id && p.role !== "trainer"; }).length);
+    } catch (e) {}
+    try {
+      var fb = await WS.listFeedback();
+      $("stFb").textContent = dn((fb.data || []).filter(function (r) { return r.event_code === EV.code; }).length);
+    } catch (e) {}
+    try {
+      var res = await fetch(WS.SB_URL + "/rest/v1/assessment_results?select=test&session_code=eq." + encodeURIComponent(EV.code),
+        { headers: { apikey: WS.SB_KEY, Authorization: "Bearer " + WS.token() } });
+      var rows = res.ok ? await res.json() : [];
+      $("stPre").textContent = dn(rows.filter(function (r) { return r.test === "pre"; }).length);
+      $("stPost").textContent = dn(rows.filter(function (r) { return r.test === "post"; }).length);
+    } catch (e) {}
+  }
+
+  $("activeBtn").addEventListener("click", async function () {
+    var btn = $("activeBtn"), m = $("activeMsg");
+    btn.disabled = true;
+    var makeActive = !EV.is_active;
+    var r = await WS.setActiveEvent(makeActive ? EV.code : "");
+    btn.disabled = false;
+    if (r.error) { m.textContent = "बदल्न सकिएन: " + r.error.message; m.className = "msg bad"; return; }
+    EV.is_active = makeActive;
+    m.textContent = EV.is_active ? "यो अब सक्रिय इभेन्ट हो। अरू इभेन्ट स्वतः निष्क्रिय भए।" : "अब कुनै इभेन्ट सक्रिय छैन।";
+    m.className = "msg ok";
+    renderHead();
+  });
+
+  /* ---------- participants ---------- */
+  async function loadPeople() {
+    var r = await WS.listByStatus("approved");
+    if (r.error) { $("people").textContent = "लोड हुन सकेन: " + r.error.message; return; }
+    var list = (r.data || []).filter(function (p) { return p.event_id === EV.id && p.role !== "trainer"; });
+    if (!list.length) { $("people").textContent = "यो इभेन्टमा अहिलेसम्म कोही स्वीकृत छैनन्।"; return; }
+    $("people").classList.remove("muted");
+    $("people").innerHTML = '<p class="small muted">' + dn(list.length) + ' जना</p><div class="scroll"><table class="t"><thead><tr><th>#</th><th>नाम</th><th>कार्यालय</th><th>लिङ्ग</th><th>उमेर</th><th>शिक्षा</th></tr></thead><tbody>' +
+      list.map(function (p, k) { return '<tr><td>' + dn(k + 1) + '</td><td>' + esc(p.full_name) + '</td><td>' + esc(p.office || "") + '</td><td>' + esc(p.gender || "") + '</td><td>' + esc(p.age_group || "") + '</td><td>' + esc(p.education || "") + '</td></tr>'; }).join("") +
+      '</tbody></table></div>';
+  }
+
+  /* ---------- feedback ---------- */
+  async function loadFeedback() {
+    var r = await WS.listFeedback();
+    if (r.error) { $("fbSummary").textContent = "लोड हुन सकेन: " + r.error.message; return; }
+    var rows = (r.data || []).filter(function (x) { return x.event_code === EV.code; });
+    if (!rows.length) { $("fbSummary").textContent = "यो इभेन्टमा अहिलेसम्म कुनै पृष्ठपोषण आएको छैन।"; return; }
+    var avg = function (a) { a = a.filter(function (x) { return typeof x === "number"; }); return a.length ? (a.reduce(function (s, x) { return s + x; }, 0) / a.length).toFixed(1) : "–"; };
+    var rec = rows.filter(function (x) { return x.recommend; }).length;
+    var comments = rows.map(function (x) {
+      var parts = [];
+      if (x.best_session) parts.push("<b>उपयोगी सत्र:</b> " + esc(x.best_session));
+      if (x.improve) parts.push("<b>सुधार:</b> " + esc(x.improve));
+      if (x.first_ai_use) parts.push("<b>पहिलो AI काम:</b> " + esc(x.first_ai_use));
+      return parts.length ? '<li class="small">' + parts.join(" · ") + '</li>' : "";
+    }).join("");
+    $("fbSummary").classList.remove("muted");
+    $("fbSummary").innerHTML = '<p><strong>' + dn(rows.length) + '</strong> प्रतिक्रिया · अरूलाई सिफारिस गर्ने: <strong>' + dn(rec) + '</strong> (' + dn(Math.round(rec / rows.length * 100)) + '%)</p>' +
+      '<div class="scroll"><table class="t"><thead><tr><th>प्रश्न</th><th>औसत (५ मध्ये)</th></tr></thead><tbody>' +
+      QS.map(function (q, k) { return '<tr><td>' + esc(q) + '</td><td>' + dn(avg(rows.map(function (x) { return (x.ratings || [])[k]; }))) + '</td></tr>'; }).join("") +
+      '</tbody></table></div>' + (comments ? '<h2>लिखित टिप्पणी</h2><ul>' + comments + '</ul>' : "");
+  }
+
+  /* ---------- start ---------- */
+  (async function () {
+    try { await WS.init(); } catch (e) {}
+    EVI.home().then(EVI.mountHome).catch(function () {});
+    if (!WS.isTrainer()) { $("loginLink").href = "/workshop/login.html?next=" + encodeURIComponent(location.pathname + location.search); show("needLogin"); return; }
+    if (!CODE) { show("notFound"); return; }
+    EV = await WS.loadEventByCode(CODE);
+    if (!EV) { show("notFound"); return; }
+    var pk = (await WS.listPackages()).data || [];
+    PKG = pk.filter(function (p) { return p.id === EV.package_id; })[0] || null;
+    PAGE = PKG && PKG.key === "representative" ? "/workshop/representative/index.html" : "/workshop/index.html";
+    renderHead();
+    show("panel");
+    showTab(location.hash.slice(1) || "details");
+    loadCounts();
+  })();
+})();
+</script>
+</body>
+</html>

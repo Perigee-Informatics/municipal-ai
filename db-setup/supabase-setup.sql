@@ -359,3 +359,35 @@ language sql stable security definer set search_path = public as $$
   limit 1;
 $$;
 grant execute on function public.public_event_brand(text) to anon, authenticated;
+
+-- 15. The active event. At most one event is active; visitors who are not signed in see the
+--     organiser, place and dates of the active event (not its code). Only the trainer changes it.
+alter table public.events add column if not exists is_active boolean not null default false;
+create unique index if not exists events_one_active on public.events ((true)) where is_active;
+
+create or replace function public.set_active_event(p_code text)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not public.is_trainer() then
+    raise exception 'only the trainer can choose the active event';
+  end if;
+  update public.events set is_active = false where is_active;
+  if coalesce(p_code, '') <> '' then
+    update public.events set is_active = true where code = upper(p_code);
+    if not found then raise exception 'no event with code %', p_code; end if;
+  end if;
+end;
+$$;
+revoke all on function public.set_active_event(text) from public, anon;
+grant execute on function public.set_active_event(text) to authenticated;
+
+create or replace function public.active_event_brand()
+returns table(name text, organized_by text, address text, event_dates date[], package_key text)
+language sql stable security definer set search_path = public as $$
+  select e.name, e.organized_by, e.address, e.event_dates, p.key
+  from public.events e
+  left join public.training_packages p on p.id = e.package_id
+  where e.is_active
+  limit 1;
+$$;
+grant execute on function public.active_event_brand() to anon, authenticated;

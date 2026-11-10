@@ -1,13 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect } from "react";
 
+import { frontPageTarget } from "@/lib/front-page";
+
 export const Route = createFileRoute("/")({
   component: Index,
 });
 
 function Index() {
   useEffect(() => {
-    window.location.replace("/workshop/index.html");
+    void frontPageTarget().then((target) => window.location.replace(target));
   }, []);
 
   return (

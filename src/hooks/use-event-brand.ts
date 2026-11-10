@@ -6,8 +6,9 @@ import { supabase } from "@/integrations/supabase/client";
  * (trainer console → इभेन्ट मास्टर). Mirrors public/workshop/event-info.js:
  *   1. ?event=CODE in the address (remembered on this device),
  *   2. the signed-in participant's own event,
- *   3. for the trainer, the newest event,
- *   4. a remembered code, for visitors who are not signed in (public_event_brand).
+ *   3. the active event (the trainer marks one; visitors get it via active_event_brand),
+ *   4. a remembered code,
+ *   5. for the trainer, the newest event.
  * Returns null while loading or when no event applies; pages then show the generic wording. */
 
 export type EventBrand = { org: string; place: string };
@@ -20,19 +21,27 @@ export function normalizeOrg(raw: string | null | undefined): string {
   return /पालिका/.test(org) ? org : `${org} पालिका`;
 }
 
-function rememberedCode(): string {
+function urlCode(): string {
   if (typeof window === "undefined") return "";
   const fromUrl = (new URLSearchParams(window.location.search).get("event") ?? "")
     .trim()
     .toUpperCase();
-  try {
-    if (fromUrl) {
+  if (fromUrl) {
+    try {
       window.localStorage.setItem(STORE_KEY, fromUrl);
-      return fromUrl;
+    } catch {
+      /* storage blocked: the code still applies to this visit */
     }
+  }
+  return fromUrl;
+}
+
+function storedCode(): string {
+  if (typeof window === "undefined") return "";
+  try {
     return window.localStorage.getItem(STORE_KEY) ?? "";
   } catch {
-    return fromUrl;
+    return "";
   }
 }
 
@@ -44,13 +53,22 @@ function toBrand(row: EventRow | null | undefined): EventBrand | null {
 }
 
 export async function loadEventBrand(): Promise<EventBrand | null> {
-  const code = rememberedCode();
+  const code = urlCode();
   const { data: sessionData } = await supabase.auth.getSession();
   const user = sessionData.session?.user;
 
   if (!user) {
-    if (!code) return null;
-    const { data } = await supabase.rpc("public_event_brand", { p_code: code });
+    if (code) {
+      const { data } = await supabase.rpc("public_event_brand", { p_code: code });
+      const brand = toBrand(data?.[0]);
+      if (brand) return brand;
+    }
+    const { data: active } = await supabase.rpc("active_event_brand");
+    const activeBrand = toBrand(active?.[0]);
+    if (activeBrand) return activeBrand;
+    const stored = storedCode();
+    if (!stored) return null;
+    const { data } = await supabase.rpc("public_event_brand", { p_code: stored });
     return toBrand(data?.[0]);
   }
 
@@ -75,6 +93,25 @@ export async function loadEventBrand(): Promise<EventBrand | null> {
       .from("events")
       .select("organized_by, address")
       .eq("id", profile.event_id)
+      .maybeSingle();
+    const brand = toBrand(data);
+    if (brand) return brand;
+  }
+
+  const { data: activeRows } = await supabase
+    .from("events")
+    .select("organized_by, address")
+    .eq("is_active", true)
+    .limit(1);
+  const activeBrand = toBrand(activeRows?.[0]);
+  if (activeBrand) return activeBrand;
+
+  const stored = storedCode();
+  if (stored) {
+    const { data } = await supabase
+      .from("events")
+      .select("organized_by, address")
+      .eq("code", stored)
       .maybeSingle();
     const brand = toBrand(data);
     if (brand) return brand;

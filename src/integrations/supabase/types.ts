@@ -87,6 +87,7 @@ export type Database = {
           created_at: string
           event_dates: string[]
           id: string
+          is_active: boolean
           name: string
           organized_by: string | null
           package_id: string | null
@@ -102,6 +103,7 @@ export type Database = {
           created_at?: string
           event_dates?: string[]
           id?: string
+          is_active?: boolean
           name: string
           organized_by?: string | null
           package_id?: string | null
@@ -117,6 +119,7 @@ export type Database = {
           created_at?: string
           event_dates?: string[]
           id?: string
+          is_active?: boolean
           name?: string
           organized_by?: string | null
           package_id?: string | null
@@ -277,6 +280,16 @@ export type Database = {
       }
       is_approved: { Args: never; Returns: boolean }
       is_trainer: { Args: never; Returns: boolean }
+      active_event_brand: {
+        Args: never
+        Returns: {
+          address: string | null
+          event_dates: string[]
+          name: string
+          organized_by: string | null
+          package_key: string | null
+        }[]
+      }
       public_event_brand: {
         Args: { p_code: string }
         Returns: {
@@ -302,6 +315,7 @@ export type Database = {
         Args: { p_code: string; p_participant: string; p_test: string }
         Returns: Json
       }
+      set_active_event: { Args: { p_code: string }; Returns: undefined }
       save_my_profile: {
         Args: {
           p_age_group: string

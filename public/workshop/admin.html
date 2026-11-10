@@ -55,6 +55,7 @@ table.t th,table.t td{border:1px solid var(--line);padding:6px 8px;text-align:le
 table.t th{background:var(--soft)}
 .frame{width:100%;height:78vh;border:1px solid var(--line);border-radius:12px;background:#fff;margin-top:10px}
 details.card>summary{cursor:pointer;font-weight:700}
+.badge-on{display:inline-block;border-radius:999px;padding:0 8px;font-size:13px;font-weight:700;background:var(--ok);color:#fff}
 </style>
 </head>
 <body>
@@ -86,6 +87,7 @@ details.card>summary{cursor:pointer;font-weight:700}
         <div class="stat"><span class="small muted">स्वीकृत सहभागी</span><b id="stApproved">–</b></div>
         <div class="stat"><span class="small muted">पृष्ठपोषण प्राप्त</span><b id="stFeedback">–</b></div>
       </div>
+      <section class="card" id="activeCard"><h2 style="margin-top:0">सक्रिय इभेन्ट</h2><p id="activeLine" class="muted">लोड हुँदैछ…</p><p class="small muted">साइन इन नगरेका आगन्तुकले सक्रिय इभेन्टको आयोजक, स्थान र मिति देख्छन्। इभेन्टको पृष्ठबाट सक्रिय बनाउन सकिन्छ।</p></section>
       <section class="card">
         <h2 style="margin-top:0">छिटो काम</h2>
         <div class="row" style="justify-content:flex-start">
@@ -140,7 +142,7 @@ details.card>summary{cursor:pointer;font-weight:700}
     <!-- प्रशिक्षण प्याकेज -->
     <div class="tabpanel" id="tab-packages">
       <h2 style="margin-top:16px">प्रशिक्षण प्याकेज</h2>
-      <p class="small muted">हरेक प्याकेजको आफ्नै प्रश्न बैंक (५० प्रश्न) र आफ्नै इभेन्टहरू हुन्छन्। नयाँ प्याकेज थप्न नयाँ प्रश्न बैंक र सामग्री चाहिन्छ, त्यसैले त्यो कोडमार्फत थपिन्छ। यहाँ नाम बदल्न सकिन्छ।</p>
+      <p class="small muted">इभेन्टको नाममा थिच्दा त्यसको विवरण, कार्यक्रम तालिका, सामग्री, परीक्षा नतिजा, सहभागी र पृष्ठपोषण एकै ठाउँमा खुल्छ। हरेक प्याकेजको आफ्नै प्रश्न बैंक (५० प्रश्न) र आफ्नै इभेन्टहरू हुन्छन्। नयाँ प्याकेज थप्न नयाँ प्रश्न बैंक र सामग्री चाहिन्छ, त्यसैले त्यो कोडमार्फत थपिन्छ। यहाँ नाम बदल्न सकिन्छ।</p>
       <div id="pkgList" class="muted">लोड हुँदैछ…</div>
       <p id="pkgMsg" class="msg hide"></p>
     </div>
@@ -314,7 +316,7 @@ details.card>summary{cursor:pointer;font-weight:700}
     if (!events.length) { $("evList").innerHTML = "अहिलेसम्म कुनै इभेन्ट छैन।"; return; }
     $("evList").innerHTML = events.map(function (e) {
       var id = esc(e.id);
-      return '<div class="ev"><div class="row"><div><strong>' + esc(e.name) + '</strong> <span class="small">[' + esc(e.code) + ']</span>' +
+      return '<div class="ev"><div class="row"><div><strong><a href="' + esc('/workshop/event.html?event=' + encodeURIComponent(e.code)) + '">' + esc(e.name) + '</a></strong> <span class="small">[' + esc(e.code) + ']</span>' + (e.is_active ? ' <span class="badge-on">सक्रिय</span>' : '') +
         '<div class="small muted">' + esc(pkgName(e.package_id)) + '</div>' +
         '<div class="small muted">' + esc(e.organized_by || "") + ' · ' + esc(e.address || "") + '</div>' +
         '<div class="small muted">मितिहरू: ' + esc(EVI.info(e).dateRange || "—") + ' <span class="muted">(' + esc((e.event_dates || []).join(", ")) + ')</span></div></div>' +
@@ -670,7 +672,8 @@ details.card>summary{cursor:pointer;font-weight:700}
   /* Header line: organiser of the newest event. */
   async function loadOrgLine() {
     try {
-      var r = await WS.listEvents(), e = (r.data || []).filter(function (x) { return x.organized_by; })[0];
+      var all = (await WS.listEvents()).data || [];
+      var e = all.filter(function (x) { return x.is_active && x.organized_by; })[0] || all.filter(function (x) { return x.organized_by; })[0];
       if (e) $("orgLine").textContent = EVI.info(e).org + " · AI तालिम";
     } catch (err) {}
   }
@@ -711,6 +714,10 @@ details.card>summary{cursor:pointer;font-weight:700}
       $("stPending").textContent = c.pending;
       $("stApproved").textContent = c.approved;
       $("stFeedback").textContent = c.feedback.length;
+      var act = c.events.filter(function (e) { return e.is_active; })[0];
+      $("activeLine").innerHTML = act
+        ? '<a href="' + esc('/workshop/event.html?event=' + encodeURIComponent(act.code)) + '"><strong>' + esc(act.name) + '</strong> [' + esc(act.code) + ']</a> · ' + esc([EVI.info(act).org, act.address, EVI.info(act).dateRange].filter(Boolean).join(" · "))
+        : 'कुनै इभेन्ट सक्रिय छैन। <a href="#packages">प्रशिक्षण प्याकेज</a>मा इभेन्ट खोलेर "सक्रिय इभेन्ट बनाउनुहोस्" थिच्नुहोस्।';
     } catch (e) {}
   }
 
@@ -724,7 +731,7 @@ details.card>summary{cursor:pointer;font-weight:700}
       var mine = events.filter(function (e) { return e.package_id === p.id; });
       return '<tr><td><input type="text" id="pkgName-' + esc(p.id) + '" value="' + esc(p.name) + '"></td>' +
         '<td>' + esc(p.key) + '</td><td>' + (POOL_SIZE[p.key] || "—") + '</td><td>' + mine.length + '</td>' +
-        '<td class="small">' + (mine.map(function (e) { return esc(e.name) + ' [' + esc(e.code) + ']'; }).join("<br>") || "—") + '</td>' +
+        '<td class="small">' + (mine.map(function (e) { return '<a href="' + esc('/workshop/event.html?event=' + encodeURIComponent(e.code)) + '">' + esc(e.name) + ' [' + esc(e.code) + ']</a>' + (e.is_active ? ' <span class="badge-on">सक्रिय</span>' : ''); }).join("<br>") || "—") + '</td>' +
         '<td><button type="button" class="ok" data-pkg-save="' + esc(p.id) + '">नाम सुरक्षित</button></td></tr>';
     }).join("");
     $("pkgList").innerHTML = '<div class="scroll"><table class="t"><thead><tr><th>प्याकेजको नाम</th><th>कुञ्जी</th><th>प्रश्न बैंक</th><th>इभेन्ट सङ्ख्या</th><th>इभेन्टहरू</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>';

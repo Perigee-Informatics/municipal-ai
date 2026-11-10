@@ -6,11 +6,13 @@ const db: {
   events: Row[];
   profile: Row | null;
   rpc: Row[];
+  active: Row[];
 } = {
   session: null,
   events: [],
   profile: null,
   rpc: [],
+  active: [],
 };
 
 // Minimal stand-in for the Supabase query builder: filters by eq(), honours maybeSingle()/limit().
@@ -35,7 +37,10 @@ vi.mock("@/integrations/supabase/client", () => ({
     },
     from: (table: string) =>
       query(() => (table === "events" ? db.events : db.profile ? [db.profile] : [])),
-    rpc: async () => ({ data: db.rpc, error: null }),
+    rpc: async (name: string) => ({
+      data: name === "active_event_brand" ? db.active : db.rpc,
+      error: null,
+    }),
   },
 }));
 
@@ -52,6 +57,7 @@ describe("event brand", () => {
     db.events = EVENTS;
     db.profile = null;
     db.rpc = [];
+    db.active = [];
     window.localStorage.clear();
     window.history.replaceState(null, "", "/auth");
   });
@@ -81,6 +87,19 @@ describe("event brand", () => {
     expect((await loadEventBrand())?.org).toBe("मालारानी गाउँपालिका");
   });
 
+  it("shows the active event to a visitor without an event link", async () => {
+    db.active = [{ organized_by: "पाणिनी गाउँपालिका, अर्घाखाँची", address: "अर्घाखाँची" }];
+    expect((await loadEventBrand())?.org).toBe("पाणिनी गाउँपालिका, अर्घाखाँची");
+  });
+
+  it("prefers the active event over the newest for the trainer", async () => {
+    db.session = { user: { id: "u" } };
+    db.profile = { id: "u", event_id: null, role: "trainer", status: "approved" };
+    const [rep, emp] = EVENTS;
+    db.events = [rep as Row, { ...(emp as Row), is_active: true }];
+    expect((await loadEventBrand())?.org).toBe("मालारानी गाउँपालिका");
+  });
+
   it("uses the newest event for the trainer", async () => {
     db.session = { user: { id: "u" } };
     db.profile = { id: "u", event_id: null, role: "trainer", status: "approved" };
@@ -92,5 +111,17 @@ describe("event brand", () => {
     db.profile = { id: "u", event_id: "r1", role: "participant", status: "approved" };
     window.history.replaceState(null, "", "/account?event=E-01");
     expect((await loadEventBrand())?.org).toBe("मालारानी गाउँपालिका");
+  });
+});
+
+describe("front page", () => {
+  it("opens the active event's course, else the employee materials", async () => {
+    const { frontPageTarget } = await import("@/lib/front-page");
+    db.active = [{ package_key: "representative" }];
+    expect(await frontPageTarget()).toBe("/workshop/representative/index.html");
+    db.active = [{ package_key: "employee" }];
+    expect(await frontPageTarget()).toBe("/workshop/index.html");
+    db.active = [];
+    expect(await frontPageTarget()).toBe("/workshop/index.html");
   });
 });
