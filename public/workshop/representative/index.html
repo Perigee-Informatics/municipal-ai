@@ -483,7 +483,7 @@ function fbHtml() {
   return `<section class="tool" id="fbTool"><h3>सामग्री १३: पृष्ठपोषण फाराम (अनलाइन)</h3>
   <p class="note">हरेक पङ्क्तिमा एउटा मात्र विकल्प छान्नुहोस् (१ = कमजोर, ५ = धेरै राम्रो)। इभेन्ट कोड प्रशिक्षकबाट पाउनुहोस्।</p>
   <form id="fbForm">
-    <label class="f">इभेन्ट कोड<input id="fbCode" type="text" required maxlength="20" autocomplete="off"></label>
+    <label class="f">इभेन्ट कोड<input id="fbCode" type="text" required maxlength="20" autocomplete="off" value="${esc(FB_CODE)}"></label>
     <div class="tbl"><table class="rate"><thead><tr><th>प्रश्न</th><th>१</th><th>२</th><th>३</th><th>४</th><th>५</th></tr></thead><tbody>${rates}</tbody></table></div>
     <label class="f">कुन सत्र सबैभन्दा उपयोगी लाग्यो, र किन?<textarea id="fbBest" rows="2" maxlength="600"></textarea></label>
     <label class="f">अर्को पटक के सुधार गर्नुपर्छ?<textarea id="fbImprove" rows="2" maxlength="600"></textarea></label>
@@ -492,6 +492,11 @@ function fbHtml() {
     <div class="actions"><button class="btn primary" type="submit" id="fbSend">पठाउनुहोस्</button></div>
     <p id="fbMsg" class="msg" hidden></p>
   </form></section>`;
+}
+let FB_CODE = '';
+/* A signed-in participant's own event code is filled in for them. */
+async function loadFbCode() {
+  try { const ev = await WS.loadEventForProfile(); if (ev && ev.code) { FB_CODE = ev.code; const i = $('#fbCode'); if (i && !i.value) i.value = FB_CODE; } } catch (e) {}
 }
 function fbMsg(text, ok) { const m = $('#fbMsg'); if (!m) return; m.textContent = text; m.className = 'msg ' + (ok ? 'ok' : 'bad'); m.hidden = false; }
 document.addEventListener('submit', async e => {
@@ -511,8 +516,8 @@ document.addEventListener('submit', async e => {
       best_session: $('#fbBest').value.trim(), improve: $('#fbImprove').value.trim(),
       first_ai_use: $('#fbFirst').value.trim(), recommend: $('#fbRec').checked,
     });
-    if (res.error) { fbMsg('पठाउन सकिएन: ' + res.error.message, false); btn.disabled = false; return; }
-    if ($('#fbForm')) $('#fbForm').reset();
+    if (res.error) { fbMsg(res.error.code === '42501' ? 'इभेन्ट कोड मिलेन। कोड प्रशिक्षकसँग सोधेर फेरि पठाउनुहोस्।' : 'पठाउन सकिएन: ' + res.error.message, false); btn.disabled = false; return; }
+    if ($('#fbForm')) $('#fbForm').reset(); if ($('#fbCode')) $('#fbCode').value = FB_CODE;
     fbMsg('धन्यवाद! तपाईंको पृष्ठपोषण सुरक्षित भयो।', true);
   } catch (err) { fbMsg('पठाउन सकिएन। इन्टरनेट जाँच गरी फेरि प्रयास गर्नुहोस्।', false); }
   btn.disabled = false;
@@ -671,6 +676,7 @@ async function start() {
   MATERIALS_OK = ok;
   route();
   loadAnswers('representative');
+  loadFbCode();
   if (window.EVI && !HOME) EVI.home().then(h => { HOME = h; EVI.mountHome(h); }).catch(() => {});
   if (EVENT_DONE) return;
   try {

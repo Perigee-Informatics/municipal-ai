@@ -174,6 +174,14 @@ a.block:hover { background: var(--soft) }
   .search { flex-basis: 160px }
   .pager a { max-width: 100% }
 }
+.tool { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin: 22px 0 }
+.tool h3 { margin-top: 0 }
+.tool input, .tool textarea { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px }
+.tool textarea, .tool input[type=text] { width: 100% }
+.tool label.f { display: block; margin: 10px 0 }
+.tool label.chk { display: flex; gap: 8px; align-items: center; margin: 10px 0 }
+.tool table.rate td { text-align: center } .tool table.rate td:first-child { text-align: left }
+.msg { margin: 8px 0; font-weight: 500 } .msg.ok { color: var(--ok) } .msg.bad { color: var(--accent) }
 .ans:empty { display: none }
 .ans { margin: 14px 0 }
 .ans-btn { border-color: var(--ok); color: var(--ok); font-weight: 700 }
@@ -271,6 +279,7 @@ function renderSide(cur) {
     <a href="#agenda" ${cur === 'agenda' ? 'aria-current="page"' : ''}>कार्यक्रम तालिका र सत्र योजना</a>
     <a href="#resources" ${['resources', ...Object.keys(R), ...Object.keys(A)].includes(cur) ? 'aria-current="page"' : ''}>सन्दर्भ सामग्री</a>
     <a href="#downloads" ${cur === 'downloads' ? 'aria-current="page"' : ''}>डाउनलोड</a>
+    <a href="#feedback" ${cur === 'feedback' ? 'aria-current="page"' : ''}>पृष्ठपोषण फाराम</a>
     <a href="/workshop/assessment/index.html">AI ज्ञान परीक्षा</a></div>`;
   for (const d of DATA.DAYS) {
     h += `<p class="day-h"><b>${d.n === 1 ? 'पहिलो दिन' : 'दोस्रो दिन'}</b><span>${d.date}</span></p><ul class="tl">`;
@@ -360,7 +369,7 @@ function vSession(s) {
 }
 function vOther(id) {
   const o = DATA.OTHER[id], loc = itemOf(id);
-  return `<p class="eyebrow">${loc.day.n === 1 ? 'पहिलो दिन' : 'दोस्रो दिन'} · ${tm(loc.it.start, loc.it.end)}</p><h1>${o.title}</h1><div class="prose">${o.html}</div>`;
+  return `<p class="eyebrow">${loc.day.n === 1 ? 'पहिलो दिन' : 'दोस्रो दिन'} · ${tm(loc.it.start, loc.it.end)}</p><h1>${o.title}</h1><div class="prose">${o.html}</div>${id === 'close' ? fbHtml() : ''}`;
 }
 function vResources() {
   return `<p class="eyebrow">सन्दर्भ सामग्री</p><h1>अभ्यास सामग्री र अनुसूची</h1>
@@ -384,6 +393,55 @@ function vDownloads() {
   return `<p class="eyebrow">डाउनलोड</p><h1>सबै सामग्री</h1>
   <p class="meta">मोबाइलमा पढ्न PDF र सम्पादन गर्न Word (docx) छान्नुहोस्। डाउनलोड गर्नुअघि पुष्टि माग्न सक्छ।</p>
   <div class="dl-list">${dlButtons(DATA.FILES.map(f => f.key))}</div><p class="note" id="dlnote" hidden>यो दृश्यमा फाइल डाउनलोड गर्न मिल्दैन। सामग्री यहीँ पढ्न सकिन्छ, वा विज्ञसँग फाइल माग्नुहोस्।</p>`;
+}
+
+/* ---------- feedback form (saved in workshop_feedback; the trainer sees it on the event page) ----------
+   Keep the question order in step with QS.employee in event.html. */
+const FBQ = ['तालिम मेरो कामका लागि उपयोगी थियो', 'सिकाइको गति मलाई ठिक्क थियो', 'भाषा बुझ्न सजिलो थियो', 'आफैँ गरेर सिक्ने पर्याप्त अवसर मिल्यो', 'अभ्यास र उदाहरण मेरो दैनिक कामसँग मिल्दा थिए', 'विज्ञ र सहयोगीबाट राम्रो सहयोग मिल्यो'];
+let FB_CODE = '';
+const fbEsc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function fbHtml() {
+  const rates = FBQ.map((q, i) => `<tr><td>${fbEsc(q)}</td>${[1, 2, 3, 4, 5].map(k => `<td><input type="radio" name="q${i}" value="${k}" aria-label="${dn(k)}" required></td>`).join('')}</tr>`).join('');
+  return `<section class="tool" id="fbTool"><h3>पृष्ठपोषण फाराम (अनलाइन)</h3>
+  <p class="note">हरेक पङ्क्तिमा एउटा मात्र विकल्प छान्नुहोस् (१ = कमजोर, ५ = धेरै राम्रो)। नाम सोधिँदैन।</p>
+  <form id="fbForm">
+    <label class="f">इभेन्ट कोड<input id="fbCode" type="text" required maxlength="20" autocomplete="off" value="${fbEsc(FB_CODE)}"></label>
+    <div class="tbl"><table class="rate"><thead><tr><th>प्रश्न</th><th>१</th><th>२</th><th>३</th><th>४</th><th>५</th></tr></thead><tbody>${rates}</tbody></table></div>
+    <label class="f">कुन सत्र सबैभन्दा उपयोगी लाग्यो, र किन?<textarea id="fbBest" rows="2" maxlength="600"></textarea></label>
+    <label class="f">अर्को पटक के सुधार गर्नुपर्छ?<textarea id="fbImprove" rows="2" maxlength="600"></textarea></label>
+    <label class="f">तपाईं सबैभन्दा पहिले कुन काम AI बाट गर्नुहुन्छ?<textarea id="fbFirst" rows="2" maxlength="600"></textarea></label>
+    <label class="chk"><input id="fbRec" type="checkbox"> यो तालिम अरू कर्मचारीलाई सिफारिस गर्छु</label>
+    <div class="actions"><button class="btn primary" type="submit" id="fbSend">पठाउनुहोस्</button></div>
+    <p id="fbMsg" class="msg" hidden></p>
+  </form></section>`;
+}
+function vFeedback() { return `<p class="eyebrow">समापन सत्र</p><h1>पृष्ठपोषण फाराम</h1>${fbHtml()}`; }
+function fbMsg(text, ok) { const m = $('#fbMsg'); if (!m) return; m.textContent = text; m.className = 'msg ' + (ok ? 'ok' : 'bad'); m.hidden = false; }
+document.addEventListener('submit', async e => {
+  if (e.target.id !== 'fbForm') return;
+  e.preventDefault();
+  const ratings = [];
+  for (let i = 0; i < FBQ.length; i++) {
+    const r = document.querySelector(`input[name="q${i}"]:checked`);
+    if (!r) { fbMsg('सबै प्रश्नमा एउटा विकल्प छान्नुहोस्।', false); return; }
+    ratings.push(parseInt(r.value, 10));
+  }
+  const btn = $('#fbSend') || {}; btn.disabled = true;
+  try {
+    const res = await WS.submitFeedback({
+      event_code: $('#fbCode').value.trim().toUpperCase(), ratings,
+      best_session: $('#fbBest').value.trim(), improve: $('#fbImprove').value.trim(),
+      first_ai_use: $('#fbFirst').value.trim(), recommend: $('#fbRec').checked,
+    });
+    if (res.error) { fbMsg(res.error.code === '42501' ? 'इभेन्ट कोड मिलेन। कोड प्रशिक्षकसँग सोधेर फेरि पठाउनुहोस्।' : 'पठाउन सकिएन: ' + res.error.message, false); btn.disabled = false; return; }
+    $('#fbForm').reset(); if ($('#fbCode')) $('#fbCode').value = FB_CODE;
+    fbMsg('धन्यवाद! तपाईंको पृष्ठपोषण सुरक्षित भयो।', true);
+  } catch (err) { fbMsg('पठाउन सकिएन। इन्टरनेट जाँच गरी फेरि प्रयास गर्नुहोस्।', false); }
+  btn.disabled = false;
+});
+/* A signed-in participant's own event code is filled in for them. */
+async function loadFbCode() {
+  try { const ev = await WS.loadEventForProfile(); if (ev && ev.code) { FB_CODE = ev.code; const i = $('#fbCode'); if (i && !i.value) i.value = FB_CODE; } } catch (e) {}
 }
 
 /* ---------- ideal answers: trainer only ----------
@@ -434,6 +492,7 @@ function route() {
   else if (id === 'resources') html = vResources();
   else if (id === 'agenda') html = vAgenda();
   else if (id === 'downloads') html = vDownloads();
+  else if (id === 'feedback') html = vFeedback();
   else { html = vHome(); cur = 'home'; }
   $('#view').innerHTML = html;
   mountAnswers();
@@ -564,6 +623,7 @@ async function start() {
   MATERIALS_OK = ok;
   route();
   loadAnswers('employee');
+  loadFbCode();
   if (window.EVI && !HOME) EVI.home().then(h => { HOME = h; EVI.mountHome(h); }).catch(() => {});
   if (EVENT_DONE) return;
   try {

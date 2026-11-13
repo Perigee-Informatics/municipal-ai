@@ -21,7 +21,7 @@ function load(rel, extra = {}) {
 
 const HTML_FILES = [
   "index.html", "login.html", "admin.html", "profile.html",
-  "assessment/index.html", "representative/index.html",
+  "assessment/index.html", "representative/index.html", "event.html",
 ];
 
 test("every inline script in the workshop pages compiles", () => {
