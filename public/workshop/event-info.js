@@ -212,8 +212,19 @@
   /* The level a course page shows: ?level= (trainer preview), else the event's, else the last one
      shown for this course on this device, else the course's own level. */
   function levelParam() { var l = String(new URLSearchParams(location.search).get("level") || ""); return l === "rural" || l === "municipal" ? l : ""; }
-  function rememberLevel(course, level) { try { localStorage.setItem("ws-level:" + course, level); } catch (e) {} }
-  function storedLevel(course) { try { var l = localStorage.getItem("ws-level:" + course); return l === "rural" || l === "municipal" ? l : ""; } catch (e) { return ""; } }
+  /* Remembered per event code (so a page opened for that event shows its wording at once), and per
+     course as a fallback. */
+  function rememberLevel(course, level, code) {
+    try { localStorage.setItem("ws-level:" + course, level); if (code) localStorage.setItem("ws-level:event:" + String(code).toUpperCase(), level); } catch (e) {}
+  }
+  function storedLevel(course) {
+    var ok = function (l) { return l === "rural" || l === "municipal" ? l : ""; };
+    try {
+      var code = String(new URLSearchParams(location.search).get("event") || "").trim().toUpperCase();
+      if (code) { var byCode = ok(localStorage.getItem("ws-level:event:" + code)); if (byCode) return byCode; }
+      return ok(localStorage.getItem("ws-level:" + course));
+    } catch (e) { return ""; }
+  }
 
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
 

@@ -228,8 +228,8 @@ a.block:hover { background: var(--soft) }
 <script src="data/reminder.js"></script>
 <script src="data/howto.js"></script>
 <script src="data/agenda.js"></script>
-<script src="account.js?v=20261113c"></script>
-<script src="event-info.js?v=20261113c"></script>
+<script src="account.js?v=20261113d"></script>
+<script src="event-info.js?v=20261113d"></script>
 <script>
 const DATA = { SESS: [window.D_VOICE,window.D_S1,window.D_S2,window.D_S3,window.D_S4,window.D_S5,window.D_S6,window.D_S7,window.D_S8,window.D_S9,window.D_S10], REFS: [window.D_RKA,window.D_RKHA,window.D_RGA,window.D_RGHA,window.D_RNGA], APPX: [window.D_PROMPTS,window.D_GLOSSARY,window.D_REMINDER,window.D_HOWTO], AGENDA_HTML: window.D_AGENDA, ...window.D_META };
 const DEV = '०१२३४५६७८९';
@@ -332,7 +332,7 @@ async function applyEvent() {
   const ev = await EVI.resolve(COURSE);
   const level = EVI.levelParam() || (ev ? await EVI.levelOfEvent(ev) : null) || (ev ? EVI.BASE_LEVEL[COURSE] : LEVEL);
   setLevel(level);
-  if (ev) EVI.rememberLevel(COURSE, level);
+  if (ev) EVI.rememberLevel(COURSE, level, ev.code);
   if (!ev) {
     // The sample text names सन्धिखर्क (a municipality); without an event, the rural version must not
     // call it a गाउँपालिका, so it shows a neutral placeholder instead.
@@ -501,7 +501,7 @@ function mountAnswers() {
     const k = el.dataset.ans, h = ANSWERS[k];
     if (!h) return;
     const open = OPEN_ANS.has(k);
-    el.innerHTML = `<button type="button" class="btn ans-btn" data-ans-toggle="${k}" aria-expanded="${open}">${open ? '▲ आदर्श उत्तर लुकाउनुहोस्' : '▼ आदर्श उत्तर देखाउनुहोस्'}<span class="ans-tag">प्रशिक्षकका लागि मात्र</span></button><div class="ans-body"${open ? '' : ' hidden'}>${h}</div>`;
+    el.innerHTML = `<button type="button" class="btn ans-btn" data-ans-toggle="${k}" aria-expanded="${open}">${open ? '▲ आदर्श उत्तर लुकाउनुहोस्' : '▼ आदर्श उत्तर देखाउनुहोस्'}<span class="ans-tag">प्रशिक्षकका लागि मात्र</span></button><div class="ans-body"${open ? '' : ' hidden'}>${fillEv(window.EVI ? EVI.fill(h, EVI.levelRules(LEVEL)) : h)}</div>`;   // answers are written separately: always word them for this page's level, then the organiser
   });
 }
 document.addEventListener('click', e => {
