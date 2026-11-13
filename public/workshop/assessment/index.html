@@ -129,7 +129,21 @@ var SESSIONS = [
 
 /* Question pools: pool-employee.js (ids 1-50) and pool-representative.js (ids 101-150). Each event has its own set of 20 pool ids (events.question_ids). */
 var POOL_BY_ID={}; POOL_EMPLOYEE.concat(POOL_REPRESENTATIVE).forEach(function(q){POOL_BY_ID[q.id]=q;});
-function itemsFor(ids){ return (ids||[]).map(function(id){return POOL_BY_ID[id];}).filter(Boolean); }
+/* Questions are worded for one level (नगरपालिका or गाउँपालिका); a test for an event of the other
+   level shows them with that level's wording (event-info.js levelRules). Scoring is unchanged. */
+var ASSESS_LEVEL = null, LV_CACHE = {};
+function levelItem(q){
+  if(!q || !ASSESS_LEVEL || !window.EVI) return q;
+  var k = ASSESS_LEVEL + ":" + q.id;
+  if(LV_CACHE[k]) return LV_CACHE[k];
+  var rules = EVI.levelRules(ASSESS_LEVEL), c = {};
+  Object.keys(q).forEach(function(f){
+    var v = q[f];
+    c[f] = typeof v === "string" ? EVI.fill(v, rules) : Array.isArray(v) ? v.map(function(x){ return typeof x === "string" ? EVI.fill(x, rules) : x; }) : v;
+  });
+  return (LV_CACHE[k] = c);
+}
+function itemsFor(ids){ return (ids||[]).map(function(id){return levelItem(POOL_BY_ID[id]);}).filter(Boolean); }
 
 
 var TRAINER = "sandhikharka-2083"; // प्रशिक्षकको पासकोड (यो बदल्न सकिन्छ)
@@ -286,6 +300,7 @@ async function checkSession(){
     var open=openTests(ev);
     if(!open.length){ err.textContent="यो इभेन्टका परीक्षा अहिले खुला छैनन्। प्रशिक्षकसँग सम्पर्क गर्नुहोस्।"; err.classList.remove("hide"); return; }
     CUR_EVENT=ev;
+    try{ ASSESS_LEVEL = await EVI.levelOfEvent(ev); }catch(e){ ASSESS_LEVEL = null; }
     SESSION=ev.code;
     var evi=EVI.info(ev);
     SESSION_INFO={client:evi.org||ev.name, location:ev.address, session_date:evi.dateRange||(ev.event_dates||[]).join(", ")};
@@ -309,6 +324,7 @@ async function fetchPublicInfo(){
     if(!res.ok){ throw {code:"HTTP "+res.status}; }
     var rows=await res.json();
     PUB=rows[0]||null;
+    if(PUB){ try{ ASSESS_LEVEL = await EVI.levelOfEvent({ code: PUB_CODE }); }catch(e){ ASSESS_LEVEL = null; } }
   }catch(e){ PUB=null; PUB_ERR=true; }
   renderApp();
 }

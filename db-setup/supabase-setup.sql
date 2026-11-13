@@ -410,3 +410,26 @@ create policy "answers: trainer only" on public.exercise_answers
   for all to authenticated
   using (public.is_trainer())
   with check (public.is_trainer());
+
+-- 16. Four packages: each course (employees, representatives) for a municipality (नगरपालिका) and a
+--     rural municipality (गाउँपालिका). The lessons are the same; the pages word them for the level of
+--     the event's package (public/workshop/event-info.js levelRules). Keys:
+--       employee (municipality, the text as written)   employee-rural
+--       representative (rural, the text as written)    representative-municipal
+insert into public.training_packages (key, name) values
+  ('employee-rural', 'AI for Rural Municipal Employee (गाउँपालिका)'),
+  ('representative-municipal', 'AI for Municipal Representative (नगरपालिका)')
+on conflict (key) do nothing;
+update public.training_packages set name = 'AI for Municipal Employee (नगरपालिका)'
+  where key = 'employee' and name = 'AI for Municipal Employee';
+update public.training_packages set name = 'AI for Rural Municipal Representative (गाउँपालिका)'
+  where key = 'representative' and name = 'AI for Municipal Representative';
+
+-- The package key of an event code, so the test page can word its questions for the event's level
+-- (visitors who are not signed in cannot read events or packages).
+create or replace function public.event_package_key(p_code text)
+returns text language sql stable security definer set search_path = public as $$
+  select p.key from public.events e join public.training_packages p on p.id = e.package_id
+  where e.code = upper(p_code) limit 1;
+$$;
+grant execute on function public.event_package_key(text) to anon, authenticated;

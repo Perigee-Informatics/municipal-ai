@@ -153,3 +153,10 @@ select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000001
 select public.set_active_event('');
 reset role;
 select pg_temp.check((select count(*) = 0 from public.events where is_active), 'trainer can clear the active event');
+
+-- ---- 11. four packages (course × level) ----
+select pg_temp.check((select count(*) = 4 from public.training_packages where key in ('employee','employee-rural','representative','representative-municipal')), 'four packages seeded');
+set role anon;
+select pg_temp.check(public.event_package_key('tst-01') = 'employee', 'visitors can read the package key of an event code');
+select pg_temp.check(public.event_package_key('NOPE') is null, 'unknown code gives no package');
+reset role;

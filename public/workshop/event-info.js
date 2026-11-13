@@ -117,7 +117,8 @@
     return row ? Object.assign({ code: code }, row) : null;
   }
 
-  /* Which event a page shows. packageKey: "employee" or "representative" (optional).
+  /* Which event a page shows. packageKey: the course, "employee" or "representative" (optional); any
+     package of that course (municipality or rural municipality) matches.
      Signed in:  ?event=CODE → the participant's own event → the active event → a remembered code
                  → (trainer) the newest event; each only if it belongs to the page's package.
      Not signed in: ?event=CODE → the active event → a remembered code. */
@@ -129,7 +130,7 @@
       var inPkg = async function (ev) {
         if (!ev) return false;
         if (!packageKey) return true;
-        if (!pkgs) pkgs = ((await WS.listPackages()).data || []).filter(function (p) { return p.key === packageKey; }).map(function (p) { return p.id; });
+        if (!pkgs) pkgs = ((await WS.listPackages()).data || []).filter(function (p) { return courseOf(p.key) === packageKey; }).map(function (p) { return p.id; });
         return pkgs.indexOf(ev.package_id) !== -1;
       };
       if (code) { var byCode = await WS.loadEventByCode(code); if (await inPkg(byCode)) return byCode; }
@@ -147,10 +148,72 @@
     }
     if (code) { var pub = await publicBrand(code); if (pub) return pub; }
     var act = await rpc("active_event_brand");
-    if (act && (!packageKey || !act.package_key || act.package_key === packageKey)) return Object.assign({ is_active: true }, act);
+    if (act && (!packageKey || !act.package_key || courseOf(act.package_key) === packageKey)) return Object.assign({ is_active: true }, act);
     var st = storedCode(packageKey);
     return st ? publicBrand(st) : null;
   }
+
+  /* ---------- packages: course × level ----------
+     employee                 = employees, municipality (नगरपालिका)       — the employee text as written
+     employee-rural           = employees, rural municipality (गाउँपालिका)
+     representative           = representatives, rural municipality         — the representative text as written
+     representative-municipal = representatives, municipality */
+  var BASE_LEVEL = { employee: "municipal", representative: "rural" };
+  function courseOf(key) { return String(key || "").indexOf("representative") === 0 ? "representative" : "employee"; }
+  function levelOf(key) {
+    key = String(key || "");
+    if (/-rural$/.test(key)) return "rural";
+    if (/-municipal$/.test(key)) return "municipal";
+    return BASE_LEVEL[courseOf(key)];
+  }
+  var LEVEL_LABEL = { municipal: "नगरपालिका", rural: "गाउँपालिका" };
+  /* Wording rules that turn text written for the other level into this level. Order matters
+     (longer phrases first); no rule's output matches another rule, so applying them twice changes
+     nothing. Staff titles (प्रमुख प्रशासकीय अधिकृत, शाखा प्रमुख) and वडाध्यक्ष are the same at both
+     levels and are left alone; अध्यक्षता (chairing a meeting) is not a post. */
+  function levelRules(level) {
+    if (level === "rural") return [
+      [/नगर उपप्रमुख/g, "उपाध्यक्ष"], [/उपप्रमुख/g, "उपाध्यक्ष"],
+      [/नगर प्रमुख/g, "अध्यक्ष"],
+      [/नगर कार्यपालिका/g, "गाउँ कार्यपालिका"], [/नगर सभा/g, "गाउँ सभा"], [/नगरसभा/g, "गाउँ सभा"],
+      [/नगरपालिका/g, "गाउँपालिका"]
+    ];
+    if (level === "municipal") return [
+      [/गाउँपालिका अध्यक्ष/g, "नगर प्रमुख"],
+      [/उपाध्यक्ष/g, "उपप्रमुख"],
+      [/अध्यक्ष(?!ता)/g, "प्रमुख"],
+      [/गाउँ कार्यपालिका/g, "नगर कार्यपालिका"], [/गाउँ सभा/g, "नगर सभा"], [/गाउँसभा/g, "नगर सभा"],
+      [/गाउँपालिका/g, "नगरपालिका"],
+      [/गाउँलेलाई/g, "नागरिकलाई"]
+    ];
+    return [];
+  }
+  /* The level of a resolved event: from its package key (visitors get package_key from the
+     database), else by looking the package up. */
+  async function levelOfEvent(ev) {
+    if (!ev) return null;
+    if (ev.package_key) return levelOf(ev.package_key);
+    if (ev.package_id && WS.session) {
+      try { var pk = ((await WS.listPackages()).data || []).filter(function (p) { return p.id === ev.package_id; })[0]; if (pk) return levelOf(pk.key); } catch (e) {}
+    }
+    if (ev.code) { var key = await rpcValue("event_package_key", { p_code: ev.code }); if (key) return levelOf(key); }
+    return null;
+  }
+  async function rpcValue(name, body) {
+    try {
+      var res = await fetch(WS.SB_URL + "/rest/v1/rpc/" + name, {
+        method: "POST",
+        headers: { apikey: WS.SB_KEY, Authorization: "Bearer " + (WS.token ? WS.token() : WS.SB_KEY), "Content-Type": "application/json" },
+        body: JSON.stringify(body || {})
+      });
+      return res.ok ? await res.json() : null;
+    } catch (e) { return null; }
+  }
+  /* The level a course page shows: ?level= (trainer preview), else the event's, else the last one
+     shown for this course on this device, else the course's own level. */
+  function levelParam() { var l = String(new URLSearchParams(location.search).get("level") || ""); return l === "rural" || l === "municipal" ? l : ""; }
+  function rememberLevel(course, level) { try { localStorage.setItem("ws-level:" + course, level); } catch (e) {} }
+  function storedLevel(course) { try { var l = localStorage.getItem("ws-level:" + course); return l === "rural" || l === "municipal" ? l : ""; } catch (e) { return ""; } }
 
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
 
@@ -189,13 +252,12 @@
       ["२०८३ असोज २४ र २५", b.length > 1 ? fmtRange(b) : ""],
       ["२०८३ असोज २४", d1], ["२०८३ असोज २५", d2],
       ["असोज २४", s1], ["असोज २५", s2],
-      ["सन्धिखर्क नगरपालिकाको सभाहल [पुष्टि गर्नुपर्ने]", i.place],
+      [/सन्धिखर्क (?:नगर|गाउँ)पालिकाको सभाहल \[पुष्टि गर्नुपर्ने\]/g, i.place],
       ["सन्धिखर्क, अर्घाखाँची", i.place],
-      ["सन्धिखर्क नगरपालिका", i.orgName],
+      [/सन्धिखर्क (?:नगर|गाउँ)पालिका/g, i.orgName],
       ["सन्धिखर्क", i.orgShort]
     ];
-    if (i.rural) rules.push(["नगर कार्यपालिका", "गाउँ कार्यपालिका"], ["नगर उपप्रमुख", "उपाध्यक्ष"], ["नगर प्रमुख", "अध्यक्ष"], ["नगरसभा", "गाउँसभा"]);
-    return rules;
+    return rules;   // नगर/गाउँ wording comes from the package level (levelRules), not from the organiser
   }
 
   /* Rules for the representative workshop, whose text has blank lines ("…………") and २०८३ कात्तिक २७. */
@@ -208,7 +270,7 @@
       [new RegExp("(, )" + BL + "(?= · मिति)", "g"), i.place ? ", " + i.place : ""],
       [new RegExp("(मिति: )" + BL, "g"), i.dateRange ? "मिति: " + i.dateRange : ""],
       [new RegExp("मिति " + BL + " हुने", "g"), i.dateRange ? "मिति " + i.dateRange + " हुने" : ""],
-      ["गाउँपालिकाको सभाहल (यकिन गर्न बाँकी)", i.place],
+      [/(?:गाउँ|नगर)पालिकाको सभाहल \(यकिन गर्न बाँकी\)/g, i.place],
       ["२०८३ कात्तिक २७", i.dateRange]
     ];
   }
@@ -231,12 +293,12 @@
         try {
           var ev = await WS.loadEventForProfile();
           var pk = ((await WS.listPackages()).data || []).filter(function (p) { return ev && p.id === ev.package_id; })[0];
-          if (pk) return pk.key === "representative" ? rep : fallback;
+          if (pk) return courseOf(pk.key) === "representative" ? rep : fallback;
         } catch (e) {}
       }
       // Otherwise home is the course of the active event.
       var act = await rpc("active_event_brand");
-      return act && act.package_key === "representative" ? rep : fallback;
+      return act && courseOf(act.package_key) === "representative" ? rep : fallback;
     })();
     return homePromise;
   }
@@ -256,5 +318,6 @@
     });
   }
 
-  window.EVI = { home: home, mountHome: mountHome, resolve: resolve, info: info, toBS: toBS, fmtFull: fmtFull, fmtRange: fmtRange, fill: fill, fillDeep: fillDeep, employeeRules: employeeRules, representativeRules: representativeRules, dn: dn };
+  window.EVI = { courseOf: courseOf, levelOf: levelOf, levelRules: levelRules, levelOfEvent: levelOfEvent, levelParam: levelParam,
+    rememberLevel: rememberLevel, storedLevel: storedLevel, BASE_LEVEL: BASE_LEVEL, LEVEL_LABEL: LEVEL_LABEL, home: home, mountHome: mountHome, resolve: resolve, info: info, toBS: toBS, fmtFull: fmtFull, fmtRange: fmtRange, fill: fill, fillDeep: fillDeep, employeeRules: employeeRules, representativeRules: representativeRules, dn: dn };
 })();

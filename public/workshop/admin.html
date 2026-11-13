@@ -369,7 +369,7 @@ details.card>summary{cursor:pointer;font-weight:700}
     if (ev.question_ids && ev.question_ids.length &&
         !confirm("यो इभेन्टको प्रश्न सेट फेरि बनाउने हो? नयाँ सेट अबदेखि लागू हुन्छ। पूर्व र पश्च परीक्षा फरक सेटमा नपरोस् भनी यो काम परीक्षा सुरु हुनु अघि गर्नुहोस्।")) return;
     var pkg = pkgById(ev.package_id);
-    var isRep = pkg && pkg.key === "representative";
+    var isRep = pkg && EVI.courseOf(pkg.key) === "representative";   // both levels use the course's question bank
     var ids = isRep ? pickRepresentativeSet() : pickEventSet();
     var r = await WS.updateEvent(evId, { question_ids: ids });
     if (r.error) { flash("evMsg", "प्रश्न सेट सुरक्षित हुन सकेन: " + r.error.message, false); return; }
@@ -655,17 +655,19 @@ details.card>summary{cursor:pointer;font-weight:700}
       if (el.tagName === "A") el.href = url; else el.dataset.show = url;
     });
     var i = ev && EVI.info(ev);
-    card.querySelector('[data-mat-info="' + key + '"]').textContent = i ? [i.org, i.place, i.dateRange].filter(Boolean).join(" · ") : "";
+    card.querySelector('[data-mat-info="' + key + '"]').textContent = i ? [ev._level ? ev._level + " संस्करण" : "", i.org, i.place, i.dateRange].filter(Boolean).join(" · ") : "";
   }
   async function loadMaterials() {
     var pk = await WS.listPackages(), ev = await WS.listEvents();
     var packages = pk.data || [];
     matEvents = ev.data || [];
+    var keyOf = {}; packages.forEach(function (x) { keyOf[x.id] = x.key; });
     ["representative", "employee"].forEach(function (key) {
-      var p = packages.filter(function (x) { return x.key === key; })[0];
-      var list = matEvents.filter(function (e) { return p && e.package_id === p.id; });
+      // both levels of the course (नगरपालिका / गाउँपालिका); the page shows the event's level
+      var list = matEvents.filter(function (e) { return keyOf[e.package_id] && EVI.courseOf(keyOf[e.package_id]) === key; });
+      list.forEach(function (e) { e._level = EVI.LEVEL_LABEL[EVI.levelOf(keyOf[e.package_id])]; });
       var sel = document.querySelector('[data-mat-ev="' + key + '"]'), cur = sel.value;
-      sel.innerHTML = list.length ? list.map(function (e) { return '<option value="' + esc(e.code) + '">' + esc(evTitle(e)) + ' [' + esc(e.code) + ']' + '</option>'; }).join("")
+      sel.innerHTML = list.length ? list.map(function (e) { return '<option value="' + esc(e.code) + '">' + esc(evTitle(e)) + ' [' + esc(e.code) + '] · ' + esc(e._level) + '</option>'; }).join("")
         : '<option value="">यो प्याकेजको इभेन्ट छैन</option>';
       if (cur && list.some(function (e) { return e.code === cur; })) sel.value = cur;
       matLink(key);
@@ -734,11 +736,11 @@ details.card>summary{cursor:pointer;font-weight:700}
     var rows = (pk.data || []).map(function (p) {
       var mine = events.filter(function (e) { return e.package_id === p.id; });
       return '<tr><td><input type="text" id="pkgName-' + esc(p.id) + '" value="' + esc(p.name) + '"></td>' +
-        '<td>' + esc(p.key) + '</td><td>' + (POOL_SIZE[p.key] || "—") + '</td><td>' + mine.length + '</td>' +
+        '<td>' + esc(p.key) + '</td><td>' + esc(EVI.LEVEL_LABEL[EVI.levelOf(p.key)]) + '</td><td>' + (POOL_SIZE[EVI.courseOf(p.key)] || "—") + '</td><td>' + mine.length + '</td>' +
         '<td class="small">' + (mine.map(function (e) { return '<a href="' + esc('/workshop/event.html?event=' + encodeURIComponent(e.code)) + '">' + esc(evTitle(e)) + ' [' + esc(e.code) + ']</a>' + (e.is_active ? ' <span class="badge-on">सक्रिय</span>' : ''); }).join("<br>") || "—") + '</td>' +
         '<td><button type="button" class="ok" data-pkg-save="' + esc(p.id) + '">नाम सुरक्षित</button></td></tr>';
     }).join("");
-    $("pkgList").innerHTML = '<div class="scroll"><table class="t"><thead><tr><th>प्याकेजको नाम</th><th>कुञ्जी</th><th>प्रश्न बैंक</th><th>इभेन्ट सङ्ख्या</th><th>इभेन्टहरू</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+    $("pkgList").innerHTML = '<div class="scroll"><table class="t"><thead><tr><th>प्याकेजको नाम</th><th>कुञ्जी</th><th>तह</th><th>प्रश्न बैंक</th><th>इभेन्ट सङ्ख्या</th><th>इभेन्टहरू</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>';
   }
 
   async function savePackage(id) {

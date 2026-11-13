@@ -209,7 +209,7 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
       fact("आयोजक", esc(EV.organized_by || "—")) +
       fact("स्थान", esc(EV.address || "—")) +
       fact("मिति", esc(i.dateRange || "—") + (i.iso.length ? ' <span class="small muted">(' + esc(i.iso.join(", ")) + ')</span>' : "")) +
-      fact("प्रशिक्षण प्याकेज", esc(PKG ? PKG.name : "—")) +
+      fact("प्रशिक्षण प्याकेज", esc(PKG ? PKG.name : "—") + (PKG ? ' <span class="small muted">(' + esc(EVI.LEVEL_LABEL[EVI.levelOf(PKG.key)]) + 'का लागि)</span>' : "")) +
       fact("इभेन्ट कोड", '<code>' + esc(EV.code) + '</code>') +
       fact("सक्रिय?", EV.is_active ? "हो: साइन इन नगरेका आगन्तुकले यही इभेन्टको विवरण देख्छन्" : "होइन");
     var qn = (EV.question_ids || []).length;
@@ -361,8 +361,8 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
     if (!EV) { show("notFound"); return; }
     var pk = (await WS.listPackages()).data || [];
     PKG = pk.filter(function (p) { return p.id === EV.package_id; })[0] || null;
-    PAGE = PKG && PKG.key === "representative" ? "/workshop/representative/index.html" : "/workshop/index.html";
-    QS = QS_BY_PKG[PKG && PKG.key === "representative" ? "representative" : "employee"];
+    PAGE = PKG && EVI.courseOf(PKG.key) === "representative" ? "/workshop/representative/index.html" : "/workshop/index.html";
+    QS = QS_BY_PKG[PKG ? EVI.courseOf(PKG.key) : "employee"];
     renderHead();
     show("panel");
     showTab(location.hash.slice(1) || "details");

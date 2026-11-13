@@ -322,7 +322,7 @@ function vHome() {
       : `<a class="block" href="#${it.id}"><span class="t">${tm(it.start, it.end)}</span><span>${it.kind === 'session' ? `<span class="n">${S[it.id].n}</span>${S[it.id].title}` : DATA.OTHER[it.id].title}${done.has(it.id) ? ' ✓' : ''}</span></a>`).join('') + '</section>';
   return `<div class="hero"><p class="eyebrow">${ORG ? esc(ORG) : 'पालिका'} · जनप्रतिनिधिहरूका लागि</p>
     <h1>जनप्रतिनिधिका लागि कृत्रिम बुद्धिमत्ता (AI): कार्यदक्षता र प्रभावकारिता अभिवृद्धि कार्यशाला</h1>
-    <div class="factline">${ORG ? `<span>आयोजक <b>${esc(ORG)}</b></span>` : ''}<span>मिति <b>${fillEv('२०८३ कात्तिक २७')} गते</b></span>${PLACE ? `<span>स्थान <b>${esc(PLACE)}</b></span>` : ''}<span>समय <b>बिहान १०:०० देखि बेलुका ४:००</b></span><span>सहभागी <b>अध्यक्ष, उपाध्यक्ष, वडाध्यक्ष, कार्यपालिका तथा वडा सदस्य</b></span></div></div>
+    <div class="factline">${ORG ? `<span>आयोजक <b>${esc(ORG)}</b></span>` : ''}<span>मिति <b>${fillEv('२०८३ कात्तिक २७')} गते</b></span>${PLACE ? `<span>स्थान <b>${esc(PLACE)}</b></span>` : ''}<span>समय <b>बिहान १०:०० देखि बेलुका ४:००</b></span><span>सहभागी <b>${lvl('गाउँपालिका अध्यक्ष, उपाध्यक्ष, वडाध्यक्ष, कार्यपालिका तथा वडा सदस्य')}</b></span></div></div>
   <section class="nowcard" aria-live="polite">
     <div class="nowtop"><b>आजको कार्यक्रम</b><span class="clock">नेपाल समय ${dn(String(Math.floor(nn.t / 60)).padStart(2, '0'))}:${dn(String(nn.t % 60).padStart(2, '0'))}</span></div>
     <div class="nowgrid">${slot('अहिले चलिरहेको', nn.now, true)}${slot('त्यसपछि', nn.next, false)}</div>
@@ -434,7 +434,7 @@ function calcHtml() {
     <div><span class="l">लक्षित कार्यक्रम</span><b>रु. <span id="cTarget">०</span> लाख (<span id="cTargetPct">०</span>%)</b></div>
   </div>
   <p id="calcMsg" class="msg"></p>
-  <p class="note">नियम: रु. ३ लाखभन्दा सानो गैर-लक्षित आयोजना छैन। रु. ५० लाखभन्दा बढी वा एकभन्दा बढी वडा समेट्ने आयोजना र प्रदेश/संघको क्षेत्राधिकारका माग गाउँपालिका स्तरमा पठाइन्छ। लक्षित कार्यक्रम बजेटको कम्तीमा १५% (रु. १३.५ लाख) हुनुपर्छ।</p>
+  <p class="note">${lvl('नियम: रु. ३ लाखभन्दा सानो गैर-लक्षित आयोजना छैन। रु. ५० लाखभन्दा बढी वा एकभन्दा बढी वडा समेट्ने आयोजना र प्रदेश/संघको क्षेत्राधिकारका माग गाउँपालिका स्तरमा पठाइन्छ। लक्षित कार्यक्रम बजेटको कम्तीमा १५% (रु. १३.५ लाख) हुनुपर्छ।')}</p>
   <div class="actions"><button type="button" class="btn" id="calcReset">रिसेट गर्नुहोस्</button></div></section>`;
 }
 function num(v) { const x = parseFloat(v); return isNaN(x) ? null : x; }
@@ -443,7 +443,7 @@ function compute() {
   const pool = [];
   rows.forEach(r => {
     const d = r.d;
-    if (d.route || d.cost === null || d.cost > UPPER) { r.status = 'गाउँपालिका/माथिल्लो तहमा पठाउने'; return; }
+    if (d.route || d.cost === null || d.cost > UPPER) { r.status = lvl('गाउँपालिका/माथिल्लो तहमा पठाउने'); return; }
     if (!r.t && d.cost < MIN_SMALL) { r.status = 'रु. ३ लाखभन्दा सानो (टुक्रे)'; return; }
     if (r.score === null) { r.status = 'अङ्क दिनुहोस्'; return; }
     pool.push(r);
@@ -605,9 +605,35 @@ document.addEventListener('click', e => {
 /* ---------- organiser, place and dates from the event (../event-info.js) ---------- */
 let ORG = '', PLACE = '', EV_RULES = null;
 const fillEv = t => EV_RULES ? EVI.fill(t, EV_RULES) : t;
+
+/* Package level: this text is written for a rural municipality (गाउँपालिका). For an event of the
+   municipality package (नगरपालिका) the same lessons are shown with municipal wording
+   (event-info.js levelRules). An untouched copy of the text lets the level change safely. */
+const COURSE = 'representative';
+const PRISTINE = JSON.parse(JSON.stringify(DATA));
+let LEVEL = window.EVI ? EVI.BASE_LEVEL[COURSE] : 'rural';
+let LV_RULES = null;
+const lvl = t => LV_RULES ? EVI.fill(t, LV_RULES) : t;
+function restoreDeep(target, src) {
+  Object.keys(src).forEach(k => {
+    if (typeof src[k] === 'string') target[k] = src[k];
+    else if (src[k] && typeof src[k] === 'object' && target[k] && typeof target[k] === 'object') restoreDeep(target[k], src[k]);
+  });
+}
+function setLevel(level) {
+  restoreDeep(DATA, PRISTINE);          // undo earlier level and event wording
+  LEVEL = level;
+  LV_RULES = window.EVI && level !== EVI.BASE_LEVEL[COURSE] ? EVI.levelRules(level) : null;
+  if (LV_RULES) EVI.fillDeep(DATA, LV_RULES);
+}
+if (window.EVI) setLevel(EVI.levelParam() || EVI.storedLevel(COURSE) || EVI.BASE_LEVEL[COURSE]);
+
 async function applyEvent() {
-  const ev = await EVI.resolve('representative');
-  if (!ev) return;
+  const ev = await EVI.resolve(COURSE);
+  const level = EVI.levelParam() || (ev ? await EVI.levelOfEvent(ev) : null) || (ev ? EVI.BASE_LEVEL[COURSE] : LEVEL);
+  setLevel(level);
+  if (ev) EVI.rememberLevel(COURSE, level);
+  if (!ev) { buildIndex(); return; }
   const info = EVI.info(ev);
   ORG = info.org; PLACE = info.place;
   EV_RULES = EVI.representativeRules(info);

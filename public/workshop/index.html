@@ -302,13 +302,50 @@ const HERO_TPL = `<div class="hero"><p class="eyebrow">सन्धिखर्�
     <div class="factline"><span>मिति <b>२०८३ असोज २४ र २५ गते</b></span><span>समय <b>बिहान १०:०० देखि बेलुका ५:००</b></span><span>स्थान <b>सन्धिखर्क, अर्घाखाँची</b></span><span>विज्ञ <b>डा. भोजराज घिमिरे</b></span></div></div>`;
 let EV_RULES = null;
 const fillEv = t => EV_RULES ? EVI.fill(t, EV_RULES) : t;
+
+/* Package level: this text is written for a municipality (नगरपालिका). For an event of the
+   rural-municipality package (गाउँपालिका) the same lessons are shown with rural wording
+   (event-info.js levelRules). An untouched copy of the text lets the level change safely. */
+const COURSE = 'employee';
+const SKIP_KEYS = ['B64', 'VITAL', 'FILES'];
+const PRISTINE = JSON.parse(JSON.stringify(DATA, (k, v) => SKIP_KEYS.includes(k) ? undefined : v));
+let LEVEL = window.EVI ? EVI.BASE_LEVEL[COURSE] : 'municipal';
+let LV_RULES = null;
+const lvl = t => LV_RULES ? EVI.fill(t, LV_RULES) : t;
+const plain = t => t.replace(/&amp;/g, '&');
+function restoreDeep(target, src) {
+  Object.keys(src).forEach(k => {
+    if (typeof src[k] === 'string') target[k] = src[k];
+    else if (src[k] && typeof src[k] === 'object' && target[k] && typeof target[k] === 'object') restoreDeep(target[k], src[k]);
+  });
+}
+function setLevel(level) {
+  restoreDeep(DATA, PRISTINE);          // undo earlier level and event wording
+  LEVEL = level;
+  LV_RULES = window.EVI && level !== EVI.BASE_LEVEL[COURSE] ? EVI.levelRules(level) : null;
+  if (LV_RULES) EVI.fillDeep(DATA, LV_RULES, SKIP_KEYS);
+  $('#brandSub').textContent = plain(lvl('सन्धिखर्क नगरपालिका · २०८३ असोज २४ र २५'));
+}
+if (window.EVI) setLevel(EVI.levelParam() || EVI.storedLevel(COURSE) || EVI.BASE_LEVEL[COURSE]);
+
 async function applyEvent() {
-  const ev = await EVI.resolve('employee');
-  if (!ev) return;
+  const ev = await EVI.resolve(COURSE);
+  const level = EVI.levelParam() || (ev ? await EVI.levelOfEvent(ev) : null) || (ev ? EVI.BASE_LEVEL[COURSE] : LEVEL);
+  setLevel(level);
+  if (ev) EVI.rememberLevel(COURSE, level);
+  if (!ev) {
+    // The sample text names सन्धिखर्क (a municipality); without an event, the rural version must not
+    // call it a गाउँपालिका, so it shows a neutral placeholder instead.
+    if (LEVEL === 'rural') {
+      const ph = [[/सन्धिखर्क गाउँपालिका/g, '[गाउँपालिकाको नाम] गाउँपालिका'], [/सन्धिखर्क/g, '[गाउँपालिका]']];
+      EVI.fillDeep(DATA, ph, SKIP_KEYS); $('#brandSub').textContent = plain(EVI.fill(lvl('सन्धिखर्क नगरपालिका · २०८३ असोज २४ र २५'), ph));
+    }
+    buildIndex(); return;
+  }
   EV_RULES = EVI.employeeRules(EVI.info(ev));
-  EVI.fillDeep(DATA, EV_RULES, ['B64', 'VITAL', 'FILES']);
-  $('#brandSub').textContent = EVI.fill('सन्धिखर्क नगरपालिका · २०८३ असोज २४ र २५', EV_RULES).replace(/&amp;/g, '&');
-  document.title = EVI.fill('AI तालिम सन्धिखर्क', EV_RULES).replace(/&amp;/g, '&');
+  EVI.fillDeep(DATA, EV_RULES, SKIP_KEYS);
+  $('#brandSub').textContent = plain(EVI.fill(lvl('सन्धिखर्क नगरपालिका · २०८३ असोज २४ र २५'), EV_RULES));
+  document.title = plain(EVI.fill('AI तालिम सन्धिखर्क', EV_RULES));
   buildIndex();
 }
 
@@ -320,7 +357,7 @@ function vHome() {
   const dayCol = d => `<section class="daycol"><h3>${d.n === 1 ? 'पहिलो दिन' : 'दोस्रो दिन'} · ${d.date}</h3><p class="th">${d.theme}</p>` +
     d.items.map(it => it.kind === 'break' ? `<div class="block b"><span class="t">${tm(it.start, it.end)}</span><span>${it.title}</span></div>`
       : `<a class="block" href="#${it.id}"><span class="t">${tm(it.start, it.end)}</span><span>${it.kind === 'session' ? `<span class="n">${S[it.id].n}</span>${S[it.id].title}` : DATA.OTHER[it.id].title}${done.has(it.id) ? ' ✓' : ''}</span></a>`).join('') + '</section>';
-  return `${fillEv(HERO_TPL)}
+  return `${fillEv(EV_RULES || LEVEL !== 'rural' ? lvl(HERO_TPL) : EVI.fill(lvl(HERO_TPL), [[/सन्धिखर्क गाउँपालिका/g, '[गाउँपालिकाको नाम] गाउँपालिका'], [/सन्धिखर्क/g, '[गाउँपालिका]']]))}
   <section class="nowcard" aria-live="polite">
     <div class="nowtop"><div class="seg" role="group" aria-label="आज कुन दिन हो?">
       <button data-day="1" aria-pressed="${today === 1}">आज पहिलो दिन</button><button data-day="2" aria-pressed="${today === 2}">आज दोस्रो दिन</button></div>

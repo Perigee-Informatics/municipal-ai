@@ -119,6 +119,10 @@ describe("front page", () => {
     const { frontPageTarget } = await import("@/lib/front-page");
     db.active = [{ package_key: "representative" }];
     expect(await frontPageTarget()).toBe("/workshop/representative/index.html");
+    db.active = [{ package_key: "representative-municipal" }];
+    expect(await frontPageTarget()).toBe("/workshop/representative/index.html");
+    db.active = [{ package_key: "employee-rural" }];
+    expect(await frontPageTarget()).toBe("/workshop/index.html");
     db.active = [{ package_key: "employee" }];
     expect(await frontPageTarget()).toBe("/workshop/index.html");
     db.active = [];
