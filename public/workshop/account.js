@@ -189,6 +189,53 @@
       return client.from("events").delete().eq("id", id);
     },
 
+    /* ---------- landing page profile (everyone reads; trainer writes) ---------- */
+    getSiteProfile: function () {
+      return client.from("site_profile").select("*").eq("id", 1).maybeSingle();
+    },
+    saveSiteProfile: function (patch) {
+      patch.updated_at = new Date().toISOString();
+      return client.from("site_profile").update(patch).eq("id", 1).select().maybeSingle();
+    },
+
+    /* ---------- event photos and short videos (storage bucket "event-media") ---------- */
+    MEDIA_BUCKET: "event-media",
+    publicUrl: function (path) {
+      return path ? client.storage.from("event-media").getPublicUrl(path).data.publicUrl : "";
+    },
+    uploadMedia: function (path, blob, contentType) {
+      return client.storage.from("event-media").upload(path, blob, { contentType: contentType, upsert: false, cacheControl: "31536000" });
+    },
+    removeMediaFiles: function (paths) {
+      return client.storage.from("event-media").remove(paths.filter(Boolean));
+    },
+    listMedia: function (eventId) {
+      return client.from("event_media").select("*").eq("event_id", eventId).order("created_at", { ascending: false });
+    },
+    addMedia: function (row) {
+      return client.from("event_media").insert(row).select().maybeSingle();
+    },
+    updateMedia: function (id, patch) {
+      return client.from("event_media").update(patch).eq("id", id);
+    },
+    deleteMedia: function (id) {
+      return client.from("event_media").delete().eq("id", id);
+    },
+
+    /* ---------- a participant's events ---------- */
+    myEvents: function () {
+      return client.rpc("my_events");
+    },
+    chooseMyEvent: function (eventId) {
+      return client.rpc("choose_my_event", { p_event: eventId });
+    },
+    listMemberships: function () {   // trainer: every participant's events
+      return client.from("participant_events").select("profile_id, event_id");
+    },
+    removeMembership: function (profileId, eventId) {
+      return client.from("participant_events").delete().eq("profile_id", profileId).eq("event_id", eventId);
+    },
+
     /* Make one event the active event (trainer only; the database checks). Empty code clears it. */
     setActiveEvent: async function (code) {
       var r = await client.rpc("set_active_event", { p_code: code || "" });

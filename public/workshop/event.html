@@ -71,6 +71,25 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
 .fb-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
 .fb-cols ul{margin:6px 0 0;padding-left:18px}.fb-cols li{margin:4px 0;font-size:15px}
 @media (max-width:640px){.fb-row,.fb-axis{grid-template-columns:minmax(0,1fr) 44px}.fb-row .fb-q{grid-column:1 / -1}.fb-axis span:first-child{display:none}}
+/* gallery */
+.gal-drop{border:2px dashed var(--line);border-radius:12px;padding:16px;text-align:center;background:var(--surface)}
+.gal-drop.over{border-color:var(--accent);background:var(--soft)}
+.gal-drop p{margin:4px 0}
+.gal-queue{list-style:none;padding:0;margin:10px 0;font-size:14px}
+.gal-queue li{padding:3px 0}.gal-queue li.ok{color:var(--ok)}.gal-queue li.bad{color:var(--bad)}
+.gal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:8px}
+.gal-item{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+.gal-item.on{border-color:#C98A0B;box-shadow:0 0 0 2px #C98A0B33}
+.gal-media{display:block;position:relative;aspect-ratio:4/3;background:var(--soft)}
+.gal-media img{width:100%;height:100%;object-fit:cover;display:block}
+.gal-play{position:absolute;inset:0;display:grid;place-items:center;font-size:34px;color:#fff;text-shadow:0 2px 8px #0008}
+.gal-item figcaption{padding:8px;display:grid;gap:6px}
+.gal-item input{font:inherit;font-size:14px;width:100%;padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.gal-item input.saved{border-color:var(--ok)}
+.gal-actions{display:flex;gap:6px;justify-content:space-between;flex-wrap:wrap}
+.gal-actions button{font-size:13px;padding:3px 8px}
+.gal-star[aria-pressed="true"]{background:#C98A0B;color:#fff;border-color:#C98A0B}
+.gal-del{color:var(--bad)}
 </style>
 </head>
 <body>
@@ -107,6 +126,7 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
       <button type="button" data-tab="results">परीक्षा नतिजा</button>
       <button type="button" data-tab="people">सहभागी</button>
       <button type="button" data-tab="feedback">पृष्ठपोषण</button>
+      <button type="button" data-tab="gallery">ग्यालरी</button>
     </nav>
 
     <div class="tabpanel on" id="tab-details">
@@ -145,6 +165,11 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
       <p class="small muted">दर्ता स्वीकृत गर्न वा नयाँ खाता बनाउन <a href="/workshop/admin.html#users">प्रयोगकर्ता</a> ट्याबमा जानुहोस्।</p>
     </div>
 
+    <div class="tabpanel" id="tab-gallery">
+      <h2>फोटो र भिडियो ग्यालरी</h2>
+      <div id="gallery"></div>
+    </div>
+
     <div class="tabpanel" id="tab-feedback">
       <h2>सहभागीको पृष्ठपोषण</h2>
       <div id="fbSummary" class="muted">लोड हुँदैछ…</div>
@@ -154,6 +179,7 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
 
 <script src="/workshop/account.js?v=20261113e"></script>
 <script src="/workshop/event-info.js?v=20261113e"></script>
+<script src="/workshop/media.js?v=20261113e"></script>
 <script>
 (function () {
   function $(id) { return document.getElementById(id); }
@@ -167,7 +193,7 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
     employee: ["तालिम मेरो कामका लागि उपयोगी थियो", "सिकाइको गति मलाई ठिक्क थियो", "भाषा बुझ्न सजिलो थियो", "आफैँ गरेर सिक्ने पर्याप्त अवसर मिल्यो", "अभ्यास र उदाहरण मेरो दैनिक कामसँग मिल्दा थिए", "विज्ञ र सहयोगीबाट राम्रो सहयोग मिल्यो"]
   };
   var QS = QS_BY_PKG.employee;
-  var TABS = ["details", "schedule", "contents", "results", "people", "feedback"];
+  var TABS = ["details", "schedule", "contents", "results", "people", "feedback", "gallery"];
   function url(path, hash) { return path + "?event=" + encodeURIComponent(CODE) + (hash ? "#" + hash : ""); }
   function show(id) { ["needLogin", "notFound", "loading", "panel"].forEach(function (x) { $(x).classList.toggle("hide", x !== id); }); }
 
@@ -184,6 +210,7 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
     if (name === "results") { var r = "/workshop/assessment/index.html?dash=" + encodeURIComponent(CODE); $("resFrame").src = r; $("resOpen").href = r; }
     if (name === "people") loadPeople();
     if (name === "feedback") loadFeedback();
+    if (name === "gallery") { if (window.EventMedia) EventMedia.mount($("gallery"), EV.id); else $("gallery").textContent = "ग्यालरी लोड हुन सकेन। पृष्ठ फेरि लोड गर्नुहोस्।"; }
   }
   document.addEventListener("click", function (e) {
     var b = e.target.closest("button[data-tab]");

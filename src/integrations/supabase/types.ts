@@ -80,6 +80,48 @@ export type Database = {
         }
         Relationships: []
       }
+      event_media: {
+        Row: {
+          bytes: number | null
+          caption: string
+          created_at: string
+          event_id: string
+          featured: boolean
+          height: number | null
+          id: string
+          kind: string
+          path: string
+          thumb_path: string
+          width: number | null
+        }
+        Insert: {
+          bytes?: number | null
+          caption?: string
+          created_at?: string
+          event_id: string
+          featured?: boolean
+          height?: number | null
+          id?: string
+          kind: string
+          path: string
+          thumb_path?: string
+          width?: number | null
+        }
+        Update: {
+          bytes?: number | null
+          caption?: string
+          created_at?: string
+          event_id?: string
+          featured?: boolean
+          height?: number | null
+          id?: string
+          kind?: string
+          path?: string
+          thumb_path?: string
+          width?: number | null
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           address: string | null
@@ -207,6 +249,42 @@ export type Database = {
           },
         ]
       }
+      site_profile: {
+        Row: {
+          bio: string
+          highlights: string[]
+          id: number
+          linkedin_url: string
+          name: string
+          organisation: string
+          photo_path: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          bio?: string
+          highlights?: string[]
+          id?: number
+          linkedin_url?: string
+          name?: string
+          organisation?: string
+          photo_path?: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          bio?: string
+          highlights?: string[]
+          id?: number
+          linkedin_url?: string
+          name?: string
+          organisation?: string
+          photo_path?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       training_packages: {
         Row: {
           created_at: string
@@ -311,6 +389,21 @@ export type Database = {
       }
       is_approved: { Args: never; Returns: boolean }
       is_trainer: { Args: never; Returns: boolean }
+      landing_gallery: {
+        Args: { p_limit?: number }
+        Returns: {
+          caption: string
+          created_at: string
+          event_name: string
+          height: number | null
+          id: string
+          kind: string
+          organized_by: string | null
+          path: string
+          thumb_path: string
+          width: number | null
+        }[]
+      }
       public_event_brand: {
         Args: { p_code: string }
         Returns: {

@@ -55,6 +55,9 @@ table.t th,table.t td{border:1px solid var(--line);padding:6px 8px;text-align:le
 table.t th{background:var(--soft)}
 .frame{width:100%;height:78vh;border:1px solid var(--line);border-radius:12px;background:#fff;margin-top:10px}
 details.card>summary{cursor:pointer;font-weight:700}
+.lp-photo-row{display:flex;gap:16px;align-items:center;margin-bottom:10px}
+.lp-photo{width:110px;height:110px;border-radius:50%;object-fit:cover;background:var(--soft);border:1px solid var(--line)}
+label.btn{display:inline-block;border:1px solid var(--line);border-radius:8px;padding:6px 12px;cursor:pointer;background:var(--surface)}
 .badge-on{display:inline-block;border-radius:999px;padding:0 8px;font-size:13px;font-weight:700;background:var(--ok);color:#fff}
 </style>
 </head>
@@ -76,6 +79,7 @@ details.card>summary{cursor:pointer;font-weight:700}
       <button type="button" data-tab="users">प्रयोगकर्ता</button>
       <button type="button" data-tab="materials">तालिम सामग्री</button>
       <button type="button" data-tab="results">नतिजा र पृष्ठपोषण</button>
+      <button type="button" data-tab="landing">ल्यान्डिङ पेज</button>
     </nav>
 
     <!-- सारांश -->
@@ -238,6 +242,28 @@ details.card>summary{cursor:pointer;font-weight:700}
         <div id="fbSummary" class="muted" style="margin-top:10px">लोड हुँदैछ…</div>
       </section>
     </div>
+    <!-- ल्यान्डिङ पेज -->
+    <div class="tabpanel" id="tab-landing">
+      <h2 style="margin-top:16px">ल्यान्डिङ पेज: प्रशिक्षकको परिचय</h2>
+      <p class="small muted">यो विवरण वेबसाइटको मुख्य पृष्ठ (<a href="/" target="_blank" rel="noopener">municipal-ai.lovable.app</a>) मा सबैले देख्छन्। ग्यालरीका फोटो र भिडियो इभेन्ट पृष्ठको "ग्यालरी" ट्याबबाट थप्नुहोस् र ★ लगाउनुहोस्।</p>
+      <form class="card" id="lpForm">
+        <div class="lp-photo-row">
+          <img id="lpPhoto" alt="प्रोफाइल फोटो" class="lp-photo">
+          <div><label class="btn">फोटो बदल्नुहोस्<input type="file" id="lpPhotoIn" accept="image/*" hidden></label>
+            <p class="small muted" id="lpPhotoMsg">वर्गाकार अनुहारको फोटो राम्रो देखिन्छ; अपलोड गर्दा सानो (८०० px) बनाइन्छ।</p></div>
+        </div>
+        <div class="grid">
+          <label class="f">नाम<input id="lpName" type="text" maxlength="80" required></label>
+          <label class="f">पद / भूमिका<input id="lpTitle" type="text" maxlength="120" placeholder="जस्तै: AI तालिम विज्ञ"></label>
+          <label class="f">संस्था<input id="lpOrg" type="text" maxlength="120"></label>
+          <label class="f">LinkedIn लिङ्क<input id="lpLinkedin" type="url" maxlength="200" placeholder="https://np.linkedin.com/in/…"></label>
+        </div>
+        <label class="f" style="margin-top:10px">छोटो परिचय<textarea id="lpBio" rows="5" maxlength="1500" placeholder="LinkedIn को About भागबाट २–४ वाक्य"></textarea></label>
+        <label class="f">मुख्य उपलब्धि वा अनुभव (एक लाइनमा एउटा)<textarea id="lpHighlights" rows="4" maxlength="1500" placeholder="जस्तै: ३० भन्दा बढी स्थानीय तहमा तालिम"></textarea></label>
+        <p class="row" style="justify-content:flex-start"><button class="pri" type="submit" id="lpSave">सुरक्षित गर्नुहोस्</button> <a href="/" target="_blank" rel="noopener">मुख्य पृष्ठ हेर्नुहोस्</a></p>
+        <p id="lpMsg" class="msg hide"></p>
+      </form>
+    </div>
   </section>
 </div>
 
@@ -246,6 +272,7 @@ details.card>summary{cursor:pointer;font-weight:700}
 <script src="assessment/pool-representative.js"></script>
 <script src="account.js?v=20261113e"></script>
 <script src="event-info.js?v=20261113e"></script>
+<script src="media.js?v=20261113e"></script>
 <script>EVI.home().then(EVI.mountHome).catch(function () {});</script>
 <script>
 (function () {
@@ -499,8 +526,16 @@ details.card>summary{cursor:pointer;font-weight:700}
         '<button class="ok" data-approve="' + esc(p.id) + '">स्वीकृत</button> <button class="bad" data-reject="' + esc(p.id) + '">अस्वीकृत</button>');
     }).join("");
     $("pending").innerHTML = pendHtml || "कुनै नयाँ दर्ता छैन।";
+    var mem = {};
+    try { ((await WS.listMemberships()).data || []).forEach(function (m) { (mem[m.profile_id] = mem[m.profile_id] || []).push(m.event_id); }); } catch (e) {}
     var apprHtml = (appr.data || []).filter(function (p) { return p.role !== "trainer"; }).map(function (p) {
-      return row(p, '<select data-changeev="' + esc(p.id) + '" style="width:auto;margin:0 6px 6px 0">' + eventOptions(p.event_id) + '</select> ' +
+      // every event the participant takes part in (they choose one after sign-in when there are several)
+      var chips = (mem[p.id] || []).map(function (evId) {
+        return '<span class="chip">' + esc(eventName(evId)) + (evId === p.event_id ? ' · अहिलेको' : '') +
+          ((mem[p.id] || []).length > 1 ? ' <button type="button" data-rmmem="' + esc(p.id + '|' + evId + '|' + ((mem[p.id] || []).filter(function (x) { return x !== evId; })[0] || '') + '|' + (evId === p.event_id ? '1' : '')) + '" title="यो इभेन्टबाट हटाउनुहोस्">✕</button>' : '') + '</span>';
+      }).join("");
+      return row(p, (chips ? '<div class="small" style="margin-bottom:4px">' + chips + '</div>' : '') +
+        '<label class="small muted">अहिलेको / थप्ने इभेन्ट <select data-changeev="' + esc(p.id) + '" style="width:auto;margin:0 6px 6px 0">' + eventOptions(p.event_id) + '</select></label> ' +
         '<button data-revoke="' + esc(p.id) + '">स्वीकृति रद्द</button>');
     }).join("");
     $("approved").innerHTML = apprHtml || "अहिलेसम्म कुनै स्वीकृत सहभागी छैन।";
@@ -522,6 +557,14 @@ details.card>summary{cursor:pointer;font-weight:700}
     }
     else if (t.dataset.reject) setStatus(t.dataset.reject, "rejected", null);
     else if (t.dataset.revoke) setStatus(t.dataset.revoke, "pending", null);
+    else if (t.dataset.rmmem) {
+      var pe = t.dataset.rmmem.split("|");
+      if (!confirm("यो सहभागीलाई \"" + eventName(pe[1]) + "\" बाट हटाउने हो?")) return;
+      var rm = await WS.removeMembership(pe[0], pe[1]);
+      if (rm.error) { flash("matMsg", "हटाउन सकिएन: " + rm.error.message, false); await renderLists(); return; }
+      if (pe[3] && pe[2]) await setStatus(pe[0], "approved", pe[2]);   // it was their current event: switch to another of theirs
+      else await renderLists();
+    }
     else if (t.dataset.rmdate) { dates = dates.filter(function (d) { return d !== t.dataset.rmdate; }); renderDates(); }
     else if (t.dataset.editEv) {
       var ev = events.find(function (x) { return x.id === t.dataset.editEv; });
@@ -630,7 +673,7 @@ details.card>summary{cursor:pointer;font-weight:700}
   function evTitle(e) { var org = (e && e.organized_by || "").trim(); return (e && e.name || "") + (org ? " – " + org : ""); }
   var QS = ["कार्यशाला मेरो कामका लागि उपयोगी थियो","सिकाइको गति मलाई ठिक्क थियो","भाषा बुझ्न सजिलो थियो","आफैँ गरेर सिक्ने पर्याप्त अवसर मिल्यो","आयोजना छनौट अभ्यास वास्तविक जस्तो लाग्यो","सहजकर्ता र सहयोगीबाट राम्रो सहयोग मिल्यो"];
   var POOL_SIZE = { employee: 50, representative: 50 };
-  var NAMES = ["overview", "events", "packages", "users", "materials", "results"];
+  var NAMES = ["overview", "events", "packages", "users", "materials", "results", "landing"];
   var loaded = {};
 
   function showTab(name) {
@@ -642,7 +685,52 @@ details.card>summary{cursor:pointer;font-weight:700}
     if (name === "packages") loadPackages();
     if (name === "results") loadFeedback();
     if (name === "materials") loadMaterials();
+    if (name === "landing") loadLanding();
   }
+
+  /* ---------- landing page profile ---------- */
+  var LP = null;
+  function lpMsg(t, ok) { var m = $("lpMsg"); m.textContent = t; m.className = "msg " + (ok ? "" : "bad"); m.style.color = ok ? "var(--ok)" : ""; m.classList.remove("hide"); }
+  function lpPhotoSrc(path) {
+    if (path) return WS.publicUrl(path);
+    var n = ($("lpName").value || "AI").trim().split(/\s+/).slice(-1)[0].slice(0, 2);
+    return "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160"><rect width="160" height="160" rx="80" fill="#1F5C4A"/><text x="80" y="98" font-size="52" text-anchor="middle" fill="#fff" font-family="sans-serif">' + n + '</text></svg>');
+  }
+  async function loadLanding() {
+    var r = await WS.getSiteProfile();
+    if (r.error) { lpMsg("लोड हुन सकेन: " + r.error.message, false); return; }
+    LP = r.data || {};
+    $("lpName").value = LP.name || ""; $("lpTitle").value = LP.title || ""; $("lpOrg").value = LP.organisation || "";
+    $("lpLinkedin").value = LP.linkedin_url || ""; $("lpBio").value = LP.bio || ""; $("lpHighlights").value = (LP.highlights || []).join("\n");
+    $("lpPhoto").src = lpPhotoSrc(LP.photo_path);
+  }
+  $("lpForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    var btn = $("lpSave"); btn.disabled = true;
+    var r = await WS.saveSiteProfile({
+      name: $("lpName").value.trim(), title: $("lpTitle").value.trim(), organisation: $("lpOrg").value.trim(),
+      linkedin_url: $("lpLinkedin").value.trim(), bio: $("lpBio").value.trim(),
+      highlights: $("lpHighlights").value.split(/\n/).map(function (x) { return x.trim(); }).filter(Boolean).slice(0, 12)
+    });
+    btn.disabled = false;
+    if (r.error) { lpMsg("सुरक्षित हुन सकेन: " + r.error.message, false); return; }
+    LP = r.data || LP; lpMsg("सुरक्षित भयो। मुख्य पृष्ठमा अब यही देखिन्छ।", true);
+  });
+  $("lpPhotoIn").addEventListener("change", async function (e) {
+    var file = e.target.files && e.target.files[0]; e.target.value = ""; if (!file) return;
+    $("lpPhotoMsg").textContent = "सानो बनाउँदै र अपलोड गर्दै…";
+    try {
+      var big = await EventMedia.resize(file, 800, 0.85);   // 800 px is plenty for a profile photo
+      var ext = big.blob.type === "image/webp" ? "webp" : "jpg";
+      var path = "site/profile-" + Date.now() + "." + ext;
+      var up = await WS.uploadMedia(path, big.blob, big.blob.type); if (up.error) throw up.error;
+      var old = LP && LP.photo_path;
+      var r = await WS.saveSiteProfile({ photo_path: path }); if (r.error) throw r.error;
+      if (old) WS.removeMediaFiles([old]);
+      LP = r.data || LP; $("lpPhoto").src = lpPhotoSrc(path);
+      $("lpPhotoMsg").textContent = "फोटो बदलियो।";
+    } catch (err) { $("lpPhotoMsg").textContent = "फोटो राख्न सकिएन: " + ((err && err.message) || err); }
+  });
 
   /* तालिम सामग्री: choose the event to present; the page then shows that event's organiser, place and dates. */
   var matEvents = [];

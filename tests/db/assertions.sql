@@ -160,3 +160,48 @@ set role anon;
 select pg_temp.check(public.event_package_key('tst-01') = 'employee', 'visitors can read the package key of an event code');
 select pg_temp.check(public.event_package_key('NOPE') is null, 'unknown code gives no package');
 reset role;
+
+-- ---- 12. landing page profile and gallery ----
+select set_config('request.jwt.claim.sub', '', false);
+set role anon;
+select pg_temp.check((select name <> '' from public.site_profile where id = 1), 'visitors read the trainer profile');
+reset role;
+set role authenticated;
+select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000003', false);
+update public.site_profile set name = 'hacked' where id = 1;
+reset role;
+select pg_temp.check((select name <> 'hacked' from public.site_profile where id = 1), 'participant cannot change the profile');
+set role authenticated;
+select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000001', false);
+update public.site_profile set bio = 'E2E bio' where id = 1;
+insert into public.event_media (event_id, kind, path, featured) values ((select id from public.events where code = 'TST-01'), 'photo', 'x/a.webp', true);
+insert into public.event_media (event_id, kind, path, featured) values ((select id from public.events where code = 'TST-01'), 'photo', 'x/b.webp', false);
+reset role;
+select pg_temp.check((select bio = 'E2E bio' from public.site_profile where id = 1), 'trainer edits the profile');
+select set_config('request.jwt.claim.sub', '', false);
+set role anon;
+select pg_temp.check((select count(*) = 1 from public.event_media), 'visitors see only featured media');
+select pg_temp.check((select count(*) = 1 and bool_and(event_name = 'Test event') from public.landing_gallery(10)), 'landing gallery lists featured items with the event');
+select pg_temp.expect_error($q$insert into public.event_media (event_id, kind, path) values (gen_random_uuid(), 'photo', 'y')$q$, 'visitors cannot add media');
+reset role;
+set role authenticated;
+select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000003', false);
+select pg_temp.check((select count(*) = 1 from public.event_media), 'participants see only featured media');
+select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000001', false);
+select pg_temp.check((select count(*) = 2 from public.event_media), 'trainer sees all media');
+reset role;
+
+-- ---- 13. several events per participant ----
+select pg_temp.check((select count(*) >= 1 from public.participant_events where profile_id = '00000000-0000-0000-0000-000000000003'), 'existing approval recorded as a membership');
+update public.profiles set event_id = (select id from public.events where code = 'TST-02') where id = '00000000-0000-0000-0000-000000000003';
+select pg_temp.check((select count(*) = 2 from public.participant_events where profile_id = '00000000-0000-0000-0000-000000000003'), 'approval to a second event keeps the first');
+set role authenticated;
+select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000003', false);
+select pg_temp.check((select count(*) = 2 and count(*) filter (where current) = 1 from public.my_events()), 'participant lists own events, one current');
+select public.choose_my_event((select id from public.events where code = 'TST-01'));
+select pg_temp.check((select code = 'TST-01' from public.my_events() where current), 'participant switches to another own event');
+select pg_temp.expect_error($q$select public.choose_my_event(gen_random_uuid())$q$, 'cannot choose an event one is not in');
+select pg_temp.check((select count(*) = 0 from public.participant_events where profile_id = '00000000-0000-0000-0000-000000000002'), 'participant cannot read others'' memberships');
+reset role;
+update public.profiles set status = 'pending', event_id = null where id = '00000000-0000-0000-0000-000000000003';
+select pg_temp.check((select count(*) = 0 from public.participant_events where profile_id = '00000000-0000-0000-0000-000000000003'), 'revoking approval removes the memberships');

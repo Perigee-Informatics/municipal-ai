@@ -433,3 +433,144 @@ returns text language sql stable security definer set search_path = public as $$
   where e.code = upper(p_code) limit 1;
 $$;
 grant execute on function public.event_package_key(text) to anon, authenticated;
+
+-- 17. Landing page: the trainer's profile (one row), editable by the trainer, readable by everyone.
+create table if not exists public.site_profile (
+  id           int primary key default 1 check (id = 1),
+  name         text not null default '',
+  title        text not null default '',
+  organisation text not null default '',
+  bio          text not null default '',
+  highlights   text[] not null default '{}',
+  linkedin_url text not null default '',
+  photo_path   text not null default '',
+  updated_at   timestamptz not null default now()
+);
+insert into public.site_profile (id, name, title, linkedin_url)
+values (1, 'डा. भोजराज घिमिरे', 'AI तालिम विज्ञ', 'https://np.linkedin.com/in/drbghimire')
+on conflict (id) do nothing;
+alter table public.site_profile enable row level security;
+drop policy if exists "site profile: anyone reads" on public.site_profile;
+create policy "site profile: anyone reads" on public.site_profile for select to anon, authenticated using (true);
+drop policy if exists "site profile: trainer writes" on public.site_profile;
+create policy "site profile: trainer writes" on public.site_profile for update to authenticated
+  using (public.is_trainer()) with check (public.is_trainer());
+
+-- 18. Event photos and short videos. Files live in the 'event-media' storage bucket (paths are
+--     random); this table lists them. Visitors see only the items the trainer marks for the landing
+--     page (featured); the trainer sees and manages everything.
+create table if not exists public.event_media (
+  id         uuid primary key default gen_random_uuid(),
+  event_id   uuid not null references public.events(id) on delete cascade,
+  kind       text not null check (kind in ('photo', 'video')),
+  path       text not null,
+  thumb_path text not null default '',
+  caption    text not null default '',
+  width      int,
+  height     int,
+  bytes      bigint,
+  featured   boolean not null default false,
+  created_at timestamptz not null default now()
+);
+create index if not exists event_media_event on public.event_media (event_id, created_at);
+alter table public.event_media enable row level security;
+drop policy if exists "media: featured for everyone" on public.event_media;
+create policy "media: featured for everyone" on public.event_media for select to anon, authenticated
+  using (featured or public.is_trainer());
+drop policy if exists "media: trainer writes" on public.event_media;
+create policy "media: trainer writes" on public.event_media for all to authenticated
+  using (public.is_trainer()) with check (public.is_trainer());
+
+-- Featured items for the landing page, with the event's name and organiser (visitors cannot read events).
+create or replace function public.landing_gallery(p_limit int default 24)
+returns table(id uuid, kind text, path text, thumb_path text, caption text, width int, height int,
+              event_name text, organized_by text, created_at timestamptz)
+language sql stable security definer set search_path = public as $$
+  select m.id, m.kind, m.path, m.thumb_path, m.caption, m.width, m.height, e.name, e.organized_by, m.created_at
+  from public.event_media m join public.events e on e.id = m.event_id
+  where m.featured
+  order by m.created_at desc
+  limit greatest(1, least(coalesce(p_limit, 24), 100));
+$$;
+grant execute on function public.landing_gallery(int) to anon, authenticated;
+
+-- Storage bucket (Supabase only; skipped where there is no storage schema, e.g. the local SQL test).
+do $$ begin
+  if to_regclass('storage.buckets') is not null then
+    insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+    values ('event-media', 'event-media', true, 41943040,
+            array['image/webp', 'image/jpeg', 'image/png', 'video/mp4', 'video/webm', 'video/quicktime'])
+    on conflict (id) do update set public = excluded.public, file_size_limit = excluded.file_size_limit,
+                                   allowed_mime_types = excluded.allowed_mime_types;
+    execute 'drop policy if exists "event-media: trainer uploads" on storage.objects';
+    execute 'create policy "event-media: trainer uploads" on storage.objects for insert to authenticated with check (bucket_id = ''event-media'' and public.is_trainer())';
+    execute 'drop policy if exists "event-media: trainer updates" on storage.objects';
+    execute 'create policy "event-media: trainer updates" on storage.objects for update to authenticated using (bucket_id = ''event-media'' and public.is_trainer())';
+    execute 'drop policy if exists "event-media: trainer deletes" on storage.objects';
+    execute 'create policy "event-media: trainer deletes" on storage.objects for delete to authenticated using (bucket_id = ''event-media'' and public.is_trainer())';
+  end if;
+end $$;
+
+-- 19. A participant can take part in several events. Every event a participant is approved for is
+--     kept here; profiles.event_id is the event they are working in now (chosen after sign-in).
+create table if not exists public.participant_events (
+  profile_id uuid not null references public.profiles(id) on delete cascade,
+  event_id   uuid not null references public.events(id) on delete cascade,
+  added_at   timestamptz not null default now(),
+  primary key (profile_id, event_id)
+);
+alter table public.participant_events enable row level security;
+drop policy if exists "memberships: own or trainer read" on public.participant_events;
+create policy "memberships: own or trainer read" on public.participant_events for select to authenticated
+  using (profile_id = auth.uid() or public.is_trainer());
+drop policy if exists "memberships: trainer writes" on public.participant_events;
+create policy "memberships: trainer writes" on public.participant_events for all to authenticated
+  using (public.is_trainer()) with check (public.is_trainer());
+
+-- Whenever an approved profile gets an event (approval, change, manual registration), remember it.
+create or replace function public.remember_event_membership()
+returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  if new.event_id is not null and new.status = 'approved' then
+    insert into public.participant_events (profile_id, event_id) values (new.id, new.event_id)
+    on conflict do nothing;
+  end if;
+  if new.status <> 'approved' then
+    delete from public.participant_events where profile_id = new.id;
+  end if;
+  return new;
+end;
+$$;
+drop trigger if exists profiles_remember_event on public.profiles;
+create trigger profiles_remember_event after insert or update of event_id, status on public.profiles
+  for each row execute function public.remember_event_membership();
+insert into public.participant_events (profile_id, event_id)
+  select id, event_id from public.profiles where event_id is not null and status = 'approved'
+on conflict do nothing;
+
+-- The signed-in participant's events, and switching the one they work in now.
+create or replace function public.my_events()
+returns table(event_id uuid, code text, name text, organized_by text, address text, event_dates date[],
+              package_key text, current boolean)
+language sql stable security definer set search_path = public as $$
+  select e.id, e.code, e.name, e.organized_by, e.address, e.event_dates, p.key,
+         e.id = (select pr.event_id from public.profiles pr where pr.id = auth.uid())
+  from public.participant_events m
+  join public.events e on e.id = m.event_id
+  left join public.training_packages p on p.id = e.package_id
+  where m.profile_id = auth.uid()
+  order by e.created_at desc;
+$$;
+grant execute on function public.my_events() to authenticated;
+
+create or replace function public.choose_my_event(p_event uuid)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not exists (select 1 from public.participant_events where profile_id = auth.uid() and event_id = p_event) then
+    raise exception 'not one of your events';
+  end if;
+  update public.profiles set event_id = p_event where id = auth.uid();
+end;
+$$;
+revoke all on function public.choose_my_event(uuid) from public, anon;
+grant execute on function public.choose_my_event(uuid) to authenticated;

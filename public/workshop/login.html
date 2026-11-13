@@ -25,6 +25,9 @@ button.primary[disabled]{opacity:.6}
 .bad{color:var(--bad)} .ok{color:var(--ok)}
 .hide{display:none}
 a{color:var(--accent)}
+.ev-choice{display:grid;gap:2px;width:100%;text-align:left;margin:8px 0;padding:12px 14px;border:1px solid var(--line, #d9dee8);border-radius:10px;background:transparent;font:inherit;cursor:pointer}
+.ev-choice:hover{border-color:currentColor}
+.ev-choice.cur{border-width:2px}
 </style>
 </head>
 <body>
@@ -38,6 +41,8 @@ a{color:var(--accent)}
     <button id="tabIn" role="tab" aria-selected="true" data-tab="in">साइन इन</button>
     <button id="tabUp" role="tab" aria-selected="false" data-tab="up">नयाँ दर्ता</button>
   </div>
+
+  <section class="card hide" id="chooseEv" aria-live="polite"></section>
 
   <section class="card" id="formIn">
     <form id="fIn">
@@ -121,12 +126,49 @@ EVI.resolve().then(function (ev) { var i = EVI.info(ev); if (i && i.org) documen
     $("inMsg").classList.remove("hide");
   });
 
+  /* A participant approved for more than one training event chooses which one to work in now.
+     Without an explicit ?next=, they then go to that event's course materials. */
+  var explicitNext = !!new URLSearchParams(location.search).get("next");
+  function destinationFor(ev) {
+    if (explicitNext || !ev) return next;
+    var page = window.EVI && EVI.courseOf(ev.package_key) === "representative" ? "representative/index.html" : "index.html";
+    return page + "?event=" + encodeURIComponent(ev.code);
+  }
+  async function chooseEventThenGo() {
+    var r; try { r = await WS.myEvents(); } catch (e) { r = { error: e }; }
+    var list = (r && r.data) || [];
+    if (r && r.error || list.length < 2) { location.href = destinationFor(list[0]); return; }
+    ["formIn", "formUp"].forEach(function (id) { $(id).classList.add("hide"); });
+    document.querySelector(".tabs").classList.add("hide");
+    var card = $("chooseEv"); card.classList.remove("hide");
+    var name = WS.profile && WS.profile.full_name ? WS.profile.full_name + "ज्यू, " : "";
+    card.innerHTML = '<h2 style="margin-top:0">कुन तालिम?</h2><p class="muted">' + esc(name) + 'तपाईं ' + list.length + ' वटा तालिममा सहभागी हुनुहुन्छ। अहिले कुन तालिमको सामग्री र परीक्षा हेर्ने हो, छान्नुहोस्।</p>' +
+      list.map(function (ev) {
+        var i = window.EVI ? EVI.info(ev) : null;
+        var lvl = window.EVI ? EVI.LEVEL_LABEL[EVI.levelOf(ev.package_key)] : "";
+        var course = window.EVI && EVI.courseOf(ev.package_key) === "representative" ? "जनप्रतिनिधिका लागि AI" : "कर्मचारीका लागि AI";
+        return '<button type="button" class="ev-choice' + (ev.current ? ' cur' : '') + '" data-choose="' + esc(ev.event_id) + '">' +
+          '<strong>' + esc(ev.name) + '</strong>' + (ev.current ? ' <span class="small">(अहिलेको)</span>' : '') +
+          '<span class="small muted">' + esc([course + (lvl ? " · " + lvl : ""), i && i.org, i && i.dateRange].filter(Boolean).join(" · ")) + '</span></button>';
+      }).join("") + '<p id="chooseMsg" class="msg hide"></p>';
+    card.onclick = async function (e) {
+      var b = e.target.closest("[data-choose]"); if (!b) return;
+      var ev = list.filter(function (x) { return x.event_id === b.dataset.choose; })[0];
+      card.querySelectorAll("button").forEach(function (x) { x.disabled = true; });
+      var c = await WS.chooseMyEvent(ev.event_id);
+      if (c.error) { var m = $("chooseMsg"); show(m, "छान्न सकिएन: " + c.error.message, "bad"); m.classList.remove("hide"); card.querySelectorAll("button").forEach(function (x) { x.disabled = false; }); return; }
+      if (WS.profile) WS.profile.event_id = ev.event_id;
+      location.href = destinationFor(ev);
+    };
+  }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+
   function routeSignedIn() {
     if (WS.isTrainer()) { location.href = "admin.html"; return; }
     if (WS.isApproved() && !(WS.profile && WS.profile.full_name)) {
       location.href = "profile.html?next=" + encodeURIComponent(next); return;
     }
-    if (WS.isApproved()) { location.href = next; return; }
+    if (WS.isApproved()) { chooseEventThenGo(); return; }
     var status = WS.profile && WS.profile.status;
     var text = status === "rejected"
       ? "तपाईंको दर्ता स्वीकृत भएन। थप जानकारीका लागि प्रशिक्षकसँग सम्पर्क गर्नुहोस्।"
