@@ -47,7 +47,11 @@
             // here made pages briefly treat a signed-in trainer or participant as signed out.
             if (after && after === before && WS.profile) return;
             if (!after) { WS.profile = null; document.dispatchEvent(new Event("ws-auth")); return; }
-            WS.loadProfile().then(function () { document.dispatchEvent(new Event("ws-auth")); });
+            // Supabase runs this callback while it holds its auth lock; a query made inside it can stall
+            // or go out without the session. Load the profile just after the callback instead.
+            setTimeout(function () {
+              WS.loadProfile().then(function () { document.dispatchEvent(new Event("ws-auth")); }, function () {});
+            }, 0);
           });
         }
         var r = await client.auth.getSession();
@@ -74,9 +78,17 @@
       profilePromise = client.from("profiles").select("*").eq("id", uid).maybeSingle().then(function (r) {
         var current = WS.session && WS.session.user ? WS.session.user.id : null;
         if (current !== uid) return WS.profile;              // signed out or switched user meanwhile
-        if (r.data) WS.profile = r.data;                      // fresh profile
-        else if (!(WS.profile && WS.profile.id === uid)) WS.profile = null;   // keep a loaded one
-        return WS.profile;
+        if (r.data) { WS.profile = r.data; return WS.profile; }   // fresh profile
+        if (WS.profile && WS.profile.id === uid) return WS.profile; // keep a loaded one
+        // Signed in but no row came back: usually a request sent before the session was ready.
+        // Ask once more before concluding there is no profile.
+        return new Promise(function (res) { setTimeout(res, 400); }).then(function () {
+          return client.from("profiles").select("*").eq("id", uid).maybeSingle();
+        }).then(function (r2) {
+          var now = WS.session && WS.session.user ? WS.session.user.id : null;
+          if (now === uid) WS.profile = (r2 && r2.data) || (WS.profile && WS.profile.id === uid ? WS.profile : null);
+          return WS.profile;
+        });
       }).then(function (p) { profilePromise = null; return p; }, function (e) { profilePromise = null; throw e; });
       return profilePromise;
     },
