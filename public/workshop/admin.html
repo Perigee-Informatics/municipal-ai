@@ -251,6 +251,8 @@ details.card>summary{cursor:pointer;font-weight:700}
 (function () {
   function $(id) { return document.getElementById(id); }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+  /* Event name with the organiser as a suffix, so events with similar names can be told apart. */
+  function evTitle(e) { var org = (e && e.organized_by || "").trim(); return (e && e.name || "") + (org ? " – " + org : ""); }
   function flash(id, text, ok) { var m = $(id); m.textContent = text; m.className = "msg " + (ok ? "ok" : "bad"); m.classList.remove("hide"); }
 
   var events = [];
@@ -282,13 +284,13 @@ details.card>summary{cursor:pointer;font-weight:700}
 
   function eventOptions(selected) {
     return '<option value="">— इभेन्ट छान्नुहोस् —</option>' + events.map(function (e) {
-      return '<option value="' + esc(e.id) + '"' + (e.id === selected ? " selected" : "") + '>' + esc(e.name) + ' (' + esc(e.code) + ')</option>';
+      return '<option value="' + esc(e.id) + '"' + (e.id === selected ? " selected" : "") + '>' + esc(evTitle(e)) + ' (' + esc(e.code) + ')</option>';
     }).join("");
   }
 
   function eventName(id) {
     var e = events.find(function (x) { return x.id === id; });
-    return e ? e.name + " (" + e.code + ")" : "इभेन्ट तोकिएको छैन";
+    return e ? evTitle(e) + " (" + e.code + ")" : "इभेन्ट तोकिएको छैन";
   }
 
   function row(p, actions) {
@@ -316,7 +318,7 @@ details.card>summary{cursor:pointer;font-weight:700}
     if (!events.length) { $("evList").innerHTML = "अहिलेसम्म कुनै इभेन्ट छैन।"; return; }
     $("evList").innerHTML = events.map(function (e) {
       var id = esc(e.id);
-      return '<div class="ev"><div class="row"><div><strong><a href="' + esc('/workshop/event.html?event=' + encodeURIComponent(e.code)) + '">' + esc(e.name) + '</a></strong> <span class="small">[' + esc(e.code) + ']</span>' + (e.is_active ? ' <span class="badge-on">सक्रिय</span>' : '') +
+      return '<div class="ev"><div class="row"><div><strong><a href="' + esc('/workshop/event.html?event=' + encodeURIComponent(e.code)) + '">' + esc(evTitle(e)) + '</a></strong> <span class="small">[' + esc(e.code) + ']</span>' + (e.is_active ? ' <span class="badge-on">सक्रिय</span>' : '') +
         '<div class="small muted">' + esc(pkgName(e.package_id)) + '</div>' +
         '<div class="small muted">' + esc(e.organized_by || "") + ' · ' + esc(e.address || "") + '</div>' +
         '<div class="small muted">मितिहरू: ' + esc(EVI.info(e).dateRange || "—") + ' <span class="muted">(' + esc((e.event_dates || []).join(", ")) + ')</span></div></div>' +
@@ -349,7 +351,7 @@ details.card>summary{cursor:pointer;font-weight:700}
       qr.addData(url.href);
       qr.make();
       var label = test === "post" ? "पश्च-तालिम" : "पूर्व-तालिम";
-      panel.innerHTML = '<h2 style="margin-top:0">' + esc(ev.name) + ' · ' + label + ' QR</h2>' +
+      panel.innerHTML = '<h2 style="margin-top:0">' + esc(evTitle(ev)) + ' · ' + label + ' QR</h2>' +
         '<div class="qr" style="background:#fff;padding:12px;display:inline-block;border-radius:8px">' + qr.createSvgTag(6, 2) + '</div>' +
         '<p class="small">लिङ्क: <a href="' + esc(url.href) + '">' + esc(url.href) + '</a></p>' +
         '<p class="small muted">यो QR मा इभेन्ट कोड र परीक्षा प्रकार मात्र छ। सहभागीको व्यक्तिगत विवरण छैन।</p>' +
@@ -379,7 +381,7 @@ details.card>summary{cursor:pointer;font-weight:700}
   function renderManualEvents() {
     var cur = $("mrEvent").value;
     $("mrEvent").innerHTML = '<option value="">— इभेन्ट छान्नुहोस् —</option>' + events.map(function (e) {
-      return '<option value="' + esc(e.id) + '">' + esc(e.name) + ' (' + esc(e.code) + ')</option>';
+      return '<option value="' + esc(e.id) + '">' + esc(evTitle(e)) + ' (' + esc(e.code) + ')</option>';
     }).join("");
     if (cur) $("mrEvent").value = cur;
   }
@@ -624,6 +626,8 @@ details.card>summary{cursor:pointer;font-weight:700}
 (function () {
   function $(id) { return document.getElementById(id); }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+  /* Event name with the organiser as a suffix, so events with similar names can be told apart. */
+  function evTitle(e) { var org = (e && e.organized_by || "").trim(); return (e && e.name || "") + (org ? " – " + org : ""); }
   var QS = ["कार्यशाला मेरो कामका लागि उपयोगी थियो","सिकाइको गति मलाई ठिक्क थियो","भाषा बुझ्न सजिलो थियो","आफैँ गरेर सिक्ने पर्याप्त अवसर मिल्यो","आयोजना छनौट अभ्यास वास्तविक जस्तो लाग्यो","सहजकर्ता र सहयोगीबाट राम्रो सहयोग मिल्यो"];
   var POOL_SIZE = { employee: 50, representative: 50 };
   var NAMES = ["overview", "events", "packages", "users", "materials", "results"];
@@ -661,7 +665,7 @@ details.card>summary{cursor:pointer;font-weight:700}
       var p = packages.filter(function (x) { return x.key === key; })[0];
       var list = matEvents.filter(function (e) { return p && e.package_id === p.id; });
       var sel = document.querySelector('[data-mat-ev="' + key + '"]'), cur = sel.value;
-      sel.innerHTML = list.length ? list.map(function (e) { return '<option value="' + esc(e.code) + '">' + esc(e.name) + ' [' + esc(e.code) + ']' + (e.organized_by ? ' · ' + esc(e.organized_by) : '') + '</option>'; }).join("")
+      sel.innerHTML = list.length ? list.map(function (e) { return '<option value="' + esc(e.code) + '">' + esc(evTitle(e)) + ' [' + esc(e.code) + ']' + '</option>'; }).join("")
         : '<option value="">यो प्याकेजको इभेन्ट छैन</option>';
       if (cur && list.some(function (e) { return e.code === cur; })) sel.value = cur;
       matLink(key);
@@ -731,7 +735,7 @@ details.card>summary{cursor:pointer;font-weight:700}
       var mine = events.filter(function (e) { return e.package_id === p.id; });
       return '<tr><td><input type="text" id="pkgName-' + esc(p.id) + '" value="' + esc(p.name) + '"></td>' +
         '<td>' + esc(p.key) + '</td><td>' + (POOL_SIZE[p.key] || "—") + '</td><td>' + mine.length + '</td>' +
-        '<td class="small">' + (mine.map(function (e) { return '<a href="' + esc('/workshop/event.html?event=' + encodeURIComponent(e.code)) + '">' + esc(e.name) + ' [' + esc(e.code) + ']</a>' + (e.is_active ? ' <span class="badge-on">सक्रिय</span>' : ''); }).join("<br>") || "—") + '</td>' +
+        '<td class="small">' + (mine.map(function (e) { return '<a href="' + esc('/workshop/event.html?event=' + encodeURIComponent(e.code)) + '">' + esc(evTitle(e)) + ' [' + esc(e.code) + ']</a>' + (e.is_active ? ' <span class="badge-on">सक्रिय</span>' : ''); }).join("<br>") || "—") + '</td>' +
         '<td><button type="button" class="ok" data-pkg-save="' + esc(p.id) + '">नाम सुरक्षित</button></td></tr>';
     }).join("");
     $("pkgList").innerHTML = '<div class="scroll"><table class="t"><thead><tr><th>प्याकेजको नाम</th><th>कुञ्जी</th><th>प्रश्न बैंक</th><th>इभेन्ट सङ्ख्या</th><th>इभेन्टहरू</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>';
