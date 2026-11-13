@@ -43,6 +43,34 @@ table.t th{background:var(--soft)}
 .msg{font-weight:700;margin-top:10px}
 .msg.bad{color:var(--bad)} .msg.ok{color:var(--ok)}
 code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anywhere}
+
+/* feedback infographic: 1-5 ratings as diverging stacked bars (validated palette, light and dark) */
+:root{--r1:#b8312f;--r2:#e57372;--r3:#d6d4ce;--r4:#5598e7;--r5:#184f95}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--r1:#f4a6a5;--r2:#d65a59;--r3:#41454e;--r4:#3987e5;--r5:#b7d3f6}}
+:root[data-theme="dark"]{--r1:#f4a6a5;--r2:#d65a59;--r3:#41454e;--r4:#3987e5;--r5:#b7d3f6}
+.fb-kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin:12px 0}
+.fb-kpis .stat b{font-size:30px;line-height:1.2;display:block}
+.fb-kpis .stat small{color:var(--muted)}
+.fb-legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14px;color:var(--muted);margin:6px 0 10px}
+.fb-legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.fb-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,2fr) 52px;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--line)}
+.fb-q{font-size:15px;line-height:1.35}
+.fb-track{position:relative;height:26px}
+.fb-track:before{content:"";position:absolute;left:50%;top:-4px;bottom:-4px;border-left:1px dashed var(--muted);opacity:.6}
+.fb-seg{position:absolute;top:0;height:100%;box-shadow:inset -2px 0 0 var(--surface);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#fff;overflow:hidden;cursor:default}
+.fb-seg.first{border-radius:4px 0 0 4px}.fb-seg.last{border-radius:0 4px 4px 0;box-shadow:none}
+.fb-seg[data-k="3"]{color:var(--ink)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .fb-seg[data-k="1"],:root:not([data-theme="light"]) .fb-seg[data-k="5"]{color:#152033}}
+:root[data-theme="dark"] .fb-seg[data-k="1"],:root[data-theme="dark"] .fb-seg[data-k="5"]{color:#152033}
+.fb-avg{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.fb-axis{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,2fr) 52px;gap:10px;font-size:12px;color:var(--muted)}
+.fb-axis span:nth-child(2){display:flex;justify-content:space-between}
+.fb-meter{height:14px;border-radius:7px;background:var(--soft);overflow:hidden;margin:6px 0}
+.fb-meter i{display:block;height:100%;background:var(--r5);border-radius:7px}
+.fb-tip{position:fixed;z-index:50;pointer-events:none;background:var(--ink);color:var(--surface);font-size:13px;padding:6px 10px;border-radius:8px;max-width:260px}
+.fb-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.fb-cols ul{margin:6px 0 0;padding-left:18px}.fb-cols li{margin:4px 0;font-size:15px}
+@media (max-width:640px){.fb-row,.fb-axis{grid-template-columns:minmax(0,1fr) 44px}.fb-row .fb-q{grid-column:1 / -1}.fb-axis span:first-child{display:none}}
 </style>
 </head>
 <body>
@@ -118,13 +146,13 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
     </div>
 
     <div class="tabpanel" id="tab-feedback">
-      <h2>पृष्ठपोषण (सामग्री १२)</h2>
+      <h2>सहभागीको पृष्ठपोषण</h2>
       <div id="fbSummary" class="muted">लोड हुँदैछ…</div>
     </div>
   </section>
 </div>
 
-<script src="/workshop/account.js?v=20261110d"></script>
+<script src="/workshop/account.js?v=20261113a"></script>
 <script src="/workshop/event-info.js?v=20261110d"></script>
 <script>
 (function () {
@@ -133,7 +161,12 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
   var dn = EVI.dn;
   var CODE = String(new URLSearchParams(location.search).get("event") || "").trim().toUpperCase();
   var EV = null, PKG = null, PAGE = "/workshop/index.html", loaded = {};
-  var QS = ["कार्यशाला मेरो कामका लागि उपयोगी थियो", "सिकाइको गति मलाई ठिक्क थियो", "भाषा बुझ्न सजिलो थियो", "आफैँ गरेर सिक्ने पर्याप्त अवसर मिल्यो", "आयोजना छनौट अभ्यास वास्तविक जस्तो लाग्यो", "सहजकर्ता र सहयोगीबाट राम्रो सहयोग मिल्यो"];
+  /* Feedback questions, in the order the forms send them (representative/index.html QS, index.html FBQ). */
+  var QS_BY_PKG = {
+    representative: ["कार्यशाला मेरो कामका लागि उपयोगी थियो", "सिकाइको गति मलाई ठिक्क थियो", "भाषा बुझ्न सजिलो थियो", "आफैँ गरेर सिक्ने पर्याप्त अवसर मिल्यो", "आयोजना छनौट अभ्यास वास्तविक जस्तो लाग्यो", "सहजकर्ता र सहयोगीबाट राम्रो सहयोग मिल्यो"],
+    employee: ["तालिम मेरो कामका लागि उपयोगी थियो", "सिकाइको गति मलाई ठिक्क थियो", "भाषा बुझ्न सजिलो थियो", "आफैँ गरेर सिक्ने पर्याप्त अवसर मिल्यो", "अभ्यास र उदाहरण मेरो दैनिक कामसँग मिल्दा थिए", "विज्ञ र सहयोगीबाट राम्रो सहयोग मिल्यो"]
+  };
+  var QS = QS_BY_PKG.employee;
   var TABS = ["details", "schedule", "contents", "results", "people", "feedback"];
   function url(path, hash) { return path + "?event=" + encodeURIComponent(CODE) + (hash ? "#" + hash : ""); }
   function show(id) { ["needLogin", "notFound", "loading", "panel"].forEach(function (x) { $(x).classList.toggle("hide", x !== id); }); }
@@ -257,27 +290,66 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
       '</tbody></table></div>';
   }
 
-  /* ---------- feedback ---------- */
+  /* ---------- feedback: infographic ---------- */
+  var RATE_LBL = ["", "कमजोर", "सुधार चाहिने", "ठिकै", "राम्रो", "धेरै राम्रो"];
+  function pct(n, d) { return d ? Math.round(n / d * 100) : 0; }
   async function loadFeedback() {
     var r = await WS.listFeedback();
     if (r.error) { $("fbSummary").textContent = "लोड हुन सकेन: " + r.error.message; return; }
     var rows = (r.data || []).filter(function (x) { return x.event_code === EV.code; });
-    if (!rows.length) { $("fbSummary").textContent = "यो इभेन्टमा अहिलेसम्म कुनै पृष्ठपोषण आएको छैन।"; return; }
-    var avg = function (a) { a = a.filter(function (x) { return typeof x === "number"; }); return a.length ? (a.reduce(function (s, x) { return s + x; }, 0) / a.length).toFixed(1) : "–"; };
+    if (!rows.length) { $("fbSummary").innerHTML = "यो इभेन्टमा अहिलेसम्म कुनै पृष्ठपोषण आएको छैन। सहभागीले समापन सत्रको पृष्ठपोषण फाराममा इभेन्ट कोड <code>" + esc(EV.code) + "</code> राखेर पठाउँछन्।"; return; }
+    var all = [], per = QS.map(function () { return [0, 0, 0, 0, 0, 0]; });
+    rows.forEach(function (x) { (x.ratings || []).forEach(function (v, k) { if (per[k] && v >= 1 && v <= 5) { per[k][v]++; all.push(v); } }); });
+    var avgAll = all.length ? all.reduce(function (s, v) { return s + v; }, 0) / all.length : 0;
+    var good = all.filter(function (v) { return v >= 4; }).length;
     var rec = rows.filter(function (x) { return x.recommend; }).length;
-    var comments = rows.map(function (x) {
-      var parts = [];
-      if (x.best_session) parts.push("<b>उपयोगी सत्र:</b> " + esc(x.best_session));
-      if (x.improve) parts.push("<b>सुधार:</b> " + esc(x.improve));
-      if (x.first_ai_use) parts.push("<b>पहिलो AI काम:</b> " + esc(x.first_ai_use));
-      return parts.length ? '<li class="small">' + parts.join(" · ") + '</li>' : "";
-    }).join("");
+    var kpi = function (label, value, note) { return '<div class="stat"><span class="small muted">' + label + '</span><b>' + value + '</b><small>' + note + '</small></div>'; };
+    var html = '<div class="fb-kpis">' +
+      kpi("प्रतिक्रिया", dn(rows.length), "जनाले फाराम भरे") +
+      kpi("समग्र औसत", dn(avgAll.toFixed(1)) + '<span class="small muted"> / ५</span>', "सबै प्रश्नको औसत अङ्क") +
+      kpi("सन्तुष्ट", dn(pct(good, all.length)) + "%", "मूल्याङ्कन ४ वा ५") +
+      kpi("सिफारिस गर्ने", dn(pct(rec, rows.length)) + "%", dn(rec) + " / " + dn(rows.length) + " जना") + '</div>';
+    html += '<section class="card"><h2 style="margin-top:0">प्रश्नअनुसार मूल्याङ्कन</h2><div class="fb-legend">' +
+      [1, 2, 3, 4, 5].map(function (k) { return '<span><i style="background:var(--r' + k + ')"></i>' + dn(k) + ' ' + RATE_LBL[k] + '</span>'; }).join("") + '</div>' +
+      '<div class="fb-axis"><span></span><span><span>← कमजोर</span><span>राम्रो →</span></span><span style="text-align:right">औसत</span></div>';
+    QS.forEach(function (q, k) {
+      var c = per[k], n = c[1] + c[2] + c[3] + c[4] + c[5];
+      var avg = n ? (c[1] + 2 * c[2] + 3 * c[3] + 4 * c[4] + 5 * c[5]) / n : 0;
+      var p = [0, 0, 0, 0, 0, 0]; for (var v = 1; v <= 5; v++) p[v] = n ? c[v] / n * 100 : 0;
+      var x = 50 - (p[1] + p[2] + p[3] / 2) / 2, segs = "", present = [1, 2, 3, 4, 5].filter(function (v) { return c[v]; });
+      present.forEach(function (v, i) {
+        var w = p[v] / 2;
+        segs += '<span class="fb-seg' + (i === 0 ? " first" : "") + (i === present.length - 1 ? " last" : "") + '" data-k="' + v + '" style="left:' + x + '%;width:' + w + '%;background:var(--r' + v + ')" data-tip="' +
+          esc(dn(v) + " (" + RATE_LBL[v] + "): " + dn(c[v]) + " जना, " + dn(Math.round(p[v])) + "%") + '">' + (p[v] >= 18 ? dn(Math.round(p[v])) + "%" : "") + '</span>';
+        x += w;
+      });
+      html += '<div class="fb-row"><div class="fb-q">' + esc(q) + '</div><div class="fb-track" role="img" aria-label="' +
+        esc(q + ": " + [1, 2, 3, 4, 5].map(function (v) { return dn(v) + " = " + dn(c[v]) + " जना"; }).join(", ")) + '">' + segs + '</div><div class="fb-avg">' + (n ? dn(avg.toFixed(1)) : "–") + '</div></div>';
+    });
+    html += '<details style="margin-top:10px"><summary class="small">तालिकामा हेर्नुहोस् (हरेक अङ्कमा कति जना)</summary><div class="scroll"><table class="t"><thead><tr><th>प्रश्न</th>' +
+      [1, 2, 3, 4, 5].map(function (v) { return '<th>' + dn(v) + '</th>'; }).join("") + '<th>औसत</th></tr></thead><tbody>' +
+      QS.map(function (q, k) { var c = per[k], n = c[1] + c[2] + c[3] + c[4] + c[5]; return '<tr><td>' + esc(q) + '</td>' + [1, 2, 3, 4, 5].map(function (v) { return '<td>' + dn(c[v]) + '</td>'; }).join("") + '<td>' + (n ? dn(((c[1] + 2 * c[2] + 3 * c[3] + 4 * c[4] + 5 * c[5]) / n).toFixed(1)) : "–") + '</td></tr>'; }).join("") +
+      '</tbody></table></div></details></section>';
+    html += '<section class="card"><h2 style="margin-top:0">अरूलाई सिफारिस गर्ने</h2><div class="fb-meter" role="img" aria-label="' + dn(pct(rec, rows.length)) + '% ले सिफारिस गर्छन्"><i style="width:' + pct(rec, rows.length) + '%"></i></div>' +
+      '<p class="small muted" style="margin:0">' + dn(rec) + ' जनाले सिफारिस गर्छन्, ' + dn(rows.length - rec) + ' जनाले चिनो लगाएनन्।</p></section>';
+    var list = function (title, key) {
+      var items = rows.map(function (x) { return (x[key] || "").trim(); }).filter(Boolean);
+      return '<div class="card" style="margin-top:0"><h3 style="margin:0">' + title + ' <span class="small muted">(' + dn(items.length) + ')</span></h3>' +
+        (items.length ? '<ul>' + items.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join("") + '</ul>' : '<p class="small muted">कुनै उत्तर आएन।</p>') + '</div>';
+    };
+    html += '<h2>लिखित उत्तर</h2><div class="fb-cols">' + list("सबैभन्दा उपयोगी सत्र", "best_session") + list("सुधार गर्नुपर्ने कुरा", "improve") + list("पहिले AI बाट गर्ने काम", "first_ai_use") + '</div>';
     $("fbSummary").classList.remove("muted");
-    $("fbSummary").innerHTML = '<p><strong>' + dn(rows.length) + '</strong> प्रतिक्रिया · अरूलाई सिफारिस गर्ने: <strong>' + dn(rec) + '</strong> (' + dn(Math.round(rec / rows.length * 100)) + '%)</p>' +
-      '<div class="scroll"><table class="t"><thead><tr><th>प्रश्न</th><th>औसत (५ मध्ये)</th></tr></thead><tbody>' +
-      QS.map(function (q, k) { return '<tr><td>' + esc(q) + '</td><td>' + dn(avg(rows.map(function (x) { return (x.ratings || [])[k]; }))) + '</td></tr>'; }).join("") +
-      '</tbody></table></div>' + (comments ? '<h2>लिखित टिप्पणी</h2><ul>' + comments + '</ul>' : "");
+    $("fbSummary").innerHTML = html;
   }
+  /* hover tooltip for the rating segments */
+  var tip = null;
+  document.addEventListener("mousemove", function (e) {
+    var s = e.target.closest && e.target.closest(".fb-seg");
+    if (!s) { if (tip) tip.hidden = true; return; }
+    if (!tip) { tip = document.createElement("div"); tip.className = "fb-tip"; document.body.appendChild(tip); }
+    tip.textContent = s.getAttribute("data-tip"); tip.hidden = false;
+    tip.style.left = Math.min(e.clientX + 14, innerWidth - 270) + "px"; tip.style.top = (e.clientY + 14) + "px";
+  });
 
   /* ---------- start ---------- */
   (async function () {
@@ -290,6 +362,7 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
     var pk = (await WS.listPackages()).data || [];
     PKG = pk.filter(function (p) { return p.id === EV.package_id; })[0] || null;
     PAGE = PKG && PKG.key === "representative" ? "/workshop/representative/index.html" : "/workshop/index.html";
+    QS = QS_BY_PKG[PKG && PKG.key === "representative" ? "representative" : "employee"];
     renderHead();
     show("panel");
     showTab(location.hash.slice(1) || "details");

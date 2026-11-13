@@ -391,3 +391,22 @@ language sql stable security definer set search_path = public as $$
   limit 1;
 $$;
 grant execute on function public.active_event_brand() to anon, authenticated;
+
+-- 15. Ideal answers to the workshop exercises. Only an approved trainer can read or change them;
+--     trainees (and anonymous visitors) get no rows. The answer text is NOT kept in this repository
+--     (it is public); it lives only in this table.
+create table if not exists public.exercise_answers (
+  key          text primary key,
+  package_key  text not null check (package_key in ('employee', 'representative')),
+  html         text not null,
+  updated_at   timestamptz not null default now()
+);
+alter table public.exercise_answers enable row level security;
+revoke all on public.exercise_answers from anon;
+revoke all on public.exercise_answers from authenticated;
+grant select, insert, update, delete on public.exercise_answers to authenticated;
+drop policy if exists "answers: trainer only" on public.exercise_answers;
+create policy "answers: trainer only" on public.exercise_answers
+  for all to authenticated
+  using (public.is_trainer())
+  with check (public.is_trainer());
