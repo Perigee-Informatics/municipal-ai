@@ -8,6 +8,7 @@
   var client = null;
   var loading = null;
   var initPromise = null;
+  var profilePromise = null, profileFor = null;
 
   function loadSdk() {
     if (window.supabase) return Promise.resolve();
@@ -63,10 +64,21 @@
       return WS.session ? WS.session.access_token : SB_KEY;
     },
 
-    loadProfile: async function () {
-      var r = await client.from("profiles").select("*").eq("id", WS.session.user.id).maybeSingle();
-      WS.profile = r.data || null;
-      return WS.profile;
+    /* One request at a time per user; an empty answer (e.g. a request that went out before the
+       session was attached) never replaces a profile already loaded for the same user. */
+    loadProfile: function () {
+      var uid = WS.session && WS.session.user ? WS.session.user.id : null;
+      if (!uid) { WS.profile = null; return Promise.resolve(null); }
+      if (profilePromise && profileFor === uid) return profilePromise;
+      profileFor = uid;
+      profilePromise = client.from("profiles").select("*").eq("id", uid).maybeSingle().then(function (r) {
+        var current = WS.session && WS.session.user ? WS.session.user.id : null;
+        if (current !== uid) return WS.profile;              // signed out or switched user meanwhile
+        if (r.data) WS.profile = r.data;                      // fresh profile
+        else if (!(WS.profile && WS.profile.id === uid)) WS.profile = null;   // keep a loaded one
+        return WS.profile;
+      }).then(function (p) { profilePromise = null; return p; }, function (e) { profilePromise = null; throw e; });
+      return profilePromise;
     },
 
     signUp: function (email, password, details) {

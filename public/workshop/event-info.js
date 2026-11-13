@@ -221,7 +221,10 @@
     if (homePromise) return homePromise;
     homePromise = (async function () {
       var fallback = { href: "/workshop/index.html", label: "गृहपृष्ठ" };
-      try { if (!WS.ready) await WS.init(); } catch (e) { return fallback; }
+      try { if (!WS.ready) await WS.init(); } catch (e) { homePromise = null; return fallback; }
+      // Signed in but the profile is not here yet: load it before deciding (and do not keep a guess).
+      if (WS.session && !WS.profile) { try { await WS.loadProfile(); } catch (e) {} }
+      if (WS.session && !WS.profile) { homePromise = null; return fallback; }
       if (WS.isTrainer()) return { href: "/workshop/admin.html", label: "प्रशिक्षक गृहपृष्ठ" };
       var rep = { href: "/workshop/representative/index.html", label: "गृहपृष्ठ" };
       if (WS.session && WS.profile && WS.profile.event_id) {
