@@ -174,6 +174,12 @@ a.block:hover { background: var(--soft) }
   .search { flex-basis: 160px }
   .pager a { max-width: 100% }
 }
+.ans:empty { display: none }
+.ans { margin: 14px 0 }
+.ans-btn { border-color: var(--ok); color: var(--ok); font-weight: 700 }
+.ans-tag { font-weight: 500; font-size: 12px; opacity: .8; margin-left: 6px }
+.ans-body { margin-top: 10px; border: 1px dashed var(--ok); background: var(--ok-bg); border-radius: var(--r); padding: 12px 16px }
+.ans-body > :first-child { margin-top: 0 }
 @media (prefers-reduced-motion: reduce) { .side { transition: none } }
 </style>
 
@@ -214,7 +220,7 @@ a.block:hover { background: var(--soft) }
 <script src="data/reminder.js"></script>
 <script src="data/howto.js"></script>
 <script src="data/agenda.js"></script>
-<script src="account.js?v=20261110d"></script>
+<script src="account.js?v=20261113a"></script>
 <script src="event-info.js?v=20261110d"></script>
 <script>
 const DATA = { SESS: [window.D_VOICE,window.D_S1,window.D_S2,window.D_S3,window.D_S4,window.D_S5,window.D_S6,window.D_S7,window.D_S8,window.D_S9,window.D_S10], REFS: [window.D_RKA,window.D_RKHA,window.D_RGA,window.D_RGHA,window.D_RNGA], APPX: [window.D_PROMPTS,window.D_GLOSSARY,window.D_REMINDER,window.D_HOWTO], AGENDA_HTML: window.D_AGENDA, ...window.D_META };
@@ -380,6 +386,37 @@ function vDownloads() {
   <div class="dl-list">${dlButtons(DATA.FILES.map(f => f.key))}</div><p class="note" id="dlnote" hidden>यो दृश्यमा फाइल डाउनलोड गर्न मिल्दैन। सामग्री यहीँ पढ्न सकिन्छ, वा विज्ञसँग फाइल माग्नुहोस्।</p>`;
 }
 
+/* ---------- ideal answers: trainer only ----------
+   The answers are not in this page: they are read from the database, which returns them to an
+   approved trainer only. Everyone else sees nothing at the answer places (empty .ans elements). */
+let ANSWERS = null;
+const OPEN_ANS = new Set();
+async function loadAnswers(pkg) {
+  if (!window.WS || !WS.isTrainer() || ANSWERS) return;
+  try {
+    const r = await WS.listAnswers(pkg);
+    if (r.error) return;
+    ANSWERS = Object.fromEntries((r.data || []).map(a => [a.key, a.html]));
+    mountAnswers();
+  } catch (e) {}
+}
+function mountAnswers() {
+  if (!ANSWERS) return;
+  document.querySelectorAll('.ans[data-ans]').forEach(el => {
+    const k = el.dataset.ans, h = ANSWERS[k];
+    if (!h) return;
+    const open = OPEN_ANS.has(k);
+    el.innerHTML = `<button type="button" class="btn ans-btn" data-ans-toggle="${k}" aria-expanded="${open}">${open ? '▲ आदर्श उत्तर लुकाउनुहोस्' : '▼ आदर्श उत्तर देखाउनुहोस्'}<span class="ans-tag">प्रशिक्षकका लागि मात्र</span></button><div class="ans-body"${open ? '' : ' hidden'}>${h}</div>`;
+  });
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-ans-toggle]');
+  if (!b) return;
+  const k = b.dataset.ansToggle;
+  OPEN_ANS.has(k) ? OPEN_ANS.delete(k) : OPEN_ANS.add(k);
+  mountAnswers();
+});
+
 let MATERIALS_OK = false;
 function gateView() {
   return `<div class="wrap" style="padding-top:20px"><p class="eyebrow">सामग्री निजी छ</p><h1>सामग्री हेर्न खाता चाहिन्छ</h1>
@@ -399,6 +436,7 @@ function route() {
   else if (id === 'downloads') html = vDownloads();
   else { html = vHome(); cur = 'home'; }
   $('#view').innerHTML = html;
+  mountAnswers();
   renderSide(cur);
   syncDl();
   closeSide();
@@ -525,6 +563,7 @@ async function start() {
   if (ok === null) { $('#view').innerHTML = slowView(); renderSide('home'); return; }
   MATERIALS_OK = ok;
   route();
+  loadAnswers('employee');
   if (window.EVI && !HOME) EVI.home().then(h => { HOME = h; EVI.mountHome(h); }).catch(() => {});
   if (EVENT_DONE) return;
   try {

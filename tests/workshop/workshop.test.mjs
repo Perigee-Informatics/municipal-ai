@@ -109,7 +109,7 @@ test("account.js exposes the methods the pages call", () => {
   for (const m of [
     "init", "signUp", "signIn", "signOut", "isTrainer", "isApproved", "materialsPublic", "setMaterialsPublic",
     "listByStatus", "setStatus", "listPackages", "listEvents", "saveEvent", "updateEvent", "deleteEvent",
-    "loadEventForProfile", "saveMyProfile", "submitFeedback",
+    "loadEventForProfile", "saveMyProfile", "submitFeedback", "listAnswers",
   ]) {
     assert.equal(typeof WS[m], "function", `WS.${m}`);
   }
@@ -122,6 +122,19 @@ test("admin page: the manual registration form sends only email and password", (
   assert.ok(html.includes('id="mrEmail"') && html.includes('id="mrPass"'));
   assert.ok(!/id="mrName"|id="mrGender"|id="mrOffice"/.test(html), "no profile fields on the manual form");
   assert.ok(html.includes("/functions/v1/admin-create-participants"));
+});
+
+test("ideal answers never ship in the public pages: every answer place is empty", () => {
+  const files = ["index.html", "representative/index.html", ...fs.readdirSync(path.join(W, "data")).map((f) => "data/" + f)];
+  let places = 0;
+  for (const f of files) {
+    const text = read(f).replace(/\\"/g, '"');
+    for (const m of text.matchAll(/<div class="ans" data-ans="([a-z0-9-]+)">([\s\S]*?)<\/div>/g)) {
+      places++;
+      assert.equal(m[2].trim(), "", `${f}: answer place ${m[1]} must be empty`);
+    }
+  }
+  assert.ok(places >= 20, `found ${places} answer places`);
 });
 
 test("service-role key is never shipped to the browser", () => {

@@ -139,6 +139,11 @@
       return client.from("training_packages").update(patch).eq("id", id);
     },
 
+    /* Ideal answers to the exercises of one package (trainer only; RLS returns no rows to anyone else). */
+    listAnswers: function (packageKey) {
+      return client.from("exercise_answers").select("key,html").eq("package_key", packageKey);
+    },
+
     /* Feedback rows (trainer only; RLS enforces this). */
     listFeedback: function () {
       return client.from("workshop_feedback").select("*").order("created_at", { ascending: false });
