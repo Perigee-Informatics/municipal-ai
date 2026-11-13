@@ -506,6 +506,10 @@ do $$ begin
     execute 'create policy "event-media: trainer uploads" on storage.objects for insert to authenticated with check (bucket_id = ''event-media'' and public.is_trainer())';
     execute 'drop policy if exists "event-media: trainer updates" on storage.objects';
     execute 'create policy "event-media: trainer updates" on storage.objects for update to authenticated using (bucket_id = ''event-media'' and public.is_trainer())';
+    -- Storage looks a file up before deleting it, so the trainer also needs to read the bucket's
+    -- file list (visitors read files through public URLs and need no policy).
+    execute 'drop policy if exists "event-media: trainer reads" on storage.objects';
+    execute 'create policy "event-media: trainer reads" on storage.objects for select to authenticated using (bucket_id = ''event-media'' and public.is_trainer())';
     execute 'drop policy if exists "event-media: trainer deletes" on storage.objects';
     execute 'create policy "event-media: trainer deletes" on storage.objects for delete to authenticated using (bucket_id = ''event-media'' and public.is_trainer())';
   end if;
