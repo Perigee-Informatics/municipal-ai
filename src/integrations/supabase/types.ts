@@ -139,6 +139,27 @@ export type Database = {
           },
         ]
       }
+      exercise_answers: {
+        Row: {
+          html: string
+          key: string
+          package_key: string
+          updated_at: string
+        }
+        Insert: {
+          html: string
+          key: string
+          package_key: string
+          updated_at?: string
+        }
+        Update: {
+          html?: string
+          key?: string
+          package_key?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           age_group: string | null
@@ -272,6 +293,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      active_event_brand: {
+        Args: never
+        Returns: {
+          address: string
+          event_dates: string[]
+          name: string
+          organized_by: string
+          package_key: string
+        }[]
+      }
       event_exists: { Args: { p_code: string }; Returns: boolean }
       event_question_ids: { Args: { p_code: string }; Returns: number[] }
       event_test_open: {
@@ -280,22 +311,12 @@ export type Database = {
       }
       is_approved: { Args: never; Returns: boolean }
       is_trainer: { Args: never; Returns: boolean }
-      active_event_brand: {
-        Args: never
-        Returns: {
-          address: string | null
-          event_dates: string[]
-          name: string
-          organized_by: string | null
-          package_key: string | null
-        }[]
-      }
       public_event_brand: {
         Args: { p_code: string }
         Returns: {
-          address: string | null
+          address: string
           event_dates: string[]
-          organized_by: string | null
+          organized_by: string
         }[]
       }
       public_event_info: {
@@ -315,7 +336,6 @@ export type Database = {
         Args: { p_code: string; p_participant: string; p_test: string }
         Returns: Json
       }
-      set_active_event: { Args: { p_code: string }; Returns: undefined }
       save_my_profile: {
         Args: {
           p_age_group: string
@@ -326,6 +346,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      set_active_event: { Args: { p_code: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
