@@ -192,6 +192,7 @@ a.block:hover { background: var(--soft) }
 </div>
 <div class="toast" id="toast" hidden></div>
 
+<script src="data/voice.js"></script>
 <script src="data/s1.js"></script>
 <script src="data/s2.js"></script>
 <script src="data/s3.js"></script>
@@ -216,7 +217,7 @@ a.block:hover { background: var(--soft) }
 <script src="account.js?v=20261110d"></script>
 <script src="event-info.js?v=20261110d"></script>
 <script>
-const DATA = { SESS: [window.D_S1,window.D_S2,window.D_S3,window.D_S4,window.D_S5,window.D_S6,window.D_S7,window.D_S8,window.D_S9,window.D_S10], REFS: [window.D_RKA,window.D_RKHA,window.D_RGA,window.D_RGHA,window.D_RNGA], APPX: [window.D_PROMPTS,window.D_GLOSSARY,window.D_REMINDER,window.D_HOWTO], AGENDA_HTML: window.D_AGENDA, ...window.D_META };
+const DATA = { SESS: [window.D_VOICE,window.D_S1,window.D_S2,window.D_S3,window.D_S4,window.D_S5,window.D_S6,window.D_S7,window.D_S8,window.D_S9,window.D_S10], REFS: [window.D_RKA,window.D_RKHA,window.D_RGA,window.D_RGHA,window.D_RNGA], APPX: [window.D_PROMPTS,window.D_GLOSSARY,window.D_REMINDER,window.D_HOWTO], AGENDA_HTML: window.D_AGENDA, ...window.D_META };
 const DEV = '०१२३४५६७८९';
 const dn = s => String(s).replace(/[0-9]/g, d => DEV[d]);
 const tm = (a, b) => dn(a) + '–' + dn(b);
@@ -310,7 +311,7 @@ function vHome() {
       <button data-day="1" aria-pressed="${today === 1}">आज पहिलो दिन</button><button data-day="2" aria-pressed="${today === 2}">आज दोस्रो दिन</button></div>
       <span class="clock">नेपाल समय ${dn(String(Math.floor(nn.t / 60)).padStart(2, '0'))}:${dn(String(nn.t % 60).padStart(2, '0'))}</span></div>
     <div class="nowgrid">${slot('अहिले चलिरहेको', nn.now, true)}${slot('त्यसपछि', nn.next, false)}</div>
-    <div class="progress"><span>पूरा भएका सत्र: ${dn(sessDone)}/${dn(10)}</span><span class="bar"><i style="width:${sessDone * 10}%"></i></span></div>
+    <div class="progress"><span>पूरा भएका सत्र: ${dn(sessDone)}/${dn(DATA.SESS.length)}</span><span class="bar"><i style="width:${Math.round(sessDone / DATA.SESS.length * 100)}%"></i></span></div>
   </section>
   <h2 class="section-title">दुई दिनको कार्यतालिका</h2>
   <div class="days">${DATA.DAYS.map(dayCol).join('')}</div>
