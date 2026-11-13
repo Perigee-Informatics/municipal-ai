@@ -94,8 +94,8 @@ a{color:var(--accent)}
   </section>
 </div>
 
-<script src="account.js?v=20261113e"></script>
-<script src="event-info.js?v=20261113e"></script>
+<script src="account.js?v=20261113f"></script>
+<script src="event-info.js?v=20261113f"></script>
 <script>EVI.home().then(EVI.mountHome).catch(function () {});</script>
 <script>
 /* Organiser of the event this visitor came for (link with ?event=CODE, or their own event once signed in). */
@@ -109,6 +109,8 @@ EVI.resolve().then(function (ev) { var i = EVI.info(ev); if (i && i.org) documen
   function $(id) { return document.getElementById(id); }
   function show(el, text, cls) { el.textContent = text; el.className = "msg " + cls; }
 
+  // login.html#signup (the landing page's "नयाँ दर्ता" link) opens the sign-up form.
+  if (location.hash === "#signup") setTimeout(function () { var t = $("tabUp"); if (t) t.click(); }, 0);
   document.querySelectorAll("[data-tab]").forEach(function (b) {
     b.addEventListener("click", function () {
       var up = b.getAttribute("data-tab") === "up";

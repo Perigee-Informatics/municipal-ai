@@ -294,6 +294,7 @@
     if (homePromise) return homePromise;
     homePromise = (async function () {
       var fallback = { href: "/workshop/index.html", label: "गृहपृष्ठ" };
+      var landing = { href: "/", label: "गृहपृष्ठ" };   // visitors: the site's landing page
       try { if (!WS.ready) await WS.init(); } catch (e) { homePromise = null; return fallback; }
       // Signed in but the profile is not here yet: load it before deciding (and do not keep a guess).
       if (WS.session && !WS.profile) { try { await WS.loadProfile(); } catch (e) {} }
@@ -307,7 +308,8 @@
           if (pk) return courseOf(pk.key) === "representative" ? rep : fallback;
         } catch (e) {}
       }
-      // Otherwise home is the course of the active event.
+      if (!WS.session) return landing;
+      // A signed-in participant without an event: the course of the active event.
       var act = await rpc("active_event_brand");
       return act && courseOf(act.package_key) === "representative" ? rep : fallback;
     })();
