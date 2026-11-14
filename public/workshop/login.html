@@ -196,6 +196,7 @@ EVI.resolve().then(function (ev) { var i = EVI.info(ev); if (i && i.org) documen
     var btn = e.target.querySelector("button"); btn.disabled = true;
     var box = $("inMsg"); box.classList.add("hide");
     try {
+      await WS.init();   // the connection must be ready (a tap can arrive before it is)
       var r = await WS.signIn($("inEmail").value.trim(), $("inPass").value);
       if (r.error) {
         show(box, "इमेल वा पासवर्ड मिलेन।", "bad"); box.classList.remove("hide");
@@ -221,6 +222,7 @@ EVI.resolve().then(function (ev) { var i = EVI.info(ev); if (i && i.org) documen
       office: $("upOffice").value.trim()
     };
     try {
+      await WS.init();
       var r = await WS.signUp($("upEmail").value.trim(), $("upPass").value, details);
       if (r.error) {
         show(box, "दर्ता हुन सकेन: " + r.error.message, "bad");
