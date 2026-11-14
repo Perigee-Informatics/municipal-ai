@@ -45,7 +45,7 @@ a{color:var(--accent)}
   <section class="card hide" id="chooseEv" aria-live="polite"></section>
 
   <section class="card" id="formIn">
-    <form id="fIn">
+    <form id="fIn" onsubmit="event.preventDefault();window.earlySubmit=this.id">
       <label for="inEmail">इमेल</label>
       <input id="inEmail" type="email" autocomplete="email" required>
       <label for="inPass">पासवर्ड</label>
@@ -56,7 +56,7 @@ a{color:var(--accent)}
   </section>
 
   <section class="card hide" id="formUp">
-    <form id="fUp">
+    <form id="fUp" onsubmit="event.preventDefault();window.earlySubmit=this.id">
       <label for="upName">पूरा नाम</label>
       <input id="upName" type="text" required>
       <label for="upEmail">इमेल</label>
@@ -233,6 +233,8 @@ EVI.resolve().then(function (ev) { var i = EVI.info(ev); if (i && i.org) documen
       show(box, "जडानमा समस्या। फेरि प्रयास गर्नुहोस्।", "bad"); box.classList.remove("hide");
     } finally { btn.disabled = false; }
   });
+  // A tap on "sign in" before this script loaded was held back (see the forms' onsubmit); send it now.
+  if (window.earlySubmit) { var early = $(window.earlySubmit); window.earlySubmit = null; if (early && early.requestSubmit) early.requestSubmit(); }
 })();
 </script>
 </body>
