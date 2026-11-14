@@ -67,14 +67,38 @@ th{background:var(--soft);font-size:13px}
 .rev.ok{border-left-color:var(--ok)}.rev.bad{border-left-color:var(--bad)}
 .rev .ans{margin:6px 0 0}
 .note{font-size:14px;color:var(--muted)}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-@media (max-width:820px){.grid3{grid-template-columns:1fr}}
-@media (max-width:720px){.grid2{grid-template-columns:1fr}}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+@media (max-width:820px){.grid3{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:720px){.grid2{grid-template-columns:minmax(0,1fr)}}
 .hide{display:none!important}
 .msg{margin-top:8px;font-size:15px}
 .bar{height:10px;border-radius:99px;background:var(--soft);overflow:hidden}
 .field{margin-top:14px}
+/* correlation / regression infographics (stats-viz.js) */
+:root{--sv-pos:#2a78d6;--sv-neg:#e34948}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--sv-pos:#3987e5;--sv-neg:#e66767}}
+:root[data-theme="dark"]{--sv-pos:#3987e5;--sv-neg:#e66767}
+svg.sv{width:100%;height:auto;display:block;font-family:inherit;overflow:visible}
+.sv-grid{stroke:var(--line);stroke-width:1}.sv-zero{stroke:var(--muted);stroke-width:1.5}
+.sv-tick{fill:var(--muted);font-size:11px;font-variant-numeric:tabular-nums}
+.sv-lab{fill:var(--ink);font-size:13.5px;font-weight:600}.sv-val{fill:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+.sv-axis{fill:var(--muted);font-size:12px}
+rect.sv-pos,circle.sv-pos{fill:var(--sv-pos)}rect.sv-neg,circle.sv-neg{fill:var(--sv-neg)}rect.sv-faint{opacity:.45}
+line.sv-pos{stroke:var(--sv-pos)}line.sv-neg{stroke:var(--sv-neg)}line.sv-ns{stroke:var(--muted)}circle.sv-ns{fill:var(--muted)}
+.sv-ci{stroke-width:2.5;stroke-linecap:round}.sv-dot{stroke:var(--surface);stroke-width:2}
+.sv-pt{fill:var(--accent);fill-opacity:.7;stroke:var(--surface);stroke-width:1.5}
+.sv-fit{stroke:var(--ink);stroke-width:2;stroke-linecap:round}.sv-ref{stroke:var(--muted);stroke-width:1.5;stroke-dasharray:4 4}
+.sv-mean{fill:var(--ink)}
+.sv-hit:hover .sv-lab{text-decoration:underline}
+.sv-legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--muted);margin:6px 0 2px}
+.sv-legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:5px}
+.sv-insights{margin:10px 0 0;padding-left:20px}.sv-insights li{margin:6px 0;line-height:1.55}
+.sv-sc-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.sv-sc-grid.sv-sc-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:820px){.sv-sc-grid,.sv-sc-grid.sv-sc-2{grid-template-columns:minmax(0,1fr)}}
+.sv-sc-grid h3{font-size:15px;margin:0 0 4px}
+@media (max-width:600px){.sv-lab{font-size:15px}.sv-val{font-size:13.5px}.sv-tick{font-size:12.5px}}
+details.sv-table summary{cursor:pointer;color:var(--muted);font-size:14px;margin-top:12px}
 </style>
 
 <div class="wrap">
@@ -112,6 +136,7 @@ th{background:var(--soft);font-size:13px}
 <script>EVI.home().then(EVI.mountHome).catch(function () {});</script>
 <script src="pool-employee.js"></script>
 <script src="pool-representative.js"></script>
+<script src="stats-viz.js?v=20261114c"></script>
 <script>
 (function(){
 "use strict";
@@ -830,6 +855,8 @@ function learningSection(){
     +'</tbody></table></div>'
     +'<p class="note" style="margin-top:6px">पूर्व अङ्क र सुधारबीचको नकारात्मक सम्बन्धले सामान्यतः कम अङ्क ल्याउनेले बढी सुधार देखाउने सङ्केत गर्छ। यसलाई कारण होइन, सम्बन्धका रूपमा मात्र लिनुहोस्।</p>';
 
+  out+=gainInfographic(P);
+
   /* participant-level achievement */
   out+='<h3 style="margin-top:22px">सहभागीगत सिकाइ</h3>'
     +'<div class="tbl-wrap"><table><thead><tr><th>सहभागी कोड</th><th>लिङ्ग</th><th>उमेर</th><th>शैक्षिक तह</th><th>पूर्व %</th><th>पश्च %</th><th>सुधार</th><th>g</th><th>स्थिति</th></tr></thead><tbody>';
@@ -843,6 +870,138 @@ function learningSection(){
 
   if(k<30) out+='<p class="msg c-warn">जोडी सहभागी ३० भन्दा कम भएकाले यी नतिजालाई प्रारम्भिक सङ्केतका रूपमा मात्र लिनुहोस्।</p>';
   return out+'</section>';
+}
+
+/* ---------- correlation and regression infographics (stats-viz.js) ---------- */
+var SV_OPEN={};
+var EDU_SHORT=["हाई स्कुल","स्नातक","स्नातकोत्तर+"];
+var AGE_SHORT=["<२०","२०–३०","३०–४०","४०–५०","५०+"];
+function genderDummy(v){ return function(r){ var g=r.gender||(r.pre&&r.pre.gender); if(g!=="Male"&&g!=="Female"&&g!=="Others") return null; return g===v?1:0; }; }
+function demoPredictors(get){
+  return [
+    {key:"female",label:"महिला (पुरुषको तुलनामा)",unit:"प्रतिशत-अङ्क",get:function(r){return genderDummy("Female")(get(r));}},
+    {key:"others",label:"अन्य लिङ्ग (पुरुषको तुलनामा)",unit:"प्रतिशत-अङ्क",get:function(r){return genderDummy("Others")(get(r));}},
+    {key:"age",label:"उमेर समूह (प्रति एक समूह माथि)",unit:"प्रतिशत-अङ्क",get:function(r){var i=idxOf(AGES,get(r).ageGroup);return i<0?null:i;}},
+    {key:"edu",label:"शैक्षिक तह (प्रति एक तह माथि)",unit:"प्रतिशत-अङ्क",get:function(r){var i=idxOf(EDUS,get(r).education);return i<0?null:i;}}
+  ];
+}
+function corrSentence(label,c,upWord){
+  if(c.r===null) return '<li><strong>'+esc(label)+'</strong>: सम्बन्ध नाप्न पर्याप्त भिन्नता वा डाटा छैन।</li>';
+  var sig=c.p!==null&&c.p<0.05;
+  var dir=Math.abs(c.r)<0.1?"":(c.r>0?" सकारात्मक":" नकारात्मक");
+  var what=Math.abs(c.r)<0.1?"":(c.r>0?" ("+upWord+" अङ्क बढी)":" ("+upWord+" अङ्क कम)");
+  return '<li><strong>'+esc(label)+'</strong>: '+SV.strength(c.r)+dir+' सम्बन्ध'+esc(what)+', r = '+SV.f2(c.r)+', '+SV.pTxt(c.p)+' — '+(sig?'<strong>सांख्यिकीय रूपमा सार्थक</strong>':'सांख्यिकीय रूपमा सार्थक होइन')+'।</li>';
+}
+function modelSentences(M,yWhat){
+  if(!M.ok&&M.reason==="novar") return '<li>सबैको '+esc(yWhat)+' एउटै भएकाले प्रतिगमन गर्न मिल्दैन।</li>';
+  if(!M.ok) return '<li>प्रतिगमन मोडेल बनाउन पर्याप्त डाटा छैन'+(M.reason==="collinear"?' (चरहरू एकअर्कासँग पूर्ण रूपमा मिल्छन्)':' (कम्तीमा '+(M.k+3)+' जना चाहिन्छ, अहिले '+M.n+')')+'।</li>';
+  var out='<li>जनसांख्यिकीय चरहरूले '+esc(yWhat)+'को भिन्नताको <strong>'+Math.round(M.r2*100)+'%</strong> व्याख्या गर्छन् (R² = '+SV.f2(M.r2)+', समायोजित R² = '+SV.f2(M.adjR2)+')। समग्र मोडेल '+(M.pF<0.05?'<strong>सार्थक</strong>':'सार्थक होइन')+' (F = '+SV.f2(M.F)+', '+SV.pTxt(M.pF)+')।</li>';
+  var sig=M.coefs.filter(function(c){return c.p!==null&&c.p<0.05;});
+  if(!sig.length) out+='<li>अरू चर उस्तै राख्दा कुनै पनि चरको छुट्टै प्रभाव सांख्यिकीय रूपमा सार्थक देखिएन।</li>';
+  sig.forEach(function(c){ out+='<li>अरू चर उस्तै राख्दा, <strong>'+esc(c.label)+'</strong>: '+esc(yWhat)+' औसतमा <strong>'+SV.signed(c.b,1)+' '+esc(c.unit)+'</strong> (९५% विश्वास अन्तराल '+SV.f2(c.lo,1)+' देखि '+SV.f2(c.hi,1)+', '+SV.pTxt(c.p)+')।</li>'; });
+  if(M.dropped.length) out+='<li class="muted">मोडेलमा नराखिएका (सबैको एउटै मान भएकाले): '+esc(M.dropped.map(function(p){return p.label;}).join(", "))+'।</li>';
+  return out;
+}
+function detailsBox(id,summary,inner){
+  return '<details class="sv-table" id="'+id+'"'+(SV_OPEN[id]?' open':'')+' ontoggle="SV_OPEN[this.id]=this.open"><summary>'+esc(summary)+'</summary>'+inner+'</details>';
+}
+function coefTable(M){
+  return '<div class="tbl-wrap"><table><thead><tr><th>चर</th><th>गुणाङ्क (b)</th><th>SE</th><th>t</th><th>p</th><th>९५% CI</th></tr></thead><tbody>'
+    +'<tr><td>स्थिराङ्क (intercept)</td><td>'+SV.f2(M.intercept,2)+'</td><td colspan="4" class="muted">सबै चर शून्य (पुरुष, सबैभन्दा तल्लो समूह) हुँदाको अनुमानित मान</td></tr>'
+    +M.coefs.map(function(c){return '<tr><td>'+esc(c.label)+'</td><td>'+SV.f2(c.b,2)+'</td><td>'+SV.f2(c.se,2)+'</td><td>'+SV.f2(c.t,2)+'</td><td>'+SV.pTxt(c.p).replace("p ","")+'</td><td>'+SV.f2(c.lo,1)+' – '+SV.f2(c.hi,1)+'</td></tr>';}).join("")
+    +'</tbody></table></div><p class="note">n = '+M.n+', R² = '+SV.f2(M.r2,3)+', समायोजित R² = '+SV.f2(M.adjR2,3)+', F('+M.k+', '+M.df+') = '+SV.f2(M.F,2)+', '+SV.pTxt(M.pF)+', RMSE = '+SV.f2(M.rmse,1)+'</p>';
+}
+var LEGEND='<div class="sv-legend"><span><i style="background:var(--sv-pos)"></i>सकारात्मक</span><span><i style="background:var(--sv-neg)"></i>नकारात्मक</span><span><i style="background:var(--muted)"></i>सार्थक होइन (p ≥ 0.05)</span><span>★ सार्थक (p &lt; 0.05)</span></div>';
+
+/* Groups with fewer than 5 people make a comparison fragile: say so next to the findings. */
+function smallGroups(recs){
+  var notes=[];
+  [[GENDERS,"gender"],[AGES,"ageGroup"],[EDUS,"education"]].forEach(function(d){
+    var present=d[0].map(function(x){return {l:x.l.replace(/ \(.*\)$/,""),n:recs.filter(function(r){return r[d[1]]===x.v;}).length};}).filter(function(x){return x.n>0;});
+    if(present.length<2) return;
+    present.filter(function(x){return x.n<5;}).forEach(function(x){notes.push(x.l+": "+SV.np(x.n)+" जना");});
+  });
+  return notes.length?'<li><strong>सावधानी:</strong> केही समूहमा ५ जनाभन्दा कम सहभागी छन् ('+esc(notes.join(", "))+')। यी समूहसँग सम्बन्धित नतिजा थोरै व्यक्तिमा आधारित छन्, त्यसैले एक-दुई जनाको अङ्कले नै धेरै फरक पार्छ।</li>':'';
+}
+
+/* Score of one test against the participants' demographics. */
+function demoInfographic(recs,test){
+  if(!window.SV) return '<section class="card"><p class="c-bad">विश्लेषण फाइल (stats-viz.js) लोड भएन। पृष्ठ फेरि लोड गर्नुहोस्।</p></section>';
+  var id=test+"-"+(sessionFilter||"all");
+  var pct=recs.map(function(r){return r.pct;});
+  var ageI=recs.map(function(r){var i=idxOf(AGES,r.ageGroup);return i<0?null:i;});
+  var eduI=recs.map(function(r){var i=idxOf(EDUS,r.education);return i<0?null:i;});
+  var fem=recs.map(function(r){return r.gender==="Female"?1:(r.gender==="Male"?0:null);});
+  var mins=recs.map(function(r){return r.seconds>0?r.seconds/60:null;});
+  var cAge=SV.corr(ageI,pct,"spearman"), cEdu=SV.corr(eduI,pct,"spearman"), cFem=SV.corr(fem,pct), cMin=SV.corr(mins,pct);
+  var preds=demoPredictors(function(r){return r;});
+  preds.push({key:"min",label:"परीक्षामा लागेको समय (प्रति मिनेट)",unit:"प्रतिशत-अङ्क",get:function(r){return r.seconds>0?r.seconds/60:null;}});
+  var M=SV.regress(recs,function(r){return r.pct;},preds);
+  var tl=testLabel(test);
+  var tip=function(r){return r.code+" · "+r.pct+"% · "+labelOf(GENDERS,r.gender)+" · "+(r.ageGroup||"")+" · "+(r.education||"");};
+  var sc=function(idx,ticks,title,xl){
+    var pts=[];recs.forEach(function(r,i){ if(idx[i]!==null) pts.push({x:idx[i],y:r.pct,tip:tip(r)}); });
+    return '<div><h3>'+esc(title)+'</h3>'+SV.scatter(pts,{ticks:ticks,xLabel:xl,title:title,yfmt:function(t){return t+"%";}})+'</div>';
+  };
+  var minPts=[];recs.forEach(function(r,i){ if(mins[i]!==null) minPts.push({x:mins[i],y:r.pct,tip:tip(r)+" · "+Math.round(mins[i])+" मिनेट"}); });
+  var s='<section class="card"><div class="row" style="justify-content:space-between;flex-wrap:wrap;gap:6px"><h2>'+esc(tl)+' परीक्षा: जनसांख्यिकी, सहसम्बन्ध र प्रतिगमन</h2><span class="small muted">n = '+recs.length+'</span></div>'
+    +'<div class="kpis">'
+    +'<div class="kpi"><span class="muted small">व्याख्या गरिएको भिन्नता (R²)</span><b>'+(M.ok?Math.round(M.r2*100)+'%':'—')+'</b></div>'
+    +'<div class="kpi"><span class="muted small">समायोजित R²</span><b>'+(M.ok?SV.f2(M.adjR2):'—')+'</b></div>'
+    +'<div class="kpi"><span class="muted small">मोडेल सार्थकता</span><b style="font-size:20px">'+(M.ok?SV.pTxt(M.pF):'—')+'</b></div>'
+    +'<div class="kpi"><span class="muted small">सार्थक चर</span><b>'+(M.ok?M.coefs.filter(function(c){return c.p!==null&&c.p<0.05;}).length+' / '+M.coefs.length:'—')+'</b></div>'
+    +'</div>'
+    +'<div class="grid2" style="margin-top:14px">'
+    +'<div><h3>सहसम्बन्ध: अङ्कसँग कति सम्बन्धित?</h3><p class="note">−१ देखि +१: शून्यभन्दा दायाँ भए त्यो चर बढ्दा अङ्क पनि बढ्छ, बायाँ भए घट्छ। उमेर र शैक्षिक तहमा Spearman, लिङ्ग र समयमा Pearson r।</p>'
+    +SV.corrChart([
+      {label:"उमेर समूह",r:cAge.r,p:cAge.p,n:cAge.n},
+      {label:"शैक्षिक तह",r:cEdu.r,p:cEdu.p,n:cEdu.n},
+      {label:"महिला (पुरुषको तुलनामा)",r:cFem.r,p:cFem.p,n:cFem.n},
+      {label:"परीक्षामा लागेको समय",r:cMin.r,p:cMin.p,n:cMin.n}])+LEGEND+'</div>'
+    +'<div><h3>बहुचर रेखीय प्रतिगमन: छुट्टाछुट्टै प्रभाव</h3><p class="note">अरू चर उस्तै राख्दा प्रत्येक चरले अङ्क (%) कति बदल्छ। थोप्लो अनुमान हो, रेखा ९५% विश्वास अन्तराल। रेखाले शून्य काटे प्रभाव निश्चित छैन।</p>'
+    +(M.ok?SV.coefChart(M.coefs)+LEGEND:'<p class="muted">प्रतिगमनका लागि पर्याप्त डाटा छैन (n = '+M.n+')।</p>')+'</div>'
+    +'</div>'
+    +'<h3 style="margin-top:18px">अङ्क र जनसांख्यिकी: प्रत्येक थोप्लो एक सहभागी</h3><p class="note">कालो रेखा: न्यूनतम वर्ग प्रतिगमन रेखा। छोटो कालो पट्टी: त्यो समूहको औसत।</p>'
+    +'<div class="sv-sc-grid">'
+    +sc(ageI,AGE_SHORT,"उमेर समूह अनुसार","उमेर समूह")
+    +sc(eduI,EDU_SHORT,"शैक्षिक तह अनुसार","शैक्षिक तह")
+    +'<div><h3>समय अनुसार</h3>'+(minPts.length>2?SV.scatter(minPts,{xLabel:"परीक्षामा लागेको समय (मिनेट)",title:"समय अनुसार",yfmt:function(t){return t+"%";}}):'<p class="muted small">समयको डाटा छैन।</p>')+'</div>'
+    +'</div>'
+    +'<h3 style="margin-top:18px">नतिजाको अर्थ</h3><ul class="sv-insights">'
+    +corrSentence("उमेर समूह",cAge,"उमेर बढी हुनेको")
+    +corrSentence("शैक्षिक तह",cEdu,"शैक्षिक तह माथि हुनेको")
+    +corrSentence("लिङ्ग",cFem,"महिलाको")
+    +corrSentence("परीक्षामा लागेको समय",cMin,"बढी समय लगाउनेको")
+    +modelSentences(M,"अङ्क")
+    +smallGroups(recs)
+    +'<li class="muted">यी सम्बन्ध हुन्, कारण होइनन्। p &lt; 0.05 लाई सार्थक मानिएको छ।'+(recs.length<30?' सहभागी ३० भन्दा कम भएकाले नतिजा प्रारम्भिक सङ्केत मात्र हुन्।':'')+'</li></ul>'
+    +(M.ok?detailsBox("svt-"+id,"प्रतिगमन तालिका (पूरा अङ्क)",coefTable(M)):'')
+    +'</section>';
+  return s;
+}
+
+/* Learning gain (post − pre, paired by participant code) against the pre score and demographics. */
+function gainInfographic(P){
+  if(!window.SV||P.length<3) return "";
+  var rows=P.map(function(p){return {p:p,pre:p.pre.pct,post:p.post.pct,gain:p.post.pct-p.pre.pct};});
+  var preds=[{key:"pre",label:"पूर्व परीक्षाको अङ्क (प्रति १०%)",unit:"प्रतिशत-अङ्क",get:function(r){return r.pre/10;}}].concat(demoPredictors(function(r){return r.p.pre;}));
+  var M=SV.regress(rows,function(r){return r.gain;},preds);
+  var cPre=SV.corr(rows.map(function(r){return r.pre;}),rows.map(function(r){return r.post;}));
+  var pts=rows.map(function(r){return {x:r.pre,y:r.post,tip:r.p.code+" · पूर्व "+r.pre+"% → पश्च "+r.post+"%"};});
+  var gainPts=rows.map(function(r){return {x:r.pre,y:r.gain,tip:r.p.code+" · सुधार "+(r.gain>=0?"+":"")+r.gain};});
+  var lo=Math.min(-10,Math.min.apply(null,rows.map(function(r){return r.gain;}))), hi=Math.max(10,Math.max.apply(null,rows.map(function(r){return r.gain;})));
+  lo=Math.floor(lo/10)*10; hi=Math.ceil(hi/10)*10;
+  var yt=[];for(var t=lo;t<=hi;t+=(hi-lo>60?20:10)) yt.push(t);
+  return '<h3 style="margin-top:22px">सिकाइ सुधारको प्रतिगमन</h3>'
+    +'<p class="note">कुन कुराले सुधार (पश्च % − पूर्व %) बढी वा कम भयो, अरू चर उस्तै राख्दा।</p>'
+    +'<div class="grid2">'
+    +'<div>'+(M.ok?SV.coefChart(M.coefs)+LEGEND:'<p class="muted">प्रतिगमनका लागि पर्याप्त जोडी छैनन् (n = '+M.n+')।</p>')+'</div>'
+    +'<div class="sv-sc-grid sv-sc-2">'
+    +'<div><h3>पूर्व बनाम पश्च</h3>'+SV.scatter(pts,{xLabel:"पूर्व %",title:"पूर्व बनाम पश्च",diag:true,xmin:0,xmax:100,xticks:[0,25,50,75,100],xfmt:function(t){return t+"%";},yfmt:function(t){return t+"%";}})+'<p class="small muted">धर्को रेखाभन्दा माथि = सुधार। r = '+SV.f2(cPre.r)+'</p></div>'
+    +'<div><h3>पूर्व अङ्क बनाम सुधार</h3>'+SV.scatter(gainPts,{xLabel:"पूर्व %",title:"पूर्व अङ्क बनाम सुधार",xmin:0,xmax:100,xticks:[0,25,50,75,100],xfmt:function(t){return t+"%";},ymin:lo,ymax:hi,yticks:yt,yfmt:function(t){return (t>0?"+":"")+t;}})+'</div>'
+    +'</div></div>'
+    +'<ul class="sv-insights">'+modelSentences(M,"सुधार")+'</ul>'
+    +(M.ok?detailsBox("svg-gain-"+(sessionFilter||"all"),"सुधार प्रतिगमन तालिका",coefTable(M)):'');
 }
 
 function renderDash(){
@@ -888,6 +1047,7 @@ function renderDash(){
   body+=learningSection();
 
   if(dashFilter==="all"){
+    TEST_VALS.forEach(function(t){ var rs=records.filter(function(r){return r.test===t;}); if(rs.length) body+=demoInfographic(rs,t); });
     body+='<section class="card"><p class="muted">प्रश्नगत र सहभागी विश्लेषण हेर्न माथिको बटनबाट पूर्व-तालिम वा पश्च-तालिम छान्नुहोस्। प्रश्नहरू परीक्षाअनुसार फरक छन्, त्यसैले दुवै परीक्षा एकसाथ विश्लेषण गरिँदैन।</p></section>';
     box.innerHTML=body;
     return;
@@ -949,8 +1109,9 @@ function renderDash(){
     +'<div class="kpi"><span class="muted small">उच्च / न्यून</span><b style="font-size:20px">'+hiP+'% · '+loP+'%</b></div>'
     +'</div></section>';
 
-  /* correlation table */
-  body+='<section class="card"><h2>जनसांख्यिकी र अङ्कबीचको सम्बन्ध</h2>'
+  /* correlation and regression infographic; the earlier table stays under it as a table view */
+  body+=demoInfographic(recs,dashFilter);
+  body+='<section class="card">'+detailsBox("svc-"+dashFilter,"जनसांख्यिकी र अङ्कबीचको सम्बन्ध: तालिका (η² सहित)",''
     +'<p class="note">उमेर र शैक्षिक तह क्रमबद्ध विवरण भएकाले Spearman सहसम्बन्ध (r, −१ देखि +१) निकालिएको छ। लिङ्गमा क्रम छैन, त्यसैले समूहबीचको भिन्नता η² (०–१) ले नापिएको छ। यी सम्बन्ध हुन्, कारण होइनन्।</p>'
     +'<div class="tbl-wrap"><table><thead><tr><th>चर</th><th>नाप</th><th>मान</th><th>बल</th><th>दिशा</th></tr></thead><tbody>'
     +'<tr><td>उमेर समूह</td><td>Spearman r</td><td>'+fmt(rhoAge,2)+'</td><td>'+strengthWord(rhoAge)+'</td><td>'+dirWord(rhoAge)+'</td></tr>'
@@ -959,7 +1120,7 @@ function renderDash(){
     +'<tr><td>उमेर समूह (समूहगत)</td><td>η²</td><td>'+fmt(etaAge,3)+'</td><td>'+etaWord(etaAge)+'</td><td>—</td></tr>'
     +'<tr><td>शैक्षिक तह (समूहगत)</td><td>η²</td><td>'+fmt(etaEdu,3)+'</td><td>'+etaWord(etaEdu)+'</td><td>—</td></tr>'
     +'</tbody></table></div>'
-    +(smallN?'<p class="msg c-warn">सहभागी ३० भन्दा कम भएकाले यी सम्बन्धलाई प्रारम्भिक सङ्केतका रूपमा मात्र लिनुहोस्।</p>':'')
+    +(smallN?'<p class="msg c-warn">सहभागी ३० भन्दा कम भएकाले यी सम्बन्धलाई प्रारम्भिक सङ्केतका रूपमा मात्र लिनुहोस्।</p>':''))
     +'</section>';
 
   /* per-factor group cards */
