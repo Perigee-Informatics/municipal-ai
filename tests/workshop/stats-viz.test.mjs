@@ -3,6 +3,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import "../../public/workshop/assessment/stats-viz.js";
+import { readFileSync } from "node:fs";
 const SV = globalThis.SV;
 let s = 7; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
 const rows = [];
@@ -29,4 +30,11 @@ test("predictors that do not vary are dropped; too few rows is reported", () => 
 test("charts render SVG", () => {
   assert.match(SV.corrChart([{ label: "x", r: 0.4, p: 0.01, n: 20 }, { label: "y", r: null, p: null, n: 2 }]), /^<svg[\s\S]*<\/svg>$/);
   assert.match(SV.scatter([{ x: 0, y: 50 }, { x: 1, y: 70 }, { x: 2, y: 80 }], { ticks: ["a", "b", "c"] }), /sv-fit/);
+});
+
+test("the copy built into the results page is the same as stats-viz.js", () => {
+  const html = readFileSync(new URL("../../public/workshop/assessment/index.html", import.meta.url), "utf8");
+  const src = readFileSync(new URL("../../public/workshop/assessment/stats-viz.js", import.meta.url), "utf8");
+  const m = html.match(/<script id="sv-src">\n\/\*[\s\S]*?\*\/\n([\s\S]*?)<\/script>/);
+  assert.ok(m, "inline block missing"); assert.equal(m[1], src);
 });
