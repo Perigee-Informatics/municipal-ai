@@ -4,7 +4,8 @@
 (function () {
   var SB_URL = "https://htcfpqfqkskchdwjnoqo.supabase.co";
   var SB_KEY = "sb_publishable_-eezpn3nkJBKeNZ2lyINsg_g-pdsuLc";
-  var SDK_URL = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js";
+  /* The database library: our own copy first (same site, quick), the public CDN only if that fails. */
+  var SDK_URLS = ["/workshop/vendor/supabase.js?v=2.45.4", "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"];
   var client = null;
   var loading = null;
   var initPromise = null;
@@ -13,13 +14,17 @@
   function loadSdk() {
     if (window.supabase) return Promise.resolve();
     if (loading) return loading;
-    loading = new Promise(function (resolve, reject) {
-      var s = document.createElement("script");
-      s.src = SDK_URL;
-      s.onload = function () { resolve(); };
-      s.onerror = function () { reject(new Error("sdk-load-failed")); };
+    function tryUrl(i, resolve, reject) {
+      if (i >= SDK_URLS.length) { loading = null; reject(new Error("sdk-load-failed")); return; }
+      var s = document.createElement("script"), done = false;
+      // A copy that neither loads nor fails within 12 s counts as failed: try the next one.
+      var timer = setTimeout(function () { if (!done) { done = true; tryUrl(i + 1, resolve, reject); } }, 12000);
+      s.src = SDK_URLS[i];
+      s.onload = function () { if (done) return; done = true; clearTimeout(timer); if (window.supabase) resolve(); else tryUrl(i + 1, resolve, reject); };
+      s.onerror = function () { if (done) return; done = true; clearTimeout(timer); tryUrl(i + 1, resolve, reject); };
       document.head.appendChild(s);
-    });
+    }
+    loading = new Promise(function (resolve, reject) { tryUrl(0, resolve, reject); });
     return loading;
   }
 
