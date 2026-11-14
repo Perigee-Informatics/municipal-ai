@@ -228,8 +228,8 @@ a.block:hover { background: var(--soft) }
 <script src="data/reminder.js"></script>
 <script src="data/howto.js"></script>
 <script src="data/agenda.js"></script>
-<script src="account.js?v=20261113f"></script>
-<script src="event-info.js?v=20261113f"></script>
+<script src="account.js?v=20261114a"></script>
+<script src="event-info.js?v=20261114a"></script>
 <script>
 const DATA = { SESS: [window.D_VOICE,window.D_S1,window.D_S2,window.D_S3,window.D_S4,window.D_S5,window.D_S6,window.D_S7,window.D_S8,window.D_S9,window.D_S10], REFS: [window.D_RKA,window.D_RKHA,window.D_RGA,window.D_RGHA,window.D_RNGA], APPX: [window.D_PROMPTS,window.D_GLOSSARY,window.D_REMINDER,window.D_HOWTO], AGENDA_HTML: window.D_AGENDA, ...window.D_META };
 const DEV = '०१२३४५६७८९';
@@ -516,7 +516,7 @@ let MATERIALS_OK = false;
 function gateView() {
   return `<div class="wrap" style="padding-top:20px"><p class="eyebrow">सामग्री निजी छ</p><h1>सामग्री हेर्न खाता चाहिन्छ</h1>
   <p class="meta">यो सामग्री अहिले प्रशिक्षकले सार्वजनिक गरेका छैनन्। स्वीकृत सहभागीहरूले साइन इन गरेर हेर्न सक्छन्।</p>
-  <p><a class="btn primary" href="login.html?next=${encodeURIComponent(location.pathname + location.hash)}">साइन इन / नयाँ दर्ता</a></p></div>`;
+  <p><a class="btn primary" href="login.html?next=${encodeURIComponent(location.pathname + location.search + location.hash)}">साइन इन / नयाँ दर्ता</a></p></div>`;
 }
 function route() {
   if (!MATERIALS_OK) { $('#view').innerHTML = gateView(); renderSide('home'); return; }

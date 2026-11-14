@@ -94,8 +94,8 @@ a{color:var(--accent)}
   </section>
 </div>
 
-<script src="account.js?v=20261113f"></script>
-<script src="event-info.js?v=20261113f"></script>
+<script src="account.js?v=20261114a"></script>
+<script src="event-info.js?v=20261114a"></script>
 <script>EVI.home().then(EVI.mountHome).catch(function () {});</script>
 <script>
 /* Organiser of the event this visitor came for (link with ?event=CODE, or their own event once signed in). */
@@ -139,6 +139,18 @@ EVI.resolve().then(function (ev) { var i = EVI.info(ev); if (i && i.org) documen
   async function chooseEventThenGo() {
     var r; try { r = await WS.myEvents(); } catch (e) { r = { error: e }; }
     var list = (r && r.data) || [];
+    /* Came from an event's link or QR (next=...?event=CODE): if that is one of their events, make it
+       the current one and go there without asking; if it is not, fall back to their own events. */
+    var wanted = (String(next).match(/[?&]event=([^&#]+)/) || [])[1];
+    if (wanted && !(r && r.error)) {
+      wanted = decodeURIComponent(wanted).toUpperCase();
+      var hit = list.filter(function (x) { return String(x.code).toUpperCase() === wanted; })[0];
+      if (hit) {
+        if (!hit.current) { try { await WS.chooseMyEvent(hit.event_id); } catch (e) {} }
+        location.href = next; return;
+      }
+      if (list.length) { explicitNext = false; next = "assessment/index.html"; }
+    }
     if (r && r.error || list.length < 2) { location.href = destinationFor(list[0]); return; }
     ["formIn", "formUp"].forEach(function (id) { $(id).classList.add("hide"); });
     document.querySelector(".tabs").classList.add("hide");

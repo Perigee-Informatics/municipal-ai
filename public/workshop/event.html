@@ -90,6 +90,11 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
 .gal-actions button{font-size:13px;padding:3px 8px}
 .gal-star[aria-pressed="true"]{background:#C98A0B;color:#fff;border-color:#C98A0B}
 .gal-del{color:var(--bad)}
+.qr-kinds{gap:6px;flex-wrap:wrap}.qr-kinds button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.qr-body{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;margin-top:14px}
+.qr-img{background:#fff;padding:10px;border-radius:10px;line-height:0;flex:none}.qr-img svg{width:220px;height:220px;display:block}
+.qr-side{flex:1 1 240px;min-width:0}.qr-side a{overflow-wrap:anywhere}
+@media print{body *{visibility:hidden}#qrCard,#qrCard *{visibility:visible}#qrCard{position:absolute;left:0;top:0;width:100%;border:0;box-shadow:none}.qr-kinds,#qrCard .row button,#qrDl{display:none!important}.qr-img svg{width:9cm;height:9cm}}
 </style>
 </head>
 <body>
@@ -137,6 +142,26 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
         <div class="stat"><span class="small muted">पृष्ठपोषण</span><b id="stFb">–</b></div>
       </div>
       <dl class="facts" id="facts"></dl>
+      <section class="card" id="qrCard">
+        <div class="row between"><h2 style="margin:0">इभेन्ट लिङ्क र QR</h2>
+          <div class="row qr-kinds" role="group" aria-label="QR को प्रकार">
+            <button type="button" data-qrkind="link" class="on">इभेन्ट लिङ्क</button>
+            <button type="button" data-qrkind="pre">पूर्व परीक्षा</button>
+            <button type="button" data-qrkind="post">पश्च परीक्षा</button>
+          </div></div>
+        <div class="qr-body">
+          <div class="qr-img" id="qrImg"></div>
+          <div class="qr-side">
+            <p id="qrNote" class="small"></p>
+            <p class="small"><a id="qrLink" href="#" target="_blank" rel="noopener"></a></p>
+            <div class="row" style="justify-content:flex-start;gap:8px">
+              <a class="btn pri" id="qrDl" download>PNG डाउनलोड</a>
+              <button type="button" id="qrCopyBtn">लिङ्क कपी</button>
+              <button type="button" id="qrPrintBtn">छाप्नुहोस्</button>
+            </div>
+          </div>
+        </div>
+      </section>
       <section class="card">
         <h2 style="margin-top:0">परीक्षा</h2>
         <div id="testInfo"></div>
@@ -177,9 +202,10 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
   </section>
 </div>
 
-<script src="/workshop/account.js?v=20261113f"></script>
-<script src="/workshop/event-info.js?v=20261113f"></script>
-<script src="/workshop/media.js?v=20261113f"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script src="/workshop/account.js?v=20261114a"></script>
+<script src="/workshop/event-info.js?v=20261114a"></script>
+<script src="/workshop/media.js?v=20261114a"></script>
 <script>
 (function () {
   function $(id) { return document.getElementById(id); }
@@ -220,6 +246,46 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
   });
   window.addEventListener("hashchange", function () { if (EV) showTab(location.hash.slice(1)); });
 
+  /* ---------- event link and QR ---------- */
+  var QR_KIND = "link";
+  var QR_TEXT = {
+    link: { label: "इभेन्ट लिङ्क", note: "सहभागीलाई दिने लिङ्क: स्क्यान गर्नेले यही इभेन्टको सामग्री खोल्छन्। साइन इन नगरेकाले पहिले साइन इन वा नयाँ दर्ता गर्छन्, अनि सिधै यही इभेन्टमा फर्किन्छन्।" },
+    pre: { label: "पूर्व-तालिम परीक्षा", note: "साइन इन बिना पूर्व-तालिम परीक्षा खोल्ने लिङ्क। परीक्षा खुला हुँदा मात्र काम गर्छ।" },
+    post: { label: "पश्च-तालिम परीक्षा", note: "साइन इन बिना पश्च-तालिम परीक्षा खोल्ने लिङ्क। परीक्षा खुला हुँदा मात्र काम गर्छ।" }
+  };
+  function qrHref(kind) {
+    if (kind === "link") return EVI.eventLink(EV.code, PKG && PKG.key);
+    return location.origin + "/workshop/assessment/index.html?e=" + encodeURIComponent(EV.code) + "&t=" + kind;
+  }
+  function renderQr() {
+    var href = qrHref(QR_KIND), t = QR_TEXT[QR_KIND];
+    document.querySelectorAll("[data-qrkind]").forEach(function (b) { b.classList.toggle("on", b.dataset.qrkind === QR_KIND); });
+    var note = t.note;
+    if (QR_KIND === "pre" && !EV.pre_open) note += " (अहिले बन्द छ)";
+    if (QR_KIND === "post" && !EV.post_open) note += " (अहिले बन्द छ)";
+    $("qrNote").textContent = note;
+    $("qrLink").href = href; $("qrLink").textContent = href;
+    try {
+      $("qrImg").innerHTML = EVI.qrSvg(href, 6);
+      $("qrDl").href = EVI.qrPng(href, [EV.name + (EV.organized_by ? " – " + EV.organized_by.trim() : ""), t.label + " · " + EV.code, href.replace(/^https?:\/\//, "")]);
+      $("qrDl").setAttribute("download", EV.code + "-" + QR_KIND + "-qr.png");
+      $("qrDl").hidden = false;
+    } catch (err) {
+      $("qrImg").textContent = "QR बनाउन सकिएन (QR लाइब्रेरी लोड भएन)। पृष्ठ फेरि लोड गर्नुहोस्।";
+      $("qrDl").hidden = true;
+    }
+  }
+  document.addEventListener("click", async function (e) {
+    var k = e.target.closest("[data-qrkind]");
+    if (k) { QR_KIND = k.dataset.qrkind; renderQr(); return; }
+    if (e.target.id === "qrPrintBtn") { window.print(); return; }
+    if (e.target.id === "qrCopyBtn") {
+      var href = qrHref(QR_KIND), b = e.target;
+      try { await navigator.clipboard.writeText(href); b.textContent = "कपी भयो ✔"; setTimeout(function () { b.textContent = "लिङ्क कपी"; }, 2000); }
+      catch (err) { prompt("लिङ्क कपी गर्नुहोस्:", href); }
+    }
+  });
+
   /* ---------- details ---------- */
   function renderHead() {
     var i = EVI.info(EV);
@@ -248,6 +314,7 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
       '<tr><td>पूर्व-तालिम</td><td>' + yes(EV.pre_open, "खुला", "बन्द") + '</td><td>' + yes(EV.pre_answers, "देखिने", "लुकाइएको") + '</td><td class="small"><a href="' + esc(link("pre")) + '" target="_blank" rel="noopener">' + esc(link("pre")) + '</a></td></tr>' +
       '<tr><td>पश्च-तालिम</td><td>' + yes(EV.post_open, "खुला", "बन्द") + '</td><td>' + yes(EV.post_answers, "देखिने", "लुकाइएको") + '</td><td class="small"><a href="' + esc(link("post")) + '" target="_blank" rel="noopener">' + esc(link("post")) + '</a></td></tr>' +
       '</tbody></table></div>';
+    renderQr();
   }
 
   async function loadCounts() {

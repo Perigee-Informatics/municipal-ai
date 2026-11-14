@@ -331,6 +331,39 @@
     });
   }
 
-  window.EVI = { courseOf: courseOf, levelOf: levelOf, levelRules: levelRules, levelOfEvent: levelOfEvent, levelParam: levelParam,
+  /* ---------- event links and QR codes (needs qrcode-generator loaded on the page) ---------- */
+  /* The link a participant opens for an event: that event's course materials. Someone not signed
+     in is asked to sign in (or register) and is then brought back to this same event. */
+  function eventLink(code, packageKey) {
+    var page = courseOf(packageKey) === "representative" ? "/workshop/representative/index.html" : "/workshop/index.html";
+    return location.origin + page + "?event=" + encodeURIComponent(String(code || "").trim().toUpperCase());
+  }
+  function qrMatrix(text) {
+    if (typeof window.qrcode !== "function") throw new Error("QR लाइब्रेरी लोड भएन");
+    var q = window.qrcode(0, "M"); q.addData(unescape(encodeURIComponent(text))); q.make();
+    return q;
+  }
+  function qrSvg(text, cell) { return qrMatrix(text).createSvgTag(cell || 6, 2); }
+  /* A printable PNG: the QR with up to three lines of text under it (event name, organiser, link). */
+  function qrPng(text, lines) {
+    var q = qrMatrix(text), n = q.getModuleCount(), cell = 12, quiet = 4, size = (n + quiet * 2) * cell;
+    lines = (lines || []).filter(Boolean).slice(0, 3);
+    var lineH = 44, pad = 24, cv = document.createElement("canvas");
+    cv.width = size; cv.height = size + (lines.length ? pad + lines.length * lineH : 0);
+    var g = cv.getContext("2d");
+    g.fillStyle = "#fff"; g.fillRect(0, 0, cv.width, cv.height); g.fillStyle = "#000";
+    for (var r = 0; r < n; r++) for (var c = 0; c < n; c++) if (q.isDark(r, c)) g.fillRect((c + quiet) * cell, (r + quiet) * cell, cell, cell);
+    g.textAlign = "center"; g.textBaseline = "top";
+    lines.forEach(function (t, i) {
+      var px = i === 0 ? 30 : 22;
+      g.font = (i === 0 ? "700 " : "400 ") + px + "px Mukta, 'Noto Sans Devanagari', sans-serif";
+      while (px > 12 && g.measureText(t).width > size - 32) { px--; g.font = (i === 0 ? "700 " : "400 ") + px + "px Mukta, 'Noto Sans Devanagari', sans-serif"; }
+      g.fillStyle = i === 0 ? "#000" : "#444";
+      g.fillText(t, size / 2, size + pad / 2 + i * lineH);
+    });
+    return cv.toDataURL("image/png");
+  }
+
+  window.EVI = { eventLink: eventLink, qrSvg: qrSvg, qrPng: qrPng, courseOf: courseOf, levelOf: levelOf, levelRules: levelRules, levelOfEvent: levelOfEvent, levelParam: levelParam,
     rememberLevel: rememberLevel, storedLevel: storedLevel, BASE_LEVEL: BASE_LEVEL, LEVEL_LABEL: LEVEL_LABEL, home: home, mountHome: mountHome, resolve: resolve, info: info, toBS: toBS, fmtFull: fmtFull, fmtRange: fmtRange, fill: fill, fillDeep: fillDeep, employeeRules: employeeRules, representativeRules: representativeRules, dn: dn };
 })();

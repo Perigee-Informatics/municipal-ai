@@ -57,7 +57,7 @@ table.t th{background:var(--soft)}
 details.card>summary{cursor:pointer;font-weight:700}
 .lp-photo-row{display:flex;gap:16px;align-items:center;margin-bottom:10px}
 .lp-photo{width:110px;height:110px;border-radius:50%;object-fit:cover;background:var(--soft);border:1px solid var(--line)}
-label.btn{display:inline-block;border:1px solid var(--line);border-radius:8px;padding:6px 12px;cursor:pointer;background:var(--surface)}
+label.btn,a.btn{text-decoration:none;color:inherit;display:inline-block;border:1px solid var(--line);border-radius:8px;padding:6px 12px;cursor:pointer;background:var(--surface)}
 .badge-on{display:inline-block;border-radius:999px;padding:0 8px;font-size:13px;font-weight:700;background:var(--ok);color:#fff}
 </style>
 </head>
@@ -270,9 +270,9 @@ label.btn{display:inline-block;border:1px solid var(--line);border-radius:8px;pa
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <script src="assessment/pool-employee.js"></script>
 <script src="assessment/pool-representative.js"></script>
-<script src="account.js?v=20261113f"></script>
-<script src="event-info.js?v=20261113f"></script>
-<script src="media.js?v=20261113f"></script>
+<script src="account.js?v=20261114a"></script>
+<script src="event-info.js?v=20261114a"></script>
+<script src="media.js?v=20261114a"></script>
 <script>EVI.home().then(EVI.mountHome).catch(function () {});</script>
 <script>
 (function () {
@@ -349,7 +349,7 @@ label.btn{display:inline-block;border:1px solid var(--line);border-radius:8px;pa
         '<div class="small muted">' + esc(pkgName(e.package_id)) + '</div>' +
         '<div class="small muted">' + esc(e.organized_by || "") + ' · ' + esc(e.address || "") + '</div>' +
         '<div class="small muted">मितिहरू: ' + esc(EVI.info(e).dateRange || "—") + ' <span class="muted">(' + esc((e.event_dates || []).join(", ")) + ')</span></div></div>' +
-        '<div><button type="button" data-edit-ev="' + id + '">सम्पादन</button></div></div>' +
+        '<div class="row" style="gap:6px"><button type="button" data-qr="link" data-ev="' + id + '">इभेन्ट लिङ्क QR</button> <button type="button" data-edit-ev="' + id + '">सम्पादन</button></div></div>' +
         '<div class="row" style="justify-content:flex-start;margin-top:8px;gap:8px">' +
         '<button type="button" data-flag="pre_open" data-ev="' + id + '" data-val="' + (!e.pre_open) + '">पूर्व परीक्षा: ' + (e.pre_open ? "खुला ✔" : "बन्द ✘") + '</button>' +
         '<button type="button" data-flag="pre_answers" data-ev="' + id + '" data-val="' + (!e.pre_answers) + '">पूर्व उत्तर: ' + (e.pre_answers ? "देखिने ✔" : "लुकाइएको ✘") + '</button>' +
@@ -367,22 +367,34 @@ label.btn{display:inline-block;border:1px solid var(--line);border-radius:8px;pa
     }).join("");
   }
 
+  /* QR for an event: "link" opens the event's course materials (sign in, then straight to this
+     event); "pre"/"post" open that test without signing in. */
   function showQr(test, evId) {
     var ev = events.find(function (x) { return x.id === evId; });
     if (!ev) return;
-    var url = new URL("assessment/index.html", location.href);
-    url.search = "?e=" + encodeURIComponent(ev.code) + "&t=" + test;
+    var pkg = pkgById(ev.package_id), href, label, note;
+    if (test === "link") {
+      href = EVI.eventLink(ev.code, pkg && pkg.key);
+      label = "इभेन्ट लिङ्क";
+      note = "स्क्यान गर्नेले यही इभेन्टको सामग्री खोल्छन्। साइन इन नगरेकाले पहिले साइन इन वा नयाँ दर्ता गर्छन्, अनि सिधै यही इभेन्टमा फर्किन्छन्।";
+    } else {
+      var url = new URL("assessment/index.html", location.href);
+      url.search = "?e=" + encodeURIComponent(ev.code) + "&t=" + test;
+      href = url.href;
+      label = test === "post" ? "पश्च-तालिम परीक्षा" : "पूर्व-तालिम परीक्षा";
+      note = "यो QR मा इभेन्ट कोड र परीक्षा प्रकार मात्र छ। सहभागीको व्यक्तिगत विवरण छैन।";
+    }
     var panel = $("qrPanel");
     try {
-      var qr = qrcode(0, "M");
-      qr.addData(url.href);
-      qr.make();
-      var label = test === "post" ? "पश्च-तालिम" : "पूर्व-तालिम";
-      panel.innerHTML = '<h2 style="margin-top:0">' + esc(evTitle(ev)) + ' · ' + label + ' QR</h2>' +
-        '<div class="qr" style="background:#fff;padding:12px;display:inline-block;border-radius:8px">' + qr.createSvgTag(6, 2) + '</div>' +
-        '<p class="small">लिङ्क: <a href="' + esc(url.href) + '">' + esc(url.href) + '</a></p>' +
-        '<p class="small muted">यो QR मा इभेन्ट कोड र परीक्षा प्रकार मात्र छ। सहभागीको व्यक्तिगत विवरण छैन।</p>' +
-        '<p class="row" style="justify-content:flex-start"><button id="qrPrint" class="pri">छाप्नुहोस्</button> <button id="qrClose">बन्द गर्नुहोस्</button></p>';
+      var png = EVI.qrPng(href, [evTitle(ev), label + " · " + ev.code, href.replace(/^https?:\/\//, "")]);
+      panel.innerHTML = '<h2 style="margin-top:0">' + esc(evTitle(ev)) + ' · ' + esc(label) + ' QR</h2>' +
+        '<div class="qr" style="background:#fff;padding:12px;display:inline-block;border-radius:8px">' + EVI.qrSvg(href, 6) + '</div>' +
+        '<p class="small">लिङ्क: <a href="' + esc(href) + '" target="_blank" rel="noopener">' + esc(href) + '</a></p>' +
+        '<p class="small muted">' + esc(note) + '</p>' +
+        '<p class="row" style="justify-content:flex-start;gap:8px"><button id="qrPrint" class="pri">छाप्नुहोस्</button> ' +
+        '<a class="btn" id="qrDownload" download="' + esc(ev.code + "-" + test + "-qr.png") + '" href="' + png + '">PNG डाउनलोड</a> ' +
+        '<button type="button" id="qrCopy" data-href="' + esc(href) + '">लिङ्क कपी</button> ' +
+        '<button id="qrClose">बन्द गर्नुहोस्</button></p>';
       panel.classList.remove("hide");
       panel.scrollIntoView({ behavior: "smooth" });
     } catch (err) {
@@ -588,6 +600,10 @@ label.btn{display:inline-block;border:1px solid var(--line);border-radius:8px;pa
     else if (t.dataset.qr) { showQr(t.dataset.qr, t.dataset.ev); }
     else if (t.id === "qrPrint") { window.print(); }
     else if (t.id === "qrClose") { $("qrPanel").classList.add("hide"); }
+    else if (t.id === "qrCopy") {
+      try { await navigator.clipboard.writeText(t.dataset.href); t.textContent = "कपी भयो ✔"; }
+      catch (e2) { prompt("लिङ्क कपी गर्नुहोस्:", t.dataset.href); }
+    }
     else if (t.dataset.flag) {
       var patch = {}; patch[t.dataset.flag] = t.dataset.val === "true";
       var fr = await WS.updateEvent(t.dataset.ev, patch);
