@@ -107,7 +107,7 @@ test("account.js exposes the methods the pages call", () => {
   const ctx = load("account.js");
   const WS = ctx.window.WS;
   for (const m of [
-    "init", "signUp", "signIn", "signOut", "isTrainer", "isApproved", "materialsPublic", "setMaterialsPublic",
+    "init", "signUp", "signIn", "signOut", "isTrainer", "isApproved", "materialsAccess",
     "listByStatus", "setStatus", "listPackages", "listEvents", "saveEvent", "updateEvent", "deleteEvent",
     "loadEventForProfile", "saveMyProfile", "submitFeedback", "listAnswers",
   ]) {
