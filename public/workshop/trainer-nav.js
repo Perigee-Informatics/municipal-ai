@@ -1,5 +1,6 @@
 /* Trainer navigation, the same shape as the trainee pages: a top bar and a left menu with every
  * training event (and, for the event being viewed, its sections) plus the console sections.
+ * The event's own sections are the horizontal tabs on event.html, not repeated here.
  * Used by admin.html and event.html. Needs account.js (WS) and event-info.js (EVI).
  *
  *   TrainerNav.mount({ page: "admin", tab: "events" })
@@ -9,13 +10,9 @@
  */
 (function () {
   "use strict";
-  var EVENT_TABS = [
-    ["details", "विवरण र QR"], ["schedule", "कार्यक्रम तालिका"], ["contents", "सामग्री"], ["results", "परीक्षा नतिजा"],
-    ["people", "सहभागी"], ["feedback", "पृष्ठपोषण"], ["gallery", "ग्यालरी"]
-  ];
   var ADMIN = [
     ["users", "दर्ता र सहभागी"], ["packages", "प्रशिक्षण प्याकेज"], ["materials", "तालिम सामग्री"],
-    ["results", "सबै नतिजा र पृष्ठपोषण"], ["landing", "ल्यान्डिङ पेज"]
+    ["results", "सबै इभेन्टको नतिजा र पृष्ठपोषण"], ["landing", "ल्यान्डिङ पेज"]
   ];
   var CACHE = "ws-trainer-nav";
   var state = { page: "admin", tab: "overview", code: "", events: [], packages: [], pending: 0 };
@@ -66,8 +63,6 @@
       ".tn-ev b{display:block;font-size:15.5px}.tn-ev span{display:block;font-size:13px;color:var(--muted)}" +
       ".tn-tag{display:inline-block!important;font-size:11.5px!important;font-weight:700;border-radius:999px;padding:0 7px;margin-left:4px;vertical-align:1px;background:var(--surface);border:1px solid var(--line);color:var(--muted)!important}" +
       ".tn-tag.act{background:var(--ok,#2E7D4F);border-color:var(--ok,#2E7D4F);color:#fff!important}" +
-      ".tn-sub{margin:2px 0 8px 12px;padding-left:8px;border-left:2px solid var(--line)}.tn-sub a{font-size:15px;padding:5px 10px}" +
-      ".tn-sub a.tn-rep{font-weight:700;color:var(--accent)}" +
       ".tn-count{float:right;background:var(--bad,#B3392F);color:#fff;border-radius:999px;font-size:12px;font-weight:700;padding:0 7px}" +
       ".tn-scrim{display:none}" +
       "body.tn-on .tabs{top:56px}" +
@@ -116,11 +111,6 @@
       h += '<a class="tn-ev' + (cur ? ' cur' : '') + '" href="' + esc(eventUrl(ev.code, "details")) + '">' +
         '<b>' + esc(i.orgName || ev.organized_by || ev.name) + (ev.is_active ? ' <span class="tn-tag act">सक्रिय</span>' : (st ? ' <span class="tn-tag">' + st + '</span>' : '')) + '</b>' +
         '<span>' + esc([courseLabel(ev), i.dateRange].filter(Boolean).join(" · ")) + '</span><span>' + esc(ev.code) + '</span></a>';
-      if (cur) {
-        h += '<div class="tn-sub">' + EVENT_TABS.map(function (t) {
-          return '<a href="' + esc(eventUrl(ev.code, t[0])) + '" class="' + (state.tab === t[0] ? "on" : "") + '">' + t[1] + '</a>';
-        }).join("") + '<a class="tn-rep" href="' + esc(reportUrl(ev.code)) + '" target="_blank" rel="noopener">📄 प्रतिवेदन बनाउनुहोस्</a></div>';
-      }
     });
     h += '<div class="tn-h"><span>व्यवस्थापन</span></div>';
     ADMIN.forEach(function (a) {

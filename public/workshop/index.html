@@ -230,6 +230,7 @@ a.block:hover { background: var(--soft) }
 <script src="data/agenda.js"></script>
 <script src="account.js?v=20261114b"></script>
 <script src="event-info.js?v=20261114b"></script>
+<script src="/workshop/teach-bar.js?v=20261116c"></script>
 <script>
 const DATA = { SESS: [window.D_VOICE,window.D_S1,window.D_S2,window.D_S3,window.D_S4,window.D_S5,window.D_S6,window.D_S7,window.D_S8,window.D_S9,window.D_S10], REFS: [window.D_RKA,window.D_RKHA,window.D_RGA,window.D_RGHA,window.D_RNGA], APPX: [window.D_PROMPTS,window.D_GLOSSARY,window.D_REMINDER,window.D_HOWTO], AGENDA_HTML: window.D_AGENDA, ...window.D_META };
 const DEV = '०१२३४५६७८९';
@@ -538,6 +539,14 @@ function route() {
   closeSide();
   const main = $('#main'); if (main) window.scrollTo({ top: 0 });
   store.set('last', cur);
+  teachBar(cur);
+}
+/* ?teach=1 (the event page's teaching tab): every session one tap away; ?embed=1 hides this page's own menus. */
+function teachBar(cur) {
+  if (!window.TeachBar || !TeachBar.on) return;
+  TeachBar.mount({ days: DATA.DAYS, titleOf, num: it => it.kind === 'session' ? S[it.id].n : null,
+    lead: [['home', 'ड्यासबोर्ड'], ['agenda', 'कार्यक्रम तालिका']], tail: [['resources', 'सन्दर्भ सामग्री'], ['downloads', 'डाउनलोड']] });
+  TeachBar.update(cur);
 }
 
 /* ---------- interactions ---------- */

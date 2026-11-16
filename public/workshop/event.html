@@ -39,6 +39,7 @@ dl.facts dd{margin:2px 0 0;overflow-wrap:anywhere}
 table.t{width:100%;border-collapse:collapse;font-size:15px}
 table.t th,table.t td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
 table.t th{background:var(--soft)}
+.frame.teach{height:calc(100vh - 150px);min-height:480px}
 .frame{width:100%;height:78vh;border:1px solid var(--line);border-radius:12px;background:#fff;margin-top:10px}
 .msg{font-weight:700;margin-top:10px}
 .msg.bad{color:var(--bad)} .msg.ok{color:var(--ok)}
@@ -125,10 +126,9 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
     </div>
     <p id="activeMsg" class="msg hide"></p>
 
-    <nav class="tabs tn-hide-wide" id="tabs" aria-label="इभेन्टका ट्याबहरू">
-      <button type="button" data-tab="details" class="on">विवरण</button>
-      <button type="button" data-tab="schedule">कार्यक्रम तालिका</button>
-      <button type="button" data-tab="contents">सामग्री</button>
+    <nav class="tabs" id="tabs" aria-label="इभेन्टका ट्याबहरू">
+      <button type="button" data-tab="details" class="on">विवरण र QR</button>
+      <button type="button" data-tab="contents">कक्षा सञ्चालन</button>
       <button type="button" data-tab="results">परीक्षा नतिजा</button>
       <button type="button" data-tab="people">सहभागी</button>
       <button type="button" data-tab="feedback">पृष्ठपोषण</button>
@@ -170,14 +170,10 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
       </section>
     </div>
 
-    <div class="tabpanel" id="tab-schedule">
-      <p class="row between small" style="margin:12px 0 0"><span class="muted">यो इभेन्टको आयोजक, स्थान र मितिसहितको कार्यक्रम तालिका।</span><a id="schedOpen" target="_blank" rel="noopener">नयाँ ट्याबमा खोल्नुहोस्</a></p>
-      <iframe class="frame" id="schedFrame" title="कार्यक्रम तालिका"></iframe>
-    </div>
-
     <div class="tabpanel" id="tab-contents">
-      <p class="row between small" style="margin:12px 0 0"><span class="muted">यो इभेन्टका लागि तालिम सामग्री (प्रशिक्षकले जुनसुकै बेला हेर्न सक्छ)।</span><span><a id="contDash" href="#" data-frame="dashboard">ड्यासबोर्ड</a> · <a id="contRes" href="#" data-frame="resources">सामग्री सूची</a> · <a id="contOpen" target="_blank" rel="noopener">नयाँ ट्याबमा खोल्नुहोस्</a></span></p>
-      <iframe class="frame" id="contFrame" title="तालिम सामग्री"></iframe>
+      <p class="row between small" style="margin:10px 0 0"><span class="muted">कक्षा सञ्चालन: माथिको पट्टीबाट जुनसुकै सत्र, क्रियाकलाप वा कार्यक्रम तालिका एकै थिचाइमा खोल्नुहोस्। किबोर्डमा सत्र नम्बर थिच्दा (जस्तै ५, वा १ र १ = ११) सिधै त्यो सत्र खुल्छ।</span>
+        <span><button type="button" id="teachFull">⛶ पूरा स्क्रिन</button> <a id="contOpen" target="_blank" rel="noopener">नयाँ ट्याबमा ↗</a></span></p>
+      <iframe class="frame teach" id="contFrame" title="कक्षा सञ्चालन: सत्र र सामग्री" allow="fullscreen" allowfullscreen></iframe>
     </div>
 
     <div class="tabpanel" id="tab-results">
@@ -206,7 +202,7 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
 <script src="/workshop/vendor/qrcode.js?v=1.4.4"></script>
 <script src="/workshop/account.js?v=20261114b"></script>
 <script src="/workshop/event-info.js?v=20261114b"></script>
-<script src="/workshop/trainer-nav.js?v=20261116a"></script>
+<script src="/workshop/trainer-nav.js?v=20261116b"></script>
 <script src="/workshop/media.js?v=20261114b"></script>
 <script>
 (function () {
@@ -221,21 +217,25 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
     employee: ["तालिम मेरो कामका लागि उपयोगी थियो", "सिकाइको गति मलाई ठिक्क थियो", "भाषा बुझ्न सजिलो थियो", "आफैँ गरेर सिक्ने पर्याप्त अवसर मिल्यो", "अभ्यास र उदाहरण मेरो दैनिक कामसँग मिल्दा थिए", "विज्ञ र सहयोगीबाट राम्रो सहयोग मिल्यो"]
   };
   var QS = QS_BY_PKG.employee;
-  var TABS = ["details", "schedule", "contents", "results", "people", "feedback", "gallery"];
+  var TABS = ["details", "contents", "results", "people", "feedback", "gallery"];
   function url(path, hash) { return path + "?event=" + encodeURIComponent(CODE) + (hash ? "#" + hash : ""); }
   function show(id) { ["needLogin", "notFound", "loading", "panel"].forEach(function (x) { $(x).classList.toggle("hide", x !== id); }); }
 
   /* ---------- tabs (lazy: frames load when first opened) ---------- */
   function showTab(name) {
+    var frameAt = "home";
+    if (name === "schedule") { name = "contents"; frameAt = "agenda"; }   // the timetable is in the teaching tab now
     if (TABS.indexOf(name) === -1) name = "details";
     if (window.TrainerNav) TrainerNav.setCurrent({ tab: name });
     document.querySelectorAll("#tabs button").forEach(function (b) { b.classList.toggle("on", b.dataset.tab === name); });
     TABS.forEach(function (n) { $("tab-" + n).classList.toggle("on", n === name); });
     if (location.hash.slice(1) !== name) history.replaceState(null, "", location.pathname + location.search + "#" + name);
-    if (loaded[name]) return;
+    if (loaded[name]) { if (name === "contents" && frameAt !== "home") try { $("contFrame").contentWindow.location.hash = frameAt; } catch (e) {} return; }
     loaded[name] = true;
-    if (name === "schedule") { $("schedFrame").src = url(PAGE, "agenda"); $("schedOpen").href = url(PAGE, "agenda"); }
-    if (name === "contents") { $("contFrame").src = url(PAGE, "resources"); $("contOpen").href = url(PAGE, "home"); }
+    if (name === "contents") {
+      $("contFrame").src = PAGE + "?event=" + encodeURIComponent(CODE) + "&teach=1&embed=1#" + frameAt;
+      $("contOpen").href = PAGE + "?event=" + encodeURIComponent(CODE) + "&teach=1&embed=1#" + frameAt;
+    }
     if (name === "results") { var r = "/workshop/assessment/index.html?dash=" + encodeURIComponent(CODE); $("resFrame").src = r; $("resOpen").href = r; }
     if (name === "people") loadPeople();
     if (name === "feedback") loadFeedback();
@@ -244,10 +244,20 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
   document.addEventListener("click", function (e) {
     var b = e.target.closest("button[data-tab]");
     if (b) { showTab(b.dataset.tab); return; }
-    var f = e.target.closest("a[data-frame]");
-    if (f) { e.preventDefault(); $("contFrame").src = url(PAGE, f.dataset.frame === "dashboard" ? "home" : "resources"); }
+    if (e.target.id === "teachFull") {
+      var fr = $("contFrame"), go = fr.requestFullscreen || fr.webkitRequestFullscreen;
+      if (go) go.call(fr); else window.open($("contOpen").href, "_blank");
+    }
   });
   window.addEventListener("hashchange", function () { if (EV) showTab(location.hash.slice(1)); });
+  /* While teaching, a session number typed on this page (not only inside the materials) jumps there. */
+  document.addEventListener("keydown", function (e) {
+    if (e.ctrlKey || e.metaKey || e.altKey || !$("tab-contents").classList.contains("on")) return;
+    var t = e.target; if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+    var k = /^[0-9]$/.test(e.key) ? e.key : ("०१२३४५६७८९".indexOf(e.key) >= 0 ? String("०१२३४५६७८९".indexOf(e.key)) : null);
+    if (k === null) return;
+    try { var tb = $("contFrame").contentWindow.TeachBar; if (tb) tb.key(k); } catch (err) {}
+  });
 
   /* ---------- event link and QR ---------- */
   var QR_KIND = "link";

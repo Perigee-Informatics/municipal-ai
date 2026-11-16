@@ -231,6 +231,7 @@ window.D_REP = {"INTRO":"यो पुस्तिका मिति ……….
 </script>
 <script src="/workshop/account.js?v=20261114b"></script>
 <script src="/workshop/event-info.js?v=20261114b"></script>
+<script src="/workshop/teach-bar.js?v=20261116c"></script>
 <script>
 /* If a supporting file did not load, say so instead of leaving a blank page. */
 (function () {
@@ -581,6 +582,14 @@ function route() {
   closeSide();
   window.scrollTo({ top: 0 });
   store.set('last', cur);
+  teachBar(cur);
+}
+/* ?teach=1 (the event page's teaching tab): every session one tap away; ?embed=1 hides this page's own menus. */
+function teachBar(cur) {
+  if (!window.TeachBar || !TeachBar.on) return;
+  TeachBar.mount({ days: DATA.DAYS, titleOf, num: it => it.kind === 'session' ? S[it.id].n : null,
+    lead: [['home', 'ड्यासबोर्ड'], ['agenda', 'कार्यक्रम तालिका']], tail: [['resources', 'सिकाइ सामग्री'], ['calc', 'आयोजना क्याल्कुलेटर']] });
+  TeachBar.update(cur);
 }
 
 /* ---------- interactions ---------- */
