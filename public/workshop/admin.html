@@ -58,21 +58,28 @@ details.card>summary{cursor:pointer;font-weight:700}
 .lp-photo-row{display:flex;gap:16px;align-items:center;margin-bottom:10px}
 .lp-photo{width:110px;height:110px;border-radius:50%;object-fit:cover;background:var(--soft);border:1px solid var(--line)}
 label.btn,a.btn{text-decoration:none;color:inherit;display:inline-block;border:1px solid var(--line);border-radius:8px;padding:6px 12px;cursor:pointer;background:var(--surface)}
+.ov-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-top:10px}
+.ov-card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:6px}
+.ov-card h3{margin:0;font-size:18px;line-height:1.3}.ov-card h3 a{color:var(--ink);text-decoration:none}
+.ov-card .row{justify-content:flex-start;margin-top:auto;padding-top:6px}
+.ov-tag{display:inline-block;font-size:12.5px;font-weight:700;border-radius:999px;padding:0 8px;border:1px solid var(--line);color:var(--muted)}
+a.pri-link{background:var(--accent);color:#fff;border-color:var(--accent)}
+#evFormBox>summary{font-weight:700;cursor:pointer}
 .badge-on{display:inline-block;border-radius:999px;padding:0 8px;font-size:13px;font-weight:700;background:var(--ok);color:#fff}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <p style="margin:0 0 6px"><a data-home href="/workshop/index.html" style="font-weight:600;text-decoration:none">⌂ गृहपृष्ठ</a></p>
-  <p class="muted" style="margin:0" id="orgLine">AI तालिम</p>
-  <div class="row"><h1>प्रशिक्षक नियन्त्रण</h1><button id="signOut">साइन आउट</button></div>
+  <p class="tn-hide" style="margin:0 0 6px"><a data-home href="/workshop/index.html" style="font-weight:600;text-decoration:none">⌂ गृहपृष्ठ</a></p>
+  <p class="muted tn-hide" style="margin:0" id="orgLine">AI तालिम</p>
+  <div class="row tn-hide"><h1>प्रशिक्षक नियन्त्रण</h1><button id="signOut">साइन आउट</button></div>
 
   <section id="needLogin" class="card hide">
     <p>यो पृष्ठ प्रशिक्षकका लागि हो। <a href="login.html?next=admin.html">प्रशिक्षक खातामा साइन इन गर्नुहोस्</a>।</p>
   </section>
 
   <section id="panel" class="hide">
-    <nav class="tabs" id="tabs" aria-label="प्रशिक्षक ट्याबहरू">
+    <nav class="tabs tn-hide" id="tabs" aria-label="प्रशिक्षक ट्याबहरू">
       <button type="button" data-tab="overview" class="on">सारांश</button>
       <button type="button" data-tab="events">इभेन्टहरू</button>
       <button type="button" data-tab="packages">प्रशिक्षण प्याकेज</button>
@@ -91,22 +98,17 @@ label.btn,a.btn{text-decoration:none;color:inherit;display:inline-block;border:1
         <div class="stat"><span class="small muted">स्वीकृत सहभागी</span><b id="stApproved">–</b></div>
         <div class="stat"><span class="small muted">पृष्ठपोषण प्राप्त</span><b id="stFeedback">–</b></div>
       </div>
-      <section class="card" id="activeCard"><h2 style="margin-top:0">सक्रिय इभेन्ट</h2><p id="activeLine" class="muted">लोड हुँदैछ…</p><p class="small muted">साइन इन नगरेका आगन्तुकले सक्रिय इभेन्टको आयोजक, स्थान र मिति देख्छन्। इभेन्टको पृष्ठबाट सक्रिय बनाउन सकिन्छ।</p></section>
-      <section class="card">
-        <h2 style="margin-top:0">छिटो काम</h2>
-        <div class="row" style="justify-content:flex-start">
-          <button type="button" class="pri" data-go="events">नयाँ इभेन्ट</button>
-          <button type="button" data-go="users">दर्ता स्वीकृत गर्ने</button>
-          <button type="button" data-go="materials">सामग्री प्रस्तुत गर्ने</button>
-          <button type="button" data-go="results">नतिजा हेर्ने</button>
-        </div>
-      </section>
+      <div class="row" style="margin-top:6px"><h2 style="margin:8px 0">तालिम इभेन्टहरू</h2><a class="btn pri-link" href="#newevent">＋ नयाँ इभेन्ट</a></div>
+      <p class="small muted" style="margin:0">इभेन्ट खोल्दा त्यसको विवरण, QR, कार्यक्रम तालिका, सामग्री, परीक्षा नतिजा, सहभागी, पृष्ठपोषण र ग्यालरी बायाँको मेनुमा देखिन्छन्। साइन इन नगरेका आगन्तुकले <strong>सक्रिय</strong> इभेन्टको विवरण देख्छन्।</p>
+      <div id="ovEvents" class="ov-grid"><p class="muted">लोड हुँदैछ…</p></div>
+      <span id="activeLine" hidden></span>
     </div>
 
     <!-- इभेन्टहरू -->
     <div class="tabpanel" id="tab-events">
-      <h2 style="margin-top:16px">इभेन्ट मास्टर</h2>
-  <section class="card">
+      <div class="row" style="margin-top:16px"><h2 style="margin:0">तालिम इभेन्टहरू</h2><button type="button" class="pri" id="evNew">＋ नयाँ इभेन्ट</button></div>
+      <details class="card" id="evFormBox">
+        <summary id="evFormTitle">＋ नयाँ इभेन्ट थप्नुहोस्</summary>
       <form id="evForm">
         <div class="grid">
           <label class="f">इभेन्टको नाम<input id="evName" type="text" required></label>
@@ -135,12 +137,10 @@ label.btn,a.btn{text-decoration:none;color:inherit;display:inline-block;border:1
           <button type="button" id="evReset">नयाँ इभेन्ट</button>
         </p>
       </form>
+      </details>
       <p id="evMsg" class="msg hide"></p>
-      <div id="evList" class="muted">लोड हुँदैछ…</div>
+      <section class="card"><div id="evList" class="muted">लोड हुँदैछ…</div></section>
       <div id="qrPanel" class="card hide"></div>
-    </section>
-
-    
     </div>
 
     <!-- प्रशिक्षण प्याकेज -->
@@ -272,6 +272,7 @@ label.btn,a.btn{text-decoration:none;color:inherit;display:inline-block;border:1
 <script src="assessment/pool-representative.js"></script>
 <script src="account.js?v=20261114b"></script>
 <script src="event-info.js?v=20261114b"></script>
+<script src="trainer-nav.js?v=20261116a"></script>
 <script src="media.js?v=20261114b"></script>
 <script>EVI.home().then(EVI.mountHome).catch(function () {});</script>
 <script>
@@ -339,17 +340,20 @@ label.btn,a.btn{text-decoration:none;color:inherit;display:inline-block;border:1
     dates = [];
     renderDates();
     $("evSave").textContent = "इभेन्ट सुरक्षित गर्नुहोस्";
+    $("evFormTitle").textContent = "＋ नयाँ इभेन्ट थप्नुहोस्";
   }
+  function openForm() { $("evFormBox").open = true; $("evName").focus(); window.scrollTo({ top: $("evFormBox").getBoundingClientRect().top + window.scrollY - 70, behavior: "smooth" }); }
 
   function renderEvents() {
     if (!events.length) { $("evList").innerHTML = "अहिलेसम्म कुनै इभेन्ट छैन।"; return; }
-    $("evList").innerHTML = events.map(function (e) {
+    var lastDate = function (e) { return (e.event_dates || []).slice().sort().pop() || ""; };   // newest first, like the menu
+    $("evList").innerHTML = events.slice().sort(function (a, b) { return (b.is_active ? 1 : 0) - (a.is_active ? 1 : 0) || lastDate(b).localeCompare(lastDate(a)); }).map(function (e) {
       var id = esc(e.id);
       return '<div class="ev"><div class="row"><div><strong><a href="' + esc('/workshop/event.html?event=' + encodeURIComponent(e.code)) + '">' + esc(evTitle(e)) + '</a></strong> <span class="small">[' + esc(e.code) + ']</span>' + (e.is_active ? ' <span class="badge-on">सक्रिय</span>' : '') +
         '<div class="small muted">' + esc(pkgName(e.package_id)) + '</div>' +
         '<div class="small muted">' + esc(e.organized_by || "") + ' · ' + esc(e.address || "") + '</div>' +
         '<div class="small muted">मितिहरू: ' + esc(EVI.info(e).dateRange || "—") + ' <span class="muted">(' + esc((e.event_dates || []).join(", ")) + ')</span></div></div>' +
-        '<div class="row" style="gap:6px"><button type="button" data-qr="link" data-ev="' + id + '">इभेन्ट लिङ्क QR</button> <button type="button" data-edit-ev="' + id + '">सम्पादन</button></div></div>' +
+        '<div class="row" style="gap:6px"><a class="btn" href="' + esc('/workshop/event.html?event=' + encodeURIComponent(e.code)) + '">खोल्नुहोस्</a> <a class="btn" href="' + esc('/workshop/assessment/index.html?report=' + encodeURIComponent(e.code)) + '" target="_blank" rel="noopener">📄 प्रतिवेदन</a> <button type="button" data-qr="link" data-ev="' + id + '">QR</button> <button type="button" data-edit-ev="' + id + '">सम्पादन</button></div></div>' +
         '<div class="row" style="justify-content:flex-start;margin-top:8px;gap:8px">' +
         '<button type="button" data-flag="pre_open" data-ev="' + id + '" data-val="' + (!e.pre_open) + '">पूर्व परीक्षा: ' + (e.pre_open ? "खुला ✔" : "बन्द ✘") + '</button>' +
         '<button type="button" data-flag="pre_answers" data-ev="' + id + '" data-val="' + (!e.pre_answers) + '">पूर्व उत्तर: ' + (e.pre_answers ? "देखिने ✔" : "लुकाइएको ✘") + '</button>' +
@@ -594,6 +598,8 @@ label.btn,a.btn{text-decoration:none;color:inherit;display:inline-block;border:1
       dates = (ev.event_dates || []).slice();
       renderDates();
       $("evSave").textContent = "इभेन्ट अद्यावधिक गर्नुहोस्";
+      $("evFormTitle").textContent = "इभेन्ट सम्पादन: " + (ev.name || "") + " [" + ev.code + "]";
+      $("evFormBox").open = true;
       window.scrollTo({ top: $("evForm").getBoundingClientRect().top + window.scrollY - 20, behavior: "smooth" });
     }
     else if (t.dataset.qset) { regenSet(t.dataset.qset); }
@@ -618,6 +624,7 @@ label.btn,a.btn{text-decoration:none;color:inherit;display:inline-block;border:1
       renderDates();
     }
     else if (t.id === "evReset") { resetForm(); }
+    else if (t.id === "evNew") { resetForm(); openForm(); }
     else if (t.id === "signOut") { WS.signOut().then(function () { location.href = "login.html"; }); }
   });
 
@@ -649,7 +656,9 @@ label.btn,a.btn{text-decoration:none;color:inherit;display:inline-block;border:1
     if (r.error) { flash("evMsg", "सुरक्षित हुन सकेन: " + r.error.message, false); return; }
     flash("evMsg", "इभेन्ट सुरक्षित भयो।", true);
     resetForm();
+    $("evFormBox").open = false;
     await renderLists();
+    if (window.TrainerNav) TrainerNav.refresh();
   });
 
   document.addEventListener("change", async function (e) {
@@ -670,6 +679,7 @@ label.btn,a.btn{text-decoration:none;color:inherit;display:inline-block;border:1
 
   WS.init().then(async function () {
     if (!WS.isTrainer()) { $("needLogin").classList.remove("hide"); return; }
+    if (window.TrainerNav) TrainerNav.mount({ page: "admin", tab: location.hash.slice(1) || "overview" });
     $("panel").classList.remove("hide");
     var pub = await WS.materialsPublic();
     $("matToggle").checked = pub;
@@ -693,10 +703,15 @@ label.btn,a.btn{text-decoration:none;color:inherit;display:inline-block;border:1
   var loaded = {};
 
   function showTab(name) {
+    var newEvent = name === "newevent";
+    if (newEvent) name = "events";
     if (NAMES.indexOf(name) === -1) name = "overview";
+    if (window.TrainerNav) TrainerNav.setCurrent({ page: "admin", tab: name });
+    if (newEvent) setTimeout(function () { var b = document.getElementById("evNew"); if (b) b.click(); }, 0);
     document.querySelectorAll("#tabs button").forEach(function (b) { b.classList.toggle("on", b.dataset.tab === name); });
     NAMES.forEach(function (n) { $("tab-" + n).classList.toggle("on", n === name); });
     if (location.hash.slice(1) !== name) history.replaceState(null, "", "#" + name);
+    window.scrollTo(0, 0);
     if (name === "overview") loadOverview();
     if (name === "packages") loadPackages();
     if (name === "results") loadFeedback();
@@ -816,6 +831,28 @@ label.btn,a.btn{text-decoration:none;color:inherit;display:inline-block;border:1
     };
   }
 
+  /* Overview: one card per event, newest first, with what the trainer does most. */
+  function renderEventCards(events, packages, feedback) {
+    var box = $("ovEvents"); if (!box) return;
+    if (!events.length) { box.innerHTML = '<p class="muted">अहिलेसम्म कुनै इभेन्ट छैन। <a href="#newevent">पहिलो इभेन्ट थप्नुहोस्</a>।</p>'; return; }
+    var t = new Date(), today = t.getFullYear() + "-" + String(t.getMonth() + 1).padStart(2, "0") + "-" + String(t.getDate()).padStart(2, "0");
+    var last = function (e) { return (e.event_dates || []).slice().sort().pop() || ""; };
+    box.innerHTML = events.slice().sort(function (a, b) { return (b.is_active ? 1 : 0) - (a.is_active ? 1 : 0) || last(b).localeCompare(last(a)); }).map(function (e) {
+      var i = EVI.info(e) || {}, p = packages.filter(function (x) { return x.id === e.package_id; })[0];
+      var ds = (e.event_dates || []).slice().sort();
+      var st = !ds.length ? "" : ds.indexOf(today) >= 0 ? "आज" : ds[0] > today ? "आगामी" : "सम्पन्न";
+      var fb = feedback.filter(function (f) { return f.event_code === e.code; }).length;
+      var url = "/workshop/event.html?event=" + encodeURIComponent(e.code);
+      return '<article class="ov-card"><div>' + (e.is_active ? '<span class="badge-on">सक्रिय</span> ' : '') + (st ? '<span class="ov-tag">' + st + '</span> ' : '') + '<span class="small muted">' + esc(e.code) + '</span></div>' +
+        '<h3><a href="' + esc(url + "#details") + '">' + esc(i.orgName || e.organized_by || e.name) + '</a></h3>' +
+        '<div class="small">' + esc(e.name) + '</div>' +
+        '<div class="small muted">' + esc([p ? p.name : "", i.dateRange].filter(Boolean).join(" · ")) + (fb ? ' · पृष्ठपोषण ' + fb : '') + '</div>' +
+        '<div class="row"><a class="btn pri-link" href="' + esc(url + "#details") + '">खोल्नुहोस्</a>' +
+        '<a class="btn" href="' + esc(url + "#results") + '">नतिजा</a>' +
+        '<a class="btn" href="' + esc("/workshop/assessment/index.html?report=" + encodeURIComponent(e.code)) + '" target="_blank" rel="noopener">📄 प्रतिवेदन</a></div></article>';
+    }).join("");
+  }
+
   async function loadOverview() {
     try {
       var c = await counts();
@@ -828,6 +865,7 @@ label.btn,a.btn{text-decoration:none;color:inherit;display:inline-block;border:1
       $("activeLine").innerHTML = act
         ? '<a href="' + esc('/workshop/event.html?event=' + encodeURIComponent(act.code)) + '"><strong>' + esc(act.name) + '</strong> [' + esc(act.code) + ']</a> · ' + esc([EVI.info(act).org, act.address, EVI.info(act).dateRange].filter(Boolean).join(" · "))
         : 'कुनै इभेन्ट सक्रिय छैन। <a href="#packages">प्रशिक्षण प्याकेज</a>मा इभेन्ट खोलेर "सक्रिय इभेन्ट बनाउनुहोस्" थिच्नुहोस्।';
+      renderEventCards(c.events, c.packages, c.feedback);
     } catch (e) {}
   }
 

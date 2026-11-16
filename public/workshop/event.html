@@ -99,7 +99,7 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
 </head>
 <body>
 <div class="wrap">
-  <p class="row between small" style="margin:0">
+  <p class="row between small tn-hide" style="margin:0">
     <span><a data-home href="/workshop/admin.html" style="font-weight:600;text-decoration:none">⌂ प्रशिक्षक गृहपृष्ठ</a> · <a href="/workshop/admin.html#packages">← प्रशिक्षण प्याकेज</a> · <a href="/workshop/admin.html#events">इभेन्टहरू</a></span>
     <span class="muted" id="orgLine">AI तालिम</span>
   </p>
@@ -119,12 +119,13 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
         <div class="row small"><code id="evCode"></code><span id="evPkg" class="muted"></span><span id="evActive" class="badge"></span></div>
       </div>
       <div class="row">
-        <button type="button" class="pri" id="activeBtn"></button>
+        <a class="btn pri" id="reportBtn" href="#" target="_blank" rel="noopener">📄 प्रतिवेदन बनाउनुहोस् (Generate Report)</a>
+        <button type="button" id="activeBtn"></button>
       </div>
     </div>
     <p id="activeMsg" class="msg hide"></p>
 
-    <nav class="tabs" id="tabs" aria-label="इभेन्टका ट्याबहरू">
+    <nav class="tabs tn-hide-wide" id="tabs" aria-label="इभेन्टका ट्याबहरू">
       <button type="button" data-tab="details" class="on">विवरण</button>
       <button type="button" data-tab="schedule">कार्यक्रम तालिका</button>
       <button type="button" data-tab="contents">सामग्री</button>
@@ -205,6 +206,7 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
 <script src="/workshop/vendor/qrcode.js?v=1.4.4"></script>
 <script src="/workshop/account.js?v=20261114b"></script>
 <script src="/workshop/event-info.js?v=20261114b"></script>
+<script src="/workshop/trainer-nav.js?v=20261116a"></script>
 <script src="/workshop/media.js?v=20261114b"></script>
 <script>
 (function () {
@@ -226,6 +228,7 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
   /* ---------- tabs (lazy: frames load when first opened) ---------- */
   function showTab(name) {
     if (TABS.indexOf(name) === -1) name = "details";
+    if (window.TrainerNav) TrainerNav.setCurrent({ tab: name });
     document.querySelectorAll("#tabs button").forEach(function (b) { b.classList.toggle("on", b.dataset.tab === name); });
     TABS.forEach(function (n) { $("tab-" + n).classList.toggle("on", n === name); });
     if (location.hash.slice(1) !== name) history.replaceState(null, "", location.pathname + location.search + "#" + name);
@@ -460,6 +463,7 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
     try { await WS.init(); }
     catch (e) { clearTimeout(watchdog); loadingMsg("डाटाबेससँग जडान हुन सकेन। इन्टरनेट जाँचेर फेरि प्रयास गर्नुहोस्।", true); return; }
     EVI.home().then(EVI.mountHome).catch(function () {});
+    if (WS.isTrainer() && window.TrainerNav) TrainerNav.mount({ page: "event", code: CODE, tab: location.hash.slice(1) || "details" });
     if (!WS.isTrainer()) { $("loginLink").href = "/workshop/login.html?next=" + encodeURIComponent(location.pathname + location.search); show("needLogin"); return; }
     if (!CODE) { show("notFound"); return; }
     try {
@@ -477,6 +481,7 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
       clearTimeout(watchdog); loadingMsg("इभेन्ट लोड हुन सकेन (" + step + "): " + (e && e.message || e), true); return;
     }
     clearTimeout(watchdog);
+    $("reportBtn").href = "/workshop/assessment/index.html?report=" + encodeURIComponent(EV.code);
     show("panel");
     showTab(location.hash.slice(1) || "details");
     loadCounts();
