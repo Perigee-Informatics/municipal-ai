@@ -123,15 +123,15 @@
     },
 
     /* Whether the training material is public right now (set by the trainer). */
-    materialsPublic: async function () {
+    /* May this visitor open the training materials of this event (?event=CODE; without a code, the
+       active event for visitors and their own events for a participant)? Public events: anyone.
+       Private events: the trainer and the participants registered for that event. */
+    materialsAccess: async function (code) {
       await loadSdk();
       if (!client) await WS.init();
-      var r = await client.from("app_settings").select("value").eq("key", "materials_public").maybeSingle();
-      return !!(r.data && r.data.value);
-    },
-
-    setMaterialsPublic: function (value) {
-      return client.from("app_settings").update({ value: value }).eq("key", "materials_public");
+      var r = await client.rpc("materials_access", { p_code: code || null });
+      if (r.error) throw r.error;
+      return !!r.data;
     },
 
     listByStatus: function (status) {

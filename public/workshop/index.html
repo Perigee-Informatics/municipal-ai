@@ -228,7 +228,7 @@ a.block:hover { background: var(--soft) }
 <script src="data/reminder.js"></script>
 <script src="data/howto.js"></script>
 <script src="data/agenda.js"></script>
-<script src="account.js?v=20261114b"></script>
+<script src="account.js?v=20261116c"></script>
 <script src="event-info.js?v=20261114b"></script>
 <script src="/workshop/teach-bar.js?v=20261116c"></script>
 <script>
@@ -515,9 +515,13 @@ document.addEventListener('click', e => {
 
 let MATERIALS_OK = false;
 function gateView() {
-  return `<div class="wrap" style="padding-top:20px"><p class="eyebrow">सामग्री निजी छ</p><h1>सामग्री हेर्न खाता चाहिन्छ</h1>
-  <p class="meta">यो सामग्री अहिले प्रशिक्षकले सार्वजनिक गरेका छैनन्। स्वीकृत सहभागीहरूले साइन इन गरेर हेर्न सक्छन्।</p>
-  <p><a class="btn primary" href="login.html?next=${encodeURIComponent(location.pathname + location.search + location.hash)}">साइन इन / नयाँ दर्ता</a></p></div>`;
+  // Private event: the trainer and the participants registered for this training only.
+  const signedIn = !!(window.WS && WS.session);
+  return `<div class="wrap" style="padding-top:20px"><p class="eyebrow">सामग्री निजी छ</p><h1>${signedIn ? 'यो तालिममा तपाईंको दर्ता छैन' : 'सामग्री हेर्न खाता चाहिन्छ'}</h1>
+  <p class="meta">${signedIn
+    ? 'यो तालिमको सामग्री अहिले यस तालिममा दर्ता भएका सहभागीले मात्र हेर्न सक्छन्। तपाईंको दर्ता स्वीकृत हुन बाँकी भए वा अर्को तालिममा भए प्रशिक्षकलाई सम्पर्क गर्नुहोस्।'
+    : 'यो तालिमको सामग्री अहिले निजी छ। यस तालिममा दर्ता भएका सहभागीले साइन इन गरेर हेर्न सक्छन्। नयाँ हुनुहुन्छ भने दर्ता गर्नुहोस्; प्रशिक्षकले स्वीकृत गरेपछि खुल्छ।'}</p>
+  ${signedIn ? '' : `<p><a class="btn primary" href="login.html?next=${encodeURIComponent(location.pathname + location.search + location.hash)}">साइन इन / नयाँ दर्ता</a></p>`}</div>`;
 }
 function route() {
   if (!MATERIALS_OK) { $('#view').innerHTML = gateView(); renderSide('home'); return; }
@@ -663,7 +667,7 @@ async function start() {
   let ok;
   try {
     await withTimeout(WS.init(), 7000);
-    ok = (await withTimeout(WS.materialsPublic(), 7000)) || WS.isApproved() || WS.isTrainer();
+    ok = WS.isTrainer() || (await withTimeout(WS.materialsAccess(new URLSearchParams(location.search).get('event')), 7000));
   } catch (e) { ok = e && e.message === 'timeout' ? null : false; }
   if (ok === null) { $('#view').innerHTML = slowView(); renderSide('home'); return; }
   MATERIALS_OK = ok;

@@ -205,3 +205,26 @@ select pg_temp.check((select count(*) = 0 from public.participant_events where p
 reset role;
 update public.profiles set status = 'pending', event_id = null where id = '00000000-0000-0000-0000-000000000003';
 select pg_temp.check((select count(*) = 0 from public.participant_events where profile_id = '00000000-0000-0000-0000-000000000003'), 'revoking approval removes the memberships');
+
+-- ---- 14. public / private materials per event ----
+update public.profiles set status = 'approved', event_id = (select id from public.events where code = 'TST-01') where id = '00000000-0000-0000-0000-000000000003';
+update public.events set materials_public = false;
+select set_config('request.jwt.claim.sub', '', false);
+set role anon;
+select pg_temp.check(not public.materials_access('TST-01'), 'private event: a visitor is not let in');
+reset role;
+update public.events set materials_public = true where code = 'TST-01';
+set role anon;
+select pg_temp.check(public.materials_access('tst-01'), 'public event: anyone with the link is let in');
+select pg_temp.check(not public.materials_access('TST-02'), 'another, private event stays closed');
+select pg_temp.check(not public.materials_access('NO-SUCH'), 'an unknown code opens nothing');
+reset role;
+update public.events set materials_public = false;
+set role authenticated;
+select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000003', false);
+select pg_temp.check(public.materials_access('TST-01'), 'private event: its registered participant is let in');
+select pg_temp.check(public.materials_access(null), 'a registered participant without a code sees their own event');
+select pg_temp.check(not public.materials_access('TST-02'), 'private event: a participant of another event is not let in');
+select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000001', false);
+select pg_temp.check(public.materials_access('TST-02'), 'the trainer always sees the materials');
+reset role;

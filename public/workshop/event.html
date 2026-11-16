@@ -24,6 +24,11 @@ button.pri,.btn.pri{background:var(--accent);color:#fff;border-color:var(--accen
 button[disabled]{opacity:.6;cursor:not-allowed}
 .badge{display:inline-block;border-radius:999px;padding:2px 10px;font-size:14px;font-weight:700;background:var(--soft)}
 .badge.on{background:var(--ok);color:#fff}
+.pubbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:10px 0 0;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.pub-l{font-weight:700}.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.seg button{border:0;border-radius:0;padding:6px 14px;background:var(--surface)}.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-checked="true"]{background:var(--accent);color:#fff;font-weight:700}
+#pubNote{flex:1 1 260px}
 .tabs{display:flex;gap:6px;overflow-x:auto;margin:16px 0 4px;padding-bottom:6px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:5}
 .tabs button{white-space:nowrap;border-radius:999px;padding:7px 14px}
 .tabs button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
@@ -125,6 +130,14 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
       </div>
     </div>
     <p id="activeMsg" class="msg hide"></p>
+    <div class="pubbar" id="pubBar">
+      <span class="pub-l">तालिम सामग्री</span>
+      <span class="seg" role="radiogroup" aria-label="तालिम सामग्री कसले हेर्न सक्ने">
+        <button type="button" role="radio" data-pub="false" aria-checked="true">🔒 निजी</button>
+        <button type="button" role="radio" data-pub="true" aria-checked="false">🌐 सार्वजनिक</button>
+      </span>
+      <span class="small muted" id="pubNote"></span>
+    </div>
 
     <nav class="tabs" id="tabs" aria-label="इभेन्टका ट्याबहरू">
       <button type="button" data-tab="details" class="on">विवरण र QR</button>
@@ -200,7 +213,7 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
 </div>
 
 <script src="/workshop/vendor/qrcode.js?v=1.4.4"></script>
-<script src="/workshop/account.js?v=20261114b"></script>
+<script src="/workshop/account.js?v=20261116c"></script>
 <script src="/workshop/event-info.js?v=20261114b"></script>
 <script src="/workshop/trainer-nav.js?v=20261116b"></script>
 <script src="/workshop/media.js?v=20261114b"></script>
@@ -274,6 +287,9 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
     var href = qrHref(QR_KIND), t = QR_TEXT[QR_KIND];
     document.querySelectorAll("[data-qrkind]").forEach(function (b) { b.classList.toggle("on", b.dataset.qrkind === QR_KIND); });
     var note = t.note;
+    if (QR_KIND === "link") note = EV.materials_public
+      ? "सहभागीलाई दिने लिङ्क: सामग्री सार्वजनिक भएकाले स्क्यान गर्ने जोसुकैले साइन इन नगरी यही इभेन्टको सामग्री खोल्छन्।"
+      : "सहभागीलाई दिने लिङ्क: सामग्री निजी भएकाले स्क्यान गर्नेले साइन इन (वा नयाँ दर्ता) गर्छन्; यस तालिममा स्वीकृत भएपछि सिधै यही इभेन्टको सामग्री खुल्छ।";
     if (QR_KIND === "pre" && !EV.pre_open) note += " (अहिले बन्द छ)";
     if (QR_KIND === "post" && !EV.post_open) note += " (अहिले बन्द छ)";
     $("qrNote").textContent = note;
@@ -309,6 +325,7 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
     $("evActive").textContent = EV.is_active ? "सक्रिय इभेन्ट" : "सक्रिय छैन";
     $("evActive").classList.toggle("on", !!EV.is_active);
     $("activeBtn").textContent = EV.is_active ? "सक्रियबाट हटाउनुहोस्" : "सक्रिय इभेन्ट बनाउनुहोस्";
+    renderPub();
     if (i.org) $("orgLine").textContent = i.org + " · AI तालिम";
     var fact = function (k, v) { return '<div><dt>' + k + '</dt><dd>' + v + '</dd></div>'; };
     $("facts").innerHTML =
@@ -383,6 +400,28 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
     m.textContent = EV.is_active ? "यो अब सक्रिय इभेन्ट हो। अरू इभेन्ट स्वतः निष्क्रिय भए।" : "अब कुनै इभेन्ट सक्रिय छैन।";
     m.className = "msg ok";
     renderHead();
+  });
+
+  /* ---------- public / private materials ---------- */
+  function renderPub() {
+    var pub = !!EV.materials_public;
+    document.querySelectorAll("[data-pub]").forEach(function (b) { b.setAttribute("aria-checked", String((b.dataset.pub === "true") === pub)); });
+    $("pubNote").textContent = pub
+      ? "QR वा लिङ्क भएका जोसुकैले साइन इन नगरी यस तालिमको सामग्री हेर्न सक्छन्।"
+      : "यस तालिममा दर्ता भई स्वीकृत भएका सहभागी (र प्रशिक्षक) ले मात्र साइन इन गरेर हेर्न सक्छन्।";
+  }
+  document.addEventListener("click", async function (e) {
+    var b = e.target.closest("[data-pub]"); if (!b || !EV) return;
+    var want = b.dataset.pub === "true"; if (want === !!EV.materials_public) return;
+    var m = $("activeMsg"), btns = document.querySelectorAll("[data-pub]");
+    btns.forEach(function (x) { x.disabled = true; }); m.textContent = "सुरक्षित हुँदैछ…"; m.className = "msg";
+    var r; try { r = await WS.updateEvent(EV.id, { materials_public: want }); } catch (err) { r = { error: err }; }
+    try { var fresh = await WS.loadEventByCode(EV.code); if (fresh) EV.materials_public = !!fresh.materials_public; } catch (err) {}
+    btns.forEach(function (x) { x.disabled = false; });
+    if ((r && r.error) || !!EV.materials_public !== want) { m.textContent = "बदल्न सकिएन" + (r && r.error && r.error.message ? ": " + r.error.message : ": डाटाबेसमा परिवर्तन देखिएन।"); m.className = "msg bad"; renderPub(); return; }
+    m.textContent = want ? "यस तालिमको सामग्री अब सार्वजनिक भयो।" : "यस तालिमको सामग्री अब निजी भयो: दर्ता भएका सहभागीले मात्र हेर्न सक्छन्।"; m.className = "msg ok";
+    renderPub(); renderQr();
+    if (window.TrainerNav) TrainerNav.refresh();
   });
 
   /* ---------- participants ---------- */

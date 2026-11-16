@@ -578,3 +578,25 @@ end;
 $$;
 revoke all on function public.choose_my_event(uuid) from public, anon;
 grant execute on function public.choose_my_event(uuid) to authenticated;
+
+-- 20. Public or private training materials, per event. A public event's materials open for anyone
+--     with its link or QR (?event=CODE); a private event's only for the trainer and the participants
+--     registered (approved) for that event. Without a code, the active event decides for visitors,
+--     and an approved participant sees their own events. The trainer switches it on the event page.
+--     (Replaces the single app_settings.materials_public switch, which is no longer read.)
+alter table public.events add column if not exists materials_public boolean not null default false;
+
+create or replace function public.materials_access(p_code text default null)
+returns boolean language sql stable security definer set search_path = public as $$
+  select public.is_trainer()
+      or coalesce((select e.materials_public from public.events e
+                   where case when coalesce(p_code, '') <> '' then e.code = upper(p_code) else e.is_active end
+                   limit 1), false)
+      or exists (select 1
+                 from public.participant_events m
+                 join public.events e on e.id = m.event_id
+                 join public.profiles p on p.id = m.profile_id
+                 where m.profile_id = auth.uid() and p.status = 'approved'
+                   and (coalesce(p_code, '') = '' or e.code = upper(p_code)));
+$$;
+grant execute on function public.materials_access(text) to anon, authenticated;

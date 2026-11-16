@@ -190,14 +190,8 @@ a.pri-link{background:var(--accent);color:#fff;border-color:var(--accent)}
     <div class="tabpanel" id="tab-materials">
       <h2 style="margin-top:16px">तालिम सामग्री</h2>
       <p class="small muted">प्रशिक्षकको खाताले सामग्री सधैं देख्छ, सहभागीको खाता नचाहिई। तल यहीँ प्रस्तुत गर्न वा पूर्ण स्क्रिनमा खोल्न सकिन्छ।</p>
-<section class="card">
-      <h2 style="margin-top:0">सहभागीहरूका लागि सामग्री खुला</h2>
-      <div class="row">
-        <span>तालिम सामग्री सबैका लागि देखिने</span>
-        <label class="switch"><input id="matToggle" type="checkbox"> <span id="matState" class="small"></span></label>
-      </div>
+<p class="small muted">कुनै तालिमको सामग्री सबैका लागि खुला (सार्वजनिक) वा दर्ता भएका सहभागीका लागि मात्र (निजी) राख्न त्यो इभेन्टको पृष्ठमा "तालिम सामग्री: 🔒 निजी / 🌐 सार्वजनिक" छान्नुहोस्।</p>
       <p id="matMsg" class="msg hide"></p>
-    </section>
 
     
       <div class="grid">
@@ -270,7 +264,7 @@ a.pri-link{background:var(--accent);color:#fff;border-color:var(--accent)}
 <script src="/workshop/vendor/qrcode.js?v=1.4.4"></script>
 <script src="assessment/pool-employee.js"></script>
 <script src="assessment/pool-representative.js"></script>
-<script src="account.js?v=20261114b"></script>
+<script src="account.js?v=20261116c"></script>
 <script src="event-info.js?v=20261114b"></script>
 <script src="trainer-nav.js?v=20261116b"></script>
 <script src="media.js?v=20261114b"></script>
@@ -349,7 +343,7 @@ a.pri-link{background:var(--accent);color:#fff;border-color:var(--accent)}
     var lastDate = function (e) { return (e.event_dates || []).slice().sort().pop() || ""; };   // newest first, like the menu
     $("evList").innerHTML = events.slice().sort(function (a, b) { return (b.is_active ? 1 : 0) - (a.is_active ? 1 : 0) || lastDate(b).localeCompare(lastDate(a)); }).map(function (e) {
       var id = esc(e.id);
-      return '<div class="ev"><div class="row"><div><strong><a href="' + esc('/workshop/event.html?event=' + encodeURIComponent(e.code)) + '">' + esc(evTitle(e)) + '</a></strong> <span class="small">[' + esc(e.code) + ']</span>' + (e.is_active ? ' <span class="badge-on">सक्रिय</span>' : '') +
+      return '<div class="ev"><div class="row"><div><strong><a href="' + esc('/workshop/event.html?event=' + encodeURIComponent(e.code)) + '">' + esc(evTitle(e)) + '</a></strong> <span class="small">[' + esc(e.code) + ']</span>' + (e.is_active ? ' <span class="badge-on">सक्रिय</span>' : '') + ' <span class="ov-tag">सामग्री: ' + (e.materials_public ? 'सार्वजनिक' : 'निजी') + '</span>' +
         '<div class="small muted">' + esc(pkgName(e.package_id)) + '</div>' +
         '<div class="small muted">' + esc(e.organized_by || "") + ' · ' + esc(e.address || "") + '</div>' +
         '<div class="small muted">मितिहरू: ' + esc(EVI.info(e).dateRange || "—") + ' <span class="muted">(' + esc((e.event_dates || []).join(", ")) + ')</span></div></div>' +
@@ -669,21 +663,10 @@ a.pri-link{background:var(--accent);color:#fff;border-color:var(--accent)}
     }
   });
 
-  $("matToggle").addEventListener("change", async function (e) {
-    var on = e.target.checked;
-    var r = await WS.setMaterialsPublic(on);
-    if (r.error) { e.target.checked = !on; flash("matMsg", "बदल्न सकिएन: " + r.error.message, false); return; }
-    $("matState").textContent = on ? "सार्वजनिक (सबैले हेर्न सक्छन्)" : "निजी (स्वीकृत सहभागी मात्र)";
-    flash("matMsg", on ? "सामग्री अब सार्वजनिक भयो।" : "सामग्री अब निजी भयो।", true);
-  });
-
   WS.init().then(async function () {
     if (!WS.isTrainer()) { $("needLogin").classList.remove("hide"); return; }
     if (window.TrainerNav) TrainerNav.mount({ page: "admin", tab: location.hash.slice(1) || "overview" });
     $("panel").classList.remove("hide");
-    var pub = await WS.materialsPublic();
-    $("matToggle").checked = pub;
-    $("matState").textContent = pub ? "सार्वजनिक (सबैले हेर्न सक्छन्)" : "निजी (स्वीकृत सहभागी मात्र)";
     renderDates();
     await renderLists();
   }).catch(function () {
@@ -843,7 +826,7 @@ a.pri-link{background:var(--accent);color:#fff;border-color:var(--accent)}
       var st = !ds.length ? "" : ds.indexOf(today) >= 0 ? "आज" : ds[0] > today ? "आगामी" : "सम्पन्न";
       var fb = feedback.filter(function (f) { return f.event_code === e.code; }).length;
       var url = "/workshop/event.html?event=" + encodeURIComponent(e.code);
-      return '<article class="ov-card"><div>' + (e.is_active ? '<span class="badge-on">सक्रिय</span> ' : '') + (st ? '<span class="ov-tag">' + st + '</span> ' : '') + '<span class="small muted">' + esc(e.code) + '</span></div>' +
+      return '<article class="ov-card"><div>' + (e.is_active ? '<span class="badge-on">सक्रिय</span> ' : '') + (st ? '<span class="ov-tag">' + st + '</span> ' : '') + '<span class="ov-tag">सामग्री ' + (e.materials_public ? 'सार्वजनिक' : 'निजी') + '</span> <span class="small muted">' + esc(e.code) + '</span></div>' +
         '<h3><a href="' + esc(url + "#details") + '">' + esc(i.orgName || e.organized_by || e.name) + '</a></h3>' +
         '<div class="small">' + esc(e.name) + '</div>' +
         '<div class="small muted">' + esc([p ? p.name : "", i.dateRange].filter(Boolean).join(" · ")) + (fb ? ' · पृष्ठपोषण ' + fb : '') + '</div>' +
