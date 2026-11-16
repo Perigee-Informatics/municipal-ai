@@ -113,6 +113,12 @@ body.rp-mode header.top{display:none}
 .sv-legend i.rp-key-pre{background:var(--surface);border:2.5px solid var(--accent);border-radius:50%}.sv-legend i.rp-key-post{background:var(--accent);border-radius:50%}
 table.rp-q td:nth-child(2){min-width:260px;white-space:normal}
 svg.rp-db{max-width:640px}
+.rp-list{margin:6px 0 10px;padding-left:22px}.rp-list li{margin:4px 0;line-height:1.55}
+.rp-photos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.rp-photos figure{margin:0;break-inside:avoid}.rp-photos img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:8px;display:block;background:var(--soft)}
+.rp-photos figcaption{font-size:13px;color:var(--muted);margin-top:4px;line-height:1.4}
+@media (max-width:600px){.rp-photos{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.rp-foot{margin-top:18px;text-align:center}
 @page{size:A4;margin:14mm 12mm}
 @media print{
   :root,:root[data-theme="dark"],:root:not([data-theme="light"]){--bg:#FFFFFF;--surface:#FFFFFF;--ink:#1B2320;--muted:#5D6A65;--line:#DAD6CB;--accent:#1F5C4A;--soft:#E7EFEA;--gold:#B7862B;--ok:#2E7D4F;--bad:#B3392F;--warn:#9A6B12;--sv-pos:#2a78d6;--sv-neg:#e34948}
@@ -163,6 +169,7 @@ svg.rp-db{max-width:640px}
 <script src="../account.js?v=20261114b"></script>
 <script src="../event-info.js?v=20261114b"></script>
 <script>EVI.home().then(EVI.mountHome).catch(function () {});</script>
+<script src="../course-outline.js?v=20261116a"></script>
 <script src="pool-employee.js"></script>
 <script src="pool-representative.js"></script>
 <script id="sv-src">
@@ -1033,7 +1040,7 @@ function pairedRows(){
 }
 
 function learningSection(){
-  var head='<section class="card"><h2>सिकाइ उपलब्धि (पूर्व बनाम पश्च)</h2>';
+  var head='<section class="card">'+(REPORT_MODE?'':'<h2>सिकाइ उपलब्धि (पूर्व बनाम पश्च)</h2>');
   var P=pairedRows(), k=P.length;
   if(k===0){
     return head+'<p class="muted">सिकाइ उपलब्धि मापन गर्न एउटै सहभागी कोडले पूर्व र पश्च दुवै परीक्षा दिएका सहभागी चाहिन्छन्। अहिलेसम्म त्यस्ता जोडी भेटिएका छैनन्।</p></section>';
@@ -1555,6 +1562,18 @@ function feedbackSummary(rows,qs){
   return {n:rows.length,per:per,avg:meanOf(all),good:all.filter(function(v){return v>=4;}).length,all:all.length,rec:rows.filter(function(x){return x.recommend;}).length};
 }
 
+/* The training's objectives and sessions (course-outline.js), worded for this event's level and organiser. */
+function outlineFor(){
+  var O=window.COURSE_OUTLINE; if(!O||!RP.pkg) return null;
+  var course=EVI.courseOf(RP.pkg.key), base=O[course]; if(!base) return null;
+  var level=EVI.levelOf(RP.pkg.key), lv=level!==EVI.BASE_LEVEL[course]?EVI.levelRules(level):null;
+  var info=EVI.info(RP.ev), ev=info?(course==="representative"?EVI.representativeRules(info):EVI.employeeRules(info)):null;
+  var w=function(t){ t=String(t||""); if(lv) t=EVI.fill(t,lv); if(ev) t=EVI.fill(t,ev); return t; };
+  return {main:w(base.main),objectives:base.objectives.map(w),outcomes:base.outcomes.map(w),
+    sessions:base.sessions.map(function(x){return {n:x.n,day:x.day,start:x.start,end:x.end,title:w(x.title),objective:w(x.objective),content:w(x.content),outcome:w(x.outcome)};})};
+}
+function photoUrl(m,full){ var p=full?m.path:(m.thumb_path||m.path); return p&&window.WS&&WS.publicUrl?WS.publicUrl(p):""; }
+
 function reportHtml(){
   var ev=RP.ev, i=EVI.info(ev)||{}, pkg=RP.pkg, course=pkg&&EVI.courseOf(pkg.key)==="representative"?"representative":"employee";
   var pre=records.filter(function(r){return r.test==="pre";}), post=records.filter(function(r){return r.test==="post";});
@@ -1567,7 +1586,9 @@ function reportHtml(){
   var qs=FB_QS[course], fb=feedbackSummary(RP.feedback,qs);
   var topics=SESSIONS.map(function(s){return {label:s.label,pre:topicShare(pre,s.id),post:topicShare(post,s.id)};}).filter(function(t){return t.pre!=null||t.post!=null;});
   var demoBase=pre.length?pre:post;
+  var outline=outlineFor(), photos=(RP.media||[]).filter(function(m){return m.kind==="photo";});
   var f1=function(v){return v==null?"—":Math.round(v)+"%";};
+  var hasTests=pre.length+post.length>0;
 
   /* key findings, written from the numbers */
   var find=[];
@@ -1577,7 +1598,7 @@ function reportHtml(){
   var withBoth=topics.filter(function(t){return t.pre!=null&&t.post!=null;});
   if(withBoth.length){
     var best=withBoth.slice().sort(function(a,b){return (b.post-b.pre)-(a.post-a.pre);})[0];
-    find.push("सबैभन्दा बढी सुधार भएको विषय: <strong>"+esc(best.label)+"</strong> ("+f1(best.pre)+" → "+f1(best.post)+")।");
+    if(best.post>best.pre) find.push("सबैभन्दा बढी सुधार भएको विषय: <strong>"+esc(best.label)+"</strong> ("+f1(best.pre)+" → "+f1(best.post)+")।");
   }
   var weak=topics.filter(function(t){var v=t.post!=null?t.post:t.pre;return v!=null&&v<60;});
   if(weak.length) find.push("थप अभ्यास चाहिने विषय (६०% भन्दा कम सही): "+weak.map(function(t){return "<strong>"+esc(t.label)+"</strong> ("+f1(t.post!=null?t.post:t.pre)+")";}).join(", ")+"।");
@@ -1591,80 +1612,121 @@ function reportHtml(){
     var sig=cs.filter(function(c){return c[1].p!=null&&c[1].p<0.05;});
     find.push(x[0]+"-परीक्षामा "+(sig.length?"अङ्कसँग सार्थक सम्बन्ध: "+sig.map(function(c){return c[0]+" (r = "+SV.f2(c[1].r)+")";}).join(", "):"उमेर, शैक्षिक तह र लिङ्गसँग अङ्कको सार्थक सम्बन्ध देखिएन")+"।");
   });
+  if(photos.length) find.push("तालिमका "+npn(photos.length)+" वटा तस्बिर प्रतिवेदनमा समावेश छन्।");
 
+  /* Sections are added only when they have something to show, and numbered in the order shown. */
+  var secs=[], N=0;
+  var sec=function(title,body,wrap){ if(!body) return; N++; secs.push(wrap?'<div class="rp-sec"><h2 class="rp-h2">'+npn(N)+'. '+esc(title)+'</h2>'+body+'</div>':'<section class="card rp-sec"><h2>'+npn(N)+'. '+esc(title)+'</h2>'+body+'</section>'); };
   var kpi=function(l,v){return '<div class="kpi"><span class="muted small">'+l+'</span><b>'+v+'</b></div>';};
-  var out='';
-  out+='<div class="rp-bar no-print"><a href="../event.html?event='+encodeURIComponent(ev.code)+'#details">← इभेन्ट पृष्ठ</a>'
-    +'<span class="rp-bar-actions"><label><input type="checkbox" id="rpPeople"'+(REPORT_OPTS.people?' checked':'')+'> सहभागीगत तालिका</label>'
-    +'<label><input type="checkbox" id="rpComments"'+(REPORT_OPTS.comments?' checked':'')+'> लिखित पृष्ठपोषण</label>'
+
+  var kp='';
+  if(RP.members) kp+=kpi("स्वीकृत सहभागी",npn(RP.members));
+  if(sPre.n) kp+=kpi("पूर्व परीक्षा",npn(sPre.n)+' · '+f1(sPre.avg));
+  if(sPost.n) kp+=kpi("पश्च परीक्षा",npn(sPost.n)+' · '+f1(sPost.avg));
+  if(P.length) kp+=kpi("औसत सुधार",(gM>=0?"+":"")+gM.toFixed(1));
+  if(fb.n&&fb.avg!=null) kp+=kpi("पृष्ठपोषण",fb.avg.toFixed(1)+" / ५");
+  if(photos.length) kp+=kpi("तस्बिर",npn(photos.length));
+  sec("सारांश",(kp?'<div class="kpis">'+kp+'</div>':'')+(find.length?'<h3>मुख्य निष्कर्ष</h3><ul class="sv-insights">'+find.map(function(f){return '<li>'+f+'</li>';}).join("")+'</ul>':''));
+
+  if(outline){
+    var ob='';
+    if(outline.main) ob+='<p><strong>मुख्य उद्देश्य:</strong> '+esc(outline.main)+'</p>';
+    if(outline.objectives.length) ob+='<h3>'+(course==="representative"?"कार्यशाला सकिँदासम्म प्रत्येक सहभागीले":"विशिष्ट उद्देश्य")+'</h3><ol class="rp-list">'+outline.objectives.map(function(x){return '<li>'+esc(x)+'</li>';}).join("")+'</ol>';
+    var oc=outline.outcomes.filter(Boolean);
+    if(oc.length) ob+='<h3>अपेक्षित उपलब्धि</h3>'+(oc.length>1?'<ul class="rp-list">'+oc.map(function(x){return '<li>'+esc(x)+'</li>';}).join("")+'</ul>':'<p>'+esc(oc[0])+'</p>');
+    sec("तालिमका उद्देश्य",ob);
+
+    var ss=outline.sessions;
+    if(ss.length){
+      var hasObj=ss.some(function(x){return x.objective;}), hasCont=ss.some(function(x){return x.content;}), hasOut=ss.some(function(x){return x.outcome;});
+      var days=ss.map(function(x){return x.day;}).filter(function(d,k,a){return a.indexOf(d)===k;});
+      var dates=(ev.event_dates||[]).slice().sort();
+      var tb='<p class="note">'+npn(ss.length)+' सत्र'+(days.length>1?', '+npn(days.length)+' दिन':'')+'। सत्र योजनाअनुसारको विषयवस्तु।</p>';
+      days.forEach(function(d){
+        var b=dates[d-1]?EVI.toBS(dates[d-1]):null;
+        if(days.length>1) tb+='<h3>'+(d===1?'पहिलो दिन':d===2?'दोस्रो दिन':'दिन '+npn(d))+(b?' · '+EVI.fmtFull(b):'')+'</h3>';
+        tb+='<div class="tbl-wrap"><table class="rp-q"><thead><tr><th>सत्र</th><th>समय</th>'+(hasObj?'<th>उद्देश्य</th>':'')+(hasCont?'<th>'+(hasObj?'विषयवस्तु':'विधि')+'</th>':'')+(hasOut?'<th>अपेक्षित उपलब्धि</th>':'')+'</tr></thead><tbody>'
+          +ss.filter(function(x){return x.day===d;}).map(function(x){
+            return '<tr><td><strong>'+esc(x.n)+'.</strong> '+esc(x.title)+'</td><td class="small">'+npn(x.start)+'–'+npn(x.end)+'</td>'
+              +(hasObj?'<td class="small">'+esc(x.objective)+'</td>':'')+(hasCont?'<td class="small">'+esc(x.content)+'</td>':'')+(hasOut?'<td class="small">'+esc(x.outcome)+'</td>':'')+'</tr>';
+          }).join("")+'</tbody></table></div>';
+      });
+      sec("तालिमको विषयवस्तु",tb);
+    }
+  }
+
+  if(demoBase.length) sec("सहभागी विवरण",'<p class="note">'+(pre.length?'पूर्व':'पश्च')+'-तालिम परीक्षामा सहभागीले भरेको विवरणमा आधारित (n = '+npn(demoBase.length)+')।</p><div class="grid3 rp-g3">'+countBars("लिङ्ग",GENDERS,"gender",demoBase)+countBars("उमेर समूह",AGES,"ageGroup",demoBase)+countBars("शैक्षिक तह",EDUS,"education",demoBase)+'</div>');
+
+  if(hasTests){
+    var gl=["A+","A","B+","B","C","D"];
+    var gcount=function(recs,g){return recs.filter(function(r){return gradeOf(r.pct)===g;}).length;};
+    var tests=[["पूर्व-तालिम",sPre,pre],["पश्च-तालिम",sPost,post]].filter(function(x){return x[1].n;});
+    var rb='<div class="tbl-wrap"><table><thead><tr><th>परीक्षा</th><th>सहभागी</th><th>औसत</th><th>मध्यिका</th><th>न्यूनतम</th><th>अधिकतम</th><th>उत्तीर्ण (≥५०%)</th></tr></thead><tbody>'
+      +tests.map(function(x){var s=x[1];return '<tr><td><strong>'+x[0]+'</strong></td><td>'+npn(s.n)+'</td><td>'+f1(s.avg)+'</td><td>'+f1(s.med)+'</td><td>'+f1(s.min)+'</td><td>'+f1(s.max)+'</td><td>'+npn(s.pass)+' ('+pctTxt(s.pass,s.n)+')</td></tr>';}).join("")
+      +'</tbody></table></div>'
+      +'<h3>ग्रेड वितरण</h3><div class="tbl-wrap"><table><thead><tr><th>ग्रेड</th>'+tests.map(function(x){return '<th>'+x[0].replace("-तालिम","")+'</th>';}).join("")+'</tr></thead><tbody>'
+      +gl.map(function(g){return '<tr><td>'+g+' <span class="muted small">('+gradeLabel(g)+')</span></td>'+tests.map(function(x){var c=gcount(x[2],g);return '<td>'+npn(c)+' <span class="muted small">'+pctTxt(c,x[2].length)+'</span></td>';}).join("")+'</tr>';}).join("")
+      +'</tbody></table></div>';
+    if(topics.length) rb+='<h3>विषयगत सही उत्तर'+(pre.length&&post.length?': पूर्व → पश्च':'')+'</h3><div class="sv-legend">'+(pre.length?'<span><i class="rp-key-pre"></i>पूर्व-तालिम</span>':'')+(post.length?'<span><i class="rp-key-post"></i>पश्च-तालिम</span>':'')+(post.length?'<span>दायाँको अङ्क: पश्च %'+(pre.length?' (परिवर्तन)':'')+'</span>':'')+'</div>'+dumbbell(topics);
+    sec("परीक्षा नतिजा",rb);
+  }
+
+  if(P.length) sec("सिकाइ उपलब्धि",learningSection(),true);
+  var demo=(pre.length>=5?demoInfographic(pre,"pre"):'')+(post.length>=5?demoInfographic(post,"post"):'');
+  sec("जनसांख्यिकी, सहसम्बन्ध र प्रतिगमन विश्लेषण",demo,true);
+
+  var qrows=questionRows(pre,post);
+  if(qrows.length){
+    var both=pre.length&&post.length;
+    sec("प्रश्नगत विश्लेषण",'<p class="note">हरेक प्रश्नमा सही उत्तर दिनेको प्रतिशत। ५०% भन्दा कम भएका प्रश्न <span class="chip c-bad">कठिन</span> देखाइएको छ।</p>'
+      +'<div class="tbl-wrap"><table class="rp-q"><thead><tr><th>#</th><th>प्रश्न</th><th>विषय</th>'+(pre.length?'<th>पूर्व</th>':'')+(post.length?'<th>पश्च</th>':'')+(both?'<th>परिवर्तन</th>':'')+'</tr></thead><tbody>'
+      +qrows.map(function(r,k){var d=r.pre!=null&&r.post!=null?r.post-r.pre:null;var hard=(r.post!=null?r.post:r.pre)<50;
+        return '<tr><td>'+npn(k+1)+'</td><td>'+esc(r.q)+(hard?' <span class="chip c-bad">कठिन</span>':'')+'</td><td class="small">'+esc((SESSIONS[r.theme]||{}).label||"")+'</td>'+(pre.length?'<td>'+f1(r.pre)+'</td>':'')+(post.length?'<td>'+f1(r.post)+'</td>':'')+(both?'<td>'+(d==null?'—':(d>=0?'+':'')+Math.round(d))+'</td>':'')+'</tr>';}).join("")
+      +'</tbody></table></div>');
+  }
+
+  if(fb.n){
+    var fbb='<div class="kpis">'+kpi("प्रतिक्रिया",npn(fb.n)+" जना")+(fb.avg!=null?kpi("समग्र औसत",fb.avg.toFixed(1)+" / ५")+kpi("सन्तुष्ट (४–५)",pctTxt(fb.good,fb.all)):'')+kpi("सिफारिस गर्ने",pctTxt(fb.rec,fb.n))+'</div>';
+    var rated=qs.map(function(q,k){var c=fb.per[k], n=c[1]+c[2]+c[3]+c[4]+c[5]; return n?barRow(q,(c[1]+2*c[2]+3*c[3]+4*c[4]+5*c[5])/n,5,"var(--accent)",((c[1]+2*c[2]+3*c[3]+4*c[4]+5*c[5])/n).toFixed(1)+" / ५"):'';}).join("");
+    if(rated) fbb+='<h3>प्रश्नअनुसार औसत (१–५)</h3>'+rated;
+    if(REPORT_OPTS.comments){
+      var lists=[["सबैभन्दा उपयोगी सत्र","best_session"],["सुधार गर्नुपर्ने कुरा","improve"],["पहिले AI बाट गर्ने काम","first_ai_use"]].map(function(x){
+        var items=RP.feedback.map(function(r){return (r[x[1]]||"").trim();}).filter(Boolean);
+        return items.length?'<div><h3>'+esc(x[0])+' <span class="small muted">('+npn(items.length)+')</span></h3><ul>'+items.map(function(t){return '<li>'+esc(t)+'</li>';}).join("")+'</ul></div>':'';
+      }).filter(Boolean);
+      if(lists.length) fbb+='<div class="grid3 rp-g3" style="margin-top:12px">'+lists.join("")+'</div>';
+    }
+    sec("सहभागीको पृष्ठपोषण",fbb);
+  }
+
+  if(photos.length){
+    sec("तालिमका तस्बिरहरू",'<div class="rp-photos">'+photos.map(function(m){
+      var cap=(m.caption||"").trim();
+      return '<figure><img src="'+esc(photoUrl(m,false))+'" data-full="'+esc(photoUrl(m,true))+'" alt="'+esc(cap||"तालिमको तस्बिर")+'" loading="eager">'+(cap?'<figcaption>'+esc(cap)+'</figcaption>':'')+'</figure>';
+    }).join("")+'</div>'+(RP.mediaMore?'<p class="note">'+npn(RP.mediaMore)+' वटा अरू तस्बिर ग्यालरीमा छन्।</p>':''));
+  }
+
+  if(hasTests||fb.n){
+    sec("विधि र टिप्पणी",'<ul class="sv-insights">'
+      +(hasTests?'<li>अङ्क = सही उत्तरको प्रतिशत।'+(P.length?' पूर्व र पश्च परीक्षाको जोडी सहभागीले राखेको एउटै सहभागी कोडबाट मिलाइएको छ। सुधार = पश्च % − पूर्व % (प्रतिशत-अङ्क)। सामान्यीकृत सिकाइ g = (पश्च − पूर्व) ÷ (१०० − पूर्व)।':'')+'</li>':'')
+      +(demo?'<li>सहसम्बन्ध: उमेर र शैक्षिक तहमा Spearman, लिङ्ग र समयमा Pearson। प्रतिगमन: न्यूनतम वर्ग विधिको बहुचर रेखीय प्रतिगमन। p &lt; 0.05 लाई सार्थक मानिएको छ। यी सम्बन्ध हुन्, कारण होइनन्।</li>':'')
+      +'<li>व्यक्तिगत नाम वा सम्पर्क विवरण यो प्रतिवेदनमा छैन'+(REPORT_OPTS.people&&P.length?'; सहभागीगत तालिकामा सहभागीले आफैँ राखेको कोड मात्र छ':'')+'।</li></ul>');
+  }
+
+  /* cover: only the facts that are known */
+  var meta=[["आयोजक",i.org||ev.organized_by],["स्थान",ev.address],["मिति",i.dateRange],["प्रशिक्षण प्याकेज",pkg&&pkg.name],["इभेन्ट कोड",ev.code],
+    ["प्रशिक्षक",RP.profile&&RP.profile.name?RP.profile.name+(RP.profile.title?", "+RP.profile.title:""):""]].filter(function(x){return x[1]&&String(x[1]).trim();});
+  var out='<div class="rp-bar no-print"><a href="../event.html?event='+encodeURIComponent(ev.code)+'#details">← इभेन्ट पृष्ठ</a>'
+    +'<span class="rp-bar-actions">'+(P.length?'<label><input type="checkbox" id="rpPeople"'+(REPORT_OPTS.people?' checked':'')+'> सहभागीगत तालिका</label>':'')
+    +(fb.n?'<label><input type="checkbox" id="rpComments"'+(REPORT_OPTS.comments?' checked':'')+'> लिखित पृष्ठपोषण</label>':'')
     +'<button type="button" class="primary" id="rpPrint">PDF डाउनलोड / छाप्नुहोस्</button>'
     +'<button type="button" id="rpHtml">HTML फाइल डाउनलोड</button></span></div>'
     +'<p class="note no-print">PDF का लागि: "PDF डाउनलोड / छाप्नुहोस्" थिचेपछि Destination / Printer मा <strong>Save as PDF</strong> छान्नुहोस्।</p>';
-  out+='<article class="rp-doc" id="rpDoc">';
-  out+='<header class="rp-cover"><p class="rp-kicker">तालिम प्रतिवेदन · Training Report</p><h1>'+esc(ev.name)+'</h1>'
-    +'<dl class="rp-meta">'
-    +'<div><dt>आयोजक</dt><dd>'+esc(i.org||ev.organized_by||"—")+'</dd></div>'
-    +'<div><dt>स्थान</dt><dd>'+esc(ev.address||"—")+'</dd></div>'
-    +'<div><dt>मिति</dt><dd>'+esc(i.dateRange||"—")+' <span class="muted">('+esc((ev.event_dates||[]).join(", "))+')</span></dd></div>'
-    +'<div><dt>प्रशिक्षण प्याकेज</dt><dd>'+esc(pkg?pkg.name:"—")+'</dd></div>'
-    +'<div><dt>इभेन्ट कोड</dt><dd>'+esc(ev.code)+'</dd></div>'
-    +'<div><dt>प्रशिक्षक</dt><dd>'+esc(RP.profile&&RP.profile.name||"")+(RP.profile&&RP.profile.title?', '+esc(RP.profile.title):'')+'</dd></div>'
-    +'</dl><p class="small muted">प्रतिवेदन तयार मिति: '+esc(todayBS())+'</p></header>';
-
-  out+='<section class="card rp-sec"><h2>१. सारांश</h2><div class="kpis">'
-    +kpi("स्वीकृत सहभागी",RP.members==null?"—":npn(RP.members))
-    +kpi("पूर्व परीक्षा",npn(sPre.n)+(sPre.n?' · '+f1(sPre.avg):''))
-    +kpi("पश्च परीक्षा",npn(sPost.n)+(sPost.n?' · '+f1(sPost.avg):''))
-    +kpi("औसत सुधार",P.length?(gM>=0?"+":"")+gM.toFixed(1):"—")
-    +kpi("पृष्ठपोषण",fb.n?(fb.avg==null?"—":fb.avg.toFixed(1))+" / ५":"—")
-    +'</div><h3>मुख्य निष्कर्ष</h3><ul class="sv-insights">'+(find.length?find.map(function(f){return '<li>'+f+'</li>';}).join(""):'<li>अहिलेसम्म परीक्षा वा पृष्ठपोषणको डाटा छैन।</li>')+'</ul></section>';
-
-  out+='<section class="card rp-sec"><h2>२. सहभागी विवरण</h2><p class="note">'+(pre.length?'पूर्व':'पश्च')+'-तालिम परीक्षामा सहभागीले भरेको विवरणमा आधारित (n = '+npn(demoBase.length)+')।</p>'
-    +(demoBase.length?'<div class="grid3 rp-g3">'+countBars("लिङ्ग",GENDERS,"gender",demoBase)+countBars("उमेर समूह",AGES,"ageGroup",demoBase)+countBars("शैक्षिक तह",EDUS,"education",demoBase)+'</div>':'<p class="muted">डाटा छैन।</p>')+'</section>';
-
-  var gl=["A+","A","B+","B","C","D"];
-  var gcount=function(recs,g){return recs.filter(function(r){return gradeOf(r.pct)===g;}).length;};
-  out+='<section class="card rp-sec"><h2>३. परीक्षा नतिजा</h2>'
-    +'<div class="tbl-wrap"><table><thead><tr><th>परीक्षा</th><th>सहभागी</th><th>औसत</th><th>मध्यिका</th><th>न्यूनतम</th><th>अधिकतम</th><th>उत्तीर्ण (≥५०%)</th></tr></thead><tbody>'
-    +[["पूर्व-तालिम",sPre],["पश्च-तालिम",sPost]].map(function(x){var s=x[1];return '<tr><td><strong>'+x[0]+'</strong></td><td>'+npn(s.n)+'</td><td>'+f1(s.avg)+'</td><td>'+f1(s.med)+'</td><td>'+f1(s.min)+'</td><td>'+f1(s.max)+'</td><td>'+(s.n?npn(s.pass)+' ('+pctTxt(s.pass,s.n)+')':'—')+'</td></tr>';}).join("")
-    +'</tbody></table></div>'
-    +'<h3>ग्रेड वितरण</h3><div class="tbl-wrap"><table><thead><tr><th>ग्रेड</th><th>पूर्व</th><th>पश्च</th></tr></thead><tbody>'
-    +gl.map(function(g){var a=gcount(pre,g),b=gcount(post,g);return '<tr><td>'+g+' <span class="muted small">('+gradeLabel(g)+')</span></td><td>'+npn(a)+' <span class="muted small">'+pctTxt(a,pre.length)+'</span></td><td>'+npn(b)+' <span class="muted small">'+pctTxt(b,post.length)+'</span></td></tr>';}).join("")
-    +'</tbody></table></div>'
-    +'<h3>विषयगत सही उत्तर: पूर्व → पश्च</h3><div class="sv-legend"><span><i class="rp-key-pre"></i>पूर्व-तालिम</span><span><i class="rp-key-post"></i>पश्च-तालिम</span><span>दायाँको अङ्क: पश्च % (परिवर्तन)</span></div>'
-    +(topics.length?dumbbell(topics):'<p class="muted">डाटा छैन।</p>')+'</section>';
-
-  out+='<div class="rp-sec"><h2 class="rp-h2">४. सिकाइ उपलब्धि</h2>'+learningSection()+'</div>';
-  out+='<div class="rp-sec"><h2 class="rp-h2">५. जनसांख्यिकी, सहसम्बन्ध र प्रतिगमन विश्लेषण</h2>'
-    +(pre.length?demoInfographic(pre,"pre"):'')+(post.length?demoInfographic(post,"post"):'')
-    +(!pre.length&&!post.length?'<section class="card"><p class="muted">डाटा छैन।</p></section>':'')+'</div>';
-
-  var qrows=questionRows(pre,post);
-  out+='<section class="card rp-sec"><h2>६. प्रश्नगत विश्लेषण</h2><p class="note">हरेक प्रश्नमा सही उत्तर दिनेको प्रतिशत। ५०% भन्दा कम भएका प्रश्न <span class="chip c-bad">कठिन</span> देखाइएको छ।</p>'
-    +'<div class="tbl-wrap"><table class="rp-q"><thead><tr><th>#</th><th>प्रश्न</th><th>विषय</th><th>पूर्व</th><th>पश्च</th><th>परिवर्तन</th></tr></thead><tbody>'
-    +qrows.map(function(r,k){var d=r.pre!=null&&r.post!=null?r.post-r.pre:null;var hard=(r.post!=null?r.post:r.pre)<50;
-      return '<tr><td>'+npn(k+1)+'</td><td>'+esc(r.q)+(hard?' <span class="chip c-bad">कठिन</span>':'')+'</td><td class="small">'+esc((SESSIONS[r.theme]||{}).label||"")+'</td><td>'+f1(r.pre)+'</td><td>'+f1(r.post)+'</td><td>'+(d==null?'—':(d>=0?'+':'')+Math.round(d))+'</td></tr>';}).join("")
-    +'</tbody></table></div></section>';
-
-  out+='<section class="card rp-sec"><h2>७. सहभागीको पृष्ठपोषण</h2>';
-  if(!fb.n) out+='<p class="muted">यो इभेन्टमा पृष्ठपोषण आएको छैन।</p>';
-  else{
-    out+='<div class="kpis">'+kpi("प्रतिक्रिया",npn(fb.n)+" जना")+kpi("समग्र औसत",(fb.avg==null?"—":fb.avg.toFixed(1))+" / ५")+kpi("सन्तुष्ट (४–५)",pctTxt(fb.good,fb.all))+kpi("सिफारिस गर्ने",pctTxt(fb.rec,fb.n))+'</div><h3>प्रश्नअनुसार औसत (१–५)</h3>';
-    qs.forEach(function(q,k){ var c=fb.per[k], n=c[1]+c[2]+c[3]+c[4]+c[5], a=n?(c[1]+2*c[2]+3*c[3]+4*c[4]+5*c[5])/n:0; out+=barRow(q,a,5,"var(--accent)",n?a.toFixed(1)+" / ५":"—"); });
-    if(REPORT_OPTS.comments){
-      var list=function(title,key){var items=RP.feedback.map(function(x){return (x[key]||"").trim();}).filter(Boolean);return '<div><h3>'+esc(title)+' <span class="small muted">('+npn(items.length)+')</span></h3>'+(items.length?'<ul>'+items.map(function(s){return '<li>'+esc(s)+'</li>';}).join("")+'</ul>':'<p class="small muted">कुनै उत्तर आएन।</p>')+'</div>';};
-      out+='<div class="grid3 rp-g3" style="margin-top:12px">'+list("सबैभन्दा उपयोगी सत्र","best_session")+list("सुधार गर्नुपर्ने कुरा","improve")+list("पहिले AI बाट गर्ने काम","first_ai_use")+'</div>';
-    }
-  }
-  out+='</section>';
-
-  out+='<section class="card rp-sec"><h2>८. विधि र टिप्पणी</h2><ul class="sv-insights">'
-    +'<li>अङ्क = सही उत्तरको प्रतिशत। पूर्व र पश्च परीक्षाको जोडी सहभागीले राखेको एउटै सहभागी कोडबाट मिलाइएको छ।</li>'
-    +'<li>सुधार = पश्च % − पूर्व % (प्रतिशत-अङ्क)। सामान्यीकृत सिकाइ g = (पश्च − पूर्व) ÷ (१०० − पूर्व)।</li>'
-    +'<li>सहसम्बन्ध: उमेर र शैक्षिक तहमा Spearman, लिङ्ग र समयमा Pearson। प्रतिगमन: न्यूनतम वर्ग विधिको बहुचर रेखीय प्रतिगमन। p &lt; 0.05 लाई सार्थक मानिएको छ। यी सम्बन्ध हुन्, कारण होइनन्।</li>'
-    +'<li>व्यक्तिगत नाम वा सम्पर्क विवरण यो प्रतिवेदनमा छैन'+(REPORT_OPTS.people?'; सहभागीगत तालिकामा सहभागीले आफैँ राखेको कोड मात्र छ':'')+'।</li>'
-    +'</ul><p class="small muted">यो प्रतिवेदन AI तालिम प्रणालीले '+esc(todayBS())+' मा स्वतः तयार गरेको हो।</p></section>';
-  out+='</article>';
+  out+='<article class="rp-doc" id="rpDoc"><header class="rp-cover"><p class="rp-kicker">तालिम प्रतिवेदन · Training Report</p><h1>'+esc(ev.name)+'</h1>'
+    +'<dl class="rp-meta">'+meta.map(function(x){return '<div><dt>'+x[0]+'</dt><dd>'+esc(x[1])+'</dd></div>';}).join("")+'</dl>'
+    +'<p class="small muted">प्रतिवेदन तयार मिति: '+esc(todayBS())+'</p></header>'
+    +(secs.length?secs.join(""):'<section class="card"><p class="muted">यो इभेन्टमा अहिलेसम्म परीक्षा, पृष्ठपोषण वा तस्बिर छैन।</p></section>')
+    +'<p class="small muted rp-foot">यो प्रतिवेदन AI तालिम प्रणालीले '+esc(todayBS())+' मा स्वतः तयार गरेको हो।</p></article>';
   return out;
 }
 
@@ -1672,24 +1734,34 @@ function renderReport(){
   var box=$("report");
   box.innerHTML=reportHtml();
   $("rpPrint").onclick=function(){ window.print(); };
-  $("rpPeople").onchange=function(){ REPORT_OPTS.people=this.checked; renderReport(); };
-  $("rpComments").onchange=function(){ REPORT_OPTS.comments=this.checked; renderReport(); };
+  if($("rpPeople")) $("rpPeople").onchange=function(){ REPORT_OPTS.people=this.checked; renderReport(); };
+  if($("rpComments")) $("rpComments").onchange=function(){ REPORT_OPTS.comments=this.checked; renderReport(); };
   $("rpHtml").onclick=downloadReportHtml;
   document.title=RP.ev.code+" · तालिम प्रतिवेदन";
 }
 
 /* A single self-contained file: the page's own styles (light colours), fonts and the report. */
-function downloadReportHtml(){
-  var css=[].map.call(document.querySelectorAll("style"),function(s){return s.textContent;}).join("\n");
-  var html='<!doctype html><html lang="ne" data-theme="light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
-    +'<title>'+esc(RP.ev.name+" · तालिम प्रतिवेदन")+'</title>'
-    +'<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;700;800&display=swap">'
-    +'<style>'+css+'</style></head><body class="rp-mode"><div class="wrap">'+$("rpDoc").outerHTML+'</div></body></html>';
-  var a=document.createElement("a");
-  a.href=URL.createObjectURL(new Blob([html],{type:"text/html;charset=utf-8"}));
-  a.download=RP.ev.code+"-training-report.html";
-  document.body.appendChild(a); a.click();
-  setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },1000);
+async function downloadReportHtml(){
+  var btn=$("rpHtml"), label=btn.textContent; btn.disabled=true; btn.textContent="तयार हुँदैछ…";
+  try{
+    var doc=$("rpDoc").cloneNode(true);
+    var imgs=[].slice.call(doc.querySelectorAll("img"));
+    await Promise.all(imgs.map(async function(im){   // photos go inside the file, so it opens without the internet
+      try{ var b=await (await fetch(im.getAttribute("src"))).blob();
+        im.src=await new Promise(function(res,rej){ var r=new FileReader(); r.onload=function(){res(r.result);}; r.onerror=rej; r.readAsDataURL(b); });
+        im.removeAttribute("data-full"); }catch(e){}
+    }));
+    var css=[].map.call(document.querySelectorAll("style"),function(s){return s.textContent;}).join("\n");
+    var html='<!doctype html><html lang="ne" data-theme="light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+      +'<title>'+esc(RP.ev.name+" · तालिम प्रतिवेदन")+'</title>'
+      +'<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;700;800&display=swap">'
+      +'<style>'+css+'</style></head><body class="rp-mode"><div class="wrap">'+doc.outerHTML+'</div></body></html>';
+    var a=document.createElement("a");
+    a.href=URL.createObjectURL(new Blob([html],{type:"text/html;charset=utf-8"}));
+    a.download=RP.ev.code+"-training-report.html";
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },1000);
+  }finally{ btn.disabled=false; btn.textContent=label; }
 }
 
 async function startReport(){
@@ -1706,6 +1778,11 @@ async function startReport(){
     ASSESS_LEVEL=RP.pkg?EVI.levelOf(RP.pkg.key):null; LV_CACHE={};
     try{ RP.profile=(await WS.getSiteProfile()).data||null; }catch(e){ RP.profile=null; }
     try{ RP.feedback=((await WS.listFeedback()).data||[]).filter(function(x){return x.event_code===RP.ev.code;}); }catch(e){ RP.feedback=[]; }
+    try{
+      var media=((await WS.listMedia(RP.ev.id)).data||[]).filter(function(m){return m.kind==="photo";});
+      media.sort(function(a,b){ return (b.featured?1:0)-(a.featured?1:0) || String(a.created_at).localeCompare(String(b.created_at)); });   // starred first, then in the order taken
+      RP.mediaMore=Math.max(0,media.length-24); RP.media=media.slice(0,24);
+    }catch(e){ RP.media=[]; RP.mediaMore=0; }
     try{ var mem=(await WS.listMemberships()).data||[]; RP.members=mem.filter(function(m){return m.event_id===RP.ev.id;}).length; }catch(e){ RP.members=null; }
     var res=await fetch(SB_URL+"/rest/v1/"+RESULTS+"?select=*&session_code=eq."+encodeURIComponent(REPORT_CODE)+"&order=submitted_at.asc",{headers:sbHeaders()});
     if(!res.ok) throw new Error("HTTP "+res.status);
