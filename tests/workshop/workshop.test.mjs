@@ -51,30 +51,27 @@ function checkPool(pool, lo, hi) {
   for (const q of pool) {
     assert.equal(q.o.length, 4, `q${q.id} has 4 options`);
     assert.equal(new Set(q.o).size, 4, `q${q.id} options are distinct`);
-    assert.ok(q.a >= 0 && q.a <= 3, `q${q.id} answer index in range`);
-    assert.ok(q.q && q.e, `q${q.id} has question and explanation`);
+    assert.ok(q.q, `q${q.id} has its question`);
+    // The answer key stays in the database (question_keys, trainer only): never in the public file.
+    assert.ok(!("a" in q) && !("e" in q), `q${q.id} carries no correct answer or explanation`);
   }
-  const pos = [0, 0, 0, 0];
-  pool.forEach((q) => pos[q.a]++);
-  assert.ok(Math.max(...pos) - Math.min(...pos) <= 2, `answer positions balanced: ${pos}`);
   return pool;
 }
 
-test("representative pool: 50 questions, ids 101-150, 10/25/15, balanced answers", () => {
+test("representative pool: 50 questions, ids 101-150, 10/25/15, no answer keys", () => {
   const ctx = load("assessment/pool-representative.js");
-  const pool = checkPool(Array.from(ctx.POOL_REPRESENTATIVE), 101, 150);
-  // Option length must not give the answer away: the correct option is never the single longest.
-  const giveaway = pool.filter((q) => {
-    const lens = q.o.map((x) => [...x].length);
-    const c = lens[q.a];
-    return lens.every((l, i) => i === q.a || l < c);
-  }).length;
-  assert.equal(giveaway, 0, "correct option is never the single longest");
+  checkPool(Array.from(ctx.POOL_REPRESENTATIVE), 101, 150);
 });
 
-test("employee pool: 50 questions, ids 1-50, 10/25/15, balanced answers", () => {
+test("employee pool: 50 questions, ids 1-50, 10/25/15, no answer keys", () => {
   const ctx = load("assessment/pool-employee.js");
   checkPool(Array.from(ctx.POOL_EMPLOYEE), 1, 50);
+});
+
+test("no other public file carries test answers", () => {
+  for (const f of ["assessment/questions-pre.js", "assessment/questions-post.js"]) assert.ok(!fs.existsSync(new URL("../../public/workshop/" + f, import.meta.url)), f + " removed");
+  const page = read("assessment/index.html");
+  assert.ok(!/[{,]a:\s*\d,/.test(page.replace(/<script id="sv-src">[\s\S]*?<\/script>/, "")), "the test page has no inline answer keys");
 });
 
 test("pools do not share ids", () => {

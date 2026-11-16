@@ -170,8 +170,8 @@ svg.rp-db{max-width:640px}
 <script src="../event-info.js?v=20261114b"></script>
 <script>EVI.home().then(EVI.mountHome).catch(function () {});</script>
 <script src="../course-outline.js?v=20261116a"></script>
-<script src="pool-employee.js"></script>
-<script src="pool-representative.js"></script>
+<script src="pool-employee.js?v=k2"></script>
+<script src="pool-representative.js?v=k2"></script>
 <script id="sv-src">
 /* Charts and statistics, built into the page (a separate file named stats-… is blocked by some ad blockers).
    Source: public/workshop/assessment/stats-viz.js; tests/workshop/stats-viz.test.mjs checks the two are the same. */
@@ -447,6 +447,23 @@ function levelItem(q){
   return (LV_CACHE[k] = c);
 }
 function itemsFor(ids){ return (ids||[]).map(function(id){return levelItem(POOL_BY_ID[id]);}).filter(Boolean); }
+/* The correct answers (a) and explanations (e) are not in the public question files. The trainer's
+   pages load them from the database (question_keys: trainer only); a participant gets them only in the
+   reply to a submitted test when the trainer has switched answers on. */
+var KEYS_LOADED=false;
+function applyKeys(list){
+  (list||[]).forEach(function(k){ var q=POOL_BY_ID[k.id]; if(q){ q.a=k.a; q.e=k.e; } });
+  LV_CACHE={};
+}
+async function loadKeys(){
+  if(KEYS_LOADED) return true;
+  try{
+    var res=await fetch(SB_URL+"/rest/v1/question_keys?select=id,a,e",{headers:sbHeaders()});
+    if(!res.ok) return false;
+    var rows=await res.json(); if(!rows.length) return false;
+    applyKeys(rows); KEYS_LOADED=true; return true;
+  }catch(e){ return false; }
+}
 
 
 var TRAINER = "sandhikharka-2083"; // प्रशिक्षकको पासकोड (यो बदल्न सकिन्छ)
@@ -708,6 +725,7 @@ async function publicReview(){
     st.test=PUB_TEST; st.bank=itemsFor(revIds); st.qids=revIds.slice(); st.code=code;
     st.gender=""; st.ageGroup=""; st.education="";
     st.result={answers:data.answers,score:data.score};
+    st.key=keyMap(data.key);
     st.save="saved"; st.phase="result";
     renderApp(); window.scrollTo(0,0);
   }catch(e){ err.textContent="जडानमा समस्या। फेरि प्रयास गर्नुहोस्।"; err.classList.remove("hide"); }
@@ -793,11 +811,15 @@ function saveNotice(){
 
 function viewResult(){
   var r=st.result, B=st.bank, N=B.length;
+  if(r.score===null||r.score===undefined){
+    return '<section class="card"><h2>तपाईंको परिणाम · '+esc(labelOf(TESTS,st.test))+'</h2>'+saveNotice()+'</section>';
+  }
   var p=pctOf(r.score,N);
   var rev="";
-  var showReview = st.reviewOpen===true || (!st.anon && st.test==="post");
+  var K=st.key||{};
+  var showReview = !!st.key && (st.reviewOpen===true || st.save==="saved");
   for(var i=0;showReview && i<N;i++){
-    var q=B[i];
+    var q=Object.assign({},B[i],K[B[i].id]||{});
     var mine=r.answers[i];
     var ok=mine===q.a;
     rev+='<article class="rev '+(ok?'ok':'bad')+'">'
@@ -820,7 +842,7 @@ function viewResult(){
    +saveNotice()
    +(showReview
       ? '<h3 style="margin-top:22px">प्रश्नगत समीक्षा</h3>'+rev
-      : '<p class="msg muted" style="margin-top:18px">सही उत्तरहरू तालिमपछि पश्च-परीक्षण सकिएपछि देखाइनेछ।</p>')
+      : '<p class="msg muted" style="margin-top:18px">सही उत्तरहरू प्रशिक्षकले खुला गरेपछि मात्र देखिन्छन्।</p>')
    +'<div class="row" style="margin-top:18px"><button class="primary" data-action="restart">नयाँ सहभागी सुरु गर्नुहोस्</button></div>'
    +'</section>';
 }
@@ -850,9 +872,9 @@ function beginExam(){
 
 async function submitExam(){
   var seconds=Math.round((Date.now()-st.startedAt)/1000);
-  var score=scoreOf(st.answers,st.bank);
-  var body={v:4,userId:(WS.session&&WS.session.user)?WS.session.user.id:null,session:SESSION,test:st.test,code:st.code.toUpperCase(),gender:st.gender,ageGroup:st.ageGroup,education:st.education,submittedAt:new Date().toISOString(),seconds:seconds,answers:st.answers.slice(),score:score,max:st.bank.length,qids:st.qids};
-  st.result={answers:body.answers,score:score};
+  var body={v:5,userId:(WS.session&&WS.session.user)?WS.session.user.id:null,session:SESSION,test:st.test,code:st.code.toUpperCase(),gender:st.gender,ageGroup:st.ageGroup,education:st.education,submittedAt:new Date().toISOString(),seconds:seconds,answers:st.answers.slice(),max:st.bank.length,qids:st.qids};
+  st.result={answers:body.answers,score:null};   // the score comes back from the database
+  st.key=null;
   st.phase="result";
   st.save="saving";
   renderApp();
@@ -860,13 +882,18 @@ async function submitExam(){
   st.body=body;
   await saveResult();
 }
-
 async function saveResult(){
   st.save="saving";
   renderApp();
   try{
-    var res=await fetch(SB_URL+"/rest/v1/"+RESULTS,{method:"POST",headers:sbHeaders({Prefer:"return=minimal"}),body:JSON.stringify(toRow(st.body))});
-    if(!res.ok){ throw {code:"HTTP "+res.status}; }
+    var b=st.body;
+    var res=await fetch(SB_URL+"/rest/v1/rpc/submit_assessment",{method:"POST",headers:sbHeaders(),body:JSON.stringify({p:{
+      test:b.test,session_code:b.session,code:b.code,gender:b.gender,age_group:b.ageGroup,education:b.education,
+      answers:b.answers,seconds:b.seconds,question_ids:b.qids}})});
+    var data=await res.json().catch(function(){return null;});
+    if(!res.ok||!data){ throw {code:(data&&data.message)?data.message:"HTTP "+res.status}; }
+    st.result.score=data.score;
+    st.key=keyMap(data.key);
     st.save="saved";
     if(st.anon){ markAnonDone(); }
   }catch(err){
@@ -875,8 +902,7 @@ async function saveResult(){
   }
   renderApp();
 }
-
-/* ---------- statistics ---------- */
+function keyMap(list){ if(!list||!list.length) return null; var m={}; list.forEach(function(k){ m[k.id]=k; }); return m; }
 function ranks(arr){
   var idx=arr.map(function(v,i){return [v,i];}).sort(function(a,b){return a[0]-b[0];});
   var r=new Array(arr.length);
@@ -956,7 +982,7 @@ function unlock(){
   trainerUnlocked=true;
   $("gate").classList.add("hide");
   $("dashBody").classList.remove("hide");
-  startLive();
+  loadKeys().then(startLive, startLive);
 }
 
 async function loadSessions(){
@@ -974,7 +1000,7 @@ async function loadRows(){
   var rows=await res.json();
   allRecords=rows.map(fromRow).filter(validRecord).map(function(r){
     var B=itemsFor(r.qids);
-    var sc=scoreOf(r.answers,B);
+    var sc=KEYS_LOADED?scoreOf(r.answers,B):(r.score||0);
     return {session:r.session||"",test:r.test,code:r.code,gender:r.gender,ageGroup:r.ageGroup,education:r.education,submittedAt:r.submittedAt||"",seconds:r.seconds||0,answers:r.answers,qids:r.qids,score:sc,pct:pctOf(sc,B.length)};
   }).sort(function(a,b){return b.pct-a.pct || String(a.submittedAt).localeCompare(String(b.submittedAt));});
   try{ await loadSessions(); }catch(e){}
@@ -1784,11 +1810,12 @@ async function startReport(){
       RP.mediaMore=Math.max(0,media.length-24); RP.media=media.slice(0,24);
     }catch(e){ RP.media=[]; RP.mediaMore=0; }
     try{ var mem=(await WS.listMemberships()).data||[]; RP.members=mem.filter(function(m){return m.event_id===RP.ev.id;}).length; }catch(e){ RP.members=null; }
+    await loadKeys();
     var res=await fetch(SB_URL+"/rest/v1/"+RESULTS+"?select=*&session_code=eq."+encodeURIComponent(REPORT_CODE)+"&order=submitted_at.asc",{headers:sbHeaders()});
     if(!res.ok) throw new Error("HTTP "+res.status);
     var rows=await res.json();
     allRecords=rows.map(fromRow).filter(validRecord).map(function(r){
-      var B=itemsFor(r.qids), sc=scoreOf(r.answers,B);
+      var B=itemsFor(r.qids), sc=KEYS_LOADED?scoreOf(r.answers,B):(r.score||0);
       return {session:r.session||"",test:r.test,code:r.code,gender:r.gender,ageGroup:r.ageGroup,education:r.education,submittedAt:r.submittedAt||"",seconds:r.seconds||0,answers:r.answers,qids:r.qids,score:sc,pct:pctOf(sc,B.length)};
     });
     sessionFilter=REPORT_CODE; applySessionFilter();

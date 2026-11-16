@@ -600,3 +600,97 @@ returns boolean language sql stable security definer set search_path = public as
                    and (coalesce(p_code, '') = '' or e.code = upper(p_code)));
 $$;
 grant execute on function public.materials_access(text) to anon, authenticated;
+
+-- 21. Test answer keys stay with the trainer. The question pools served to participants
+--     (assessment/pool-*.js) carry only the questions and options; the correct option and the
+--     explanation of each question live here, readable only by the trainer. Tests are scored in
+--     the database: a result's score is always worked out from its answers, whatever a page sends.
+--     The keys themselves are NOT in this repository (it is public): load them separately.
+--     remap: for results saved by a page that still had the earlier option order (key_version
+--     null), old option index -> current index.
+create table if not exists public.question_keys (
+  id    int primary key,
+  a     smallint not null check (a between 0 and 3),
+  e     text not null default '',
+  remap smallint[]
+);
+alter table public.question_keys enable row level security;
+revoke all on public.question_keys from anon, authenticated;
+grant select on public.question_keys to authenticated;
+drop policy if exists "question keys: trainer reads" on public.question_keys;
+create policy "question keys: trainer reads" on public.question_keys for select to authenticated using (public.is_trainer());
+
+alter table public.assessment_results add column if not exists key_version smallint;
+
+-- Score (and, for an older page, re-order) the answers of a result as it is saved.
+create or replace function public.score_result() returns trigger
+language plpgsql security definer set search_path = public as $$
+declare
+  n int := coalesce(array_length(new.question_ids, 1), 0);
+  found_keys int;
+  i int; x int; k record; v_out jsonb := '[]'::jsonb; s int := 0;
+begin
+  if n = 0 then return new; end if;
+  select count(*) into found_keys from public.question_keys where id = any(new.question_ids);
+  if found_keys < n then return new; end if;            -- keys not loaded: keep what the page sent
+  for i in 1..n loop
+    x := case when jsonb_typeof(new.answers -> (i - 1)) = 'number' then (new.answers ->> (i - 1))::int else -1 end;
+    select a, remap into k from public.question_keys where id = new.question_ids[i];
+    if new.key_version is null and k.remap is not null and x between 0 and 3 then x := k.remap[x + 1]; end if;
+    v_out := v_out || to_jsonb(x);
+    if x = k.a then s := s + 1; end if;
+  end loop;
+  new.answers := v_out; new.score := s; new.max_score := n; new.key_version := 2;
+  return new;
+end;
+$$;
+drop trigger if exists assessment_results_score on public.assessment_results;
+create trigger assessment_results_score before insert on public.assessment_results
+  for each row execute function public.score_result();
+
+-- Save a test and return its score; the correct answers and explanations come back only when the
+-- trainer has switched them on for that test (or, for a signed-in participant, after the post-test).
+create or replace function public.submit_assessment(p jsonb)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare
+  v_uid uuid := auth.uid();
+  v_test text := p ->> 'test';
+  v_ids int[];
+  e record; r record; v_show boolean;
+begin
+  select * into e from public.events where code = upper(p ->> 'session_code');
+  if not found then raise exception 'no such event'; end if;
+  if not ((v_test = 'pre' and e.pre_open) or (v_test = 'post' and e.post_open)) then raise exception 'this test is closed'; end if;
+  v_ids := array(select jsonb_array_elements_text(p -> 'question_ids')::int);
+  if v_ids is distinct from e.question_ids then raise exception 'the question set has changed; reload the page'; end if;
+  if v_uid is not null and not exists (select 1 from public.profiles where id = v_uid and status = 'approved' and event_id = e.id) then
+    raise exception 'not registered for this event';
+  end if;
+  insert into public.assessment_results (test, code, gender, age_group, education, answers, seconds, submitted_at, session_code, user_id, question_ids, key_version)
+  values (v_test, left(upper(coalesce(p ->> 'code', '')), 40), p ->> 'gender', p ->> 'age_group', p ->> 'education',
+          coalesce(p -> 'answers', '[]'::jsonb), nullif(p ->> 'seconds', '')::int, now(), e.code, v_uid, v_ids, 2)
+  returning score, max_score into r;
+  v_show := (v_test = 'pre' and e.pre_answers) or (v_test = 'post' and e.post_answers) or (v_uid is not null and v_test = 'post');
+  return jsonb_build_object('score', r.score, 'max', r.max_score,
+    'key', case when v_show then (select jsonb_agg(jsonb_build_object('id', k.id, 'a', k.a, 'e', k.e)) from public.question_keys k where k.id = any(v_ids)) end);
+end;
+$$;
+revoke all on function public.submit_assessment(jsonb) from public;
+grant execute on function public.submit_assessment(jsonb) to anon, authenticated;
+
+-- Review by participant code (QR survey): answers, score and now the key, only while answers are on.
+create or replace function public.public_review(p_code text, p_test text, p_participant text)
+returns jsonb language sql stable security definer set search_path = public as $$
+  select jsonb_build_object('answers', r.answers, 'score', r.score, 'max', r.max_score,
+    'key', (select jsonb_agg(jsonb_build_object('id', k.id, 'a', k.a, 'e', k.e)) from public.question_keys k where k.id = any(r.question_ids)))
+  from public.assessment_results r
+  join public.events e on e.code = r.session_code
+  where e.code = upper(p_code)
+    and r.session_code = upper(p_code)
+    and r.test = p_test
+    and r.code = upper(p_participant)
+    and r.user_id is null
+    and ((p_test = 'pre' and e.pre_answers) or (p_test = 'post' and e.post_answers))
+  order by r.submitted_at asc
+  limit 1;
+$$;

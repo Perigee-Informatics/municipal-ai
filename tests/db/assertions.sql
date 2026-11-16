@@ -228,3 +228,31 @@ select pg_temp.check(not public.materials_access('TST-02'), 'private event: a pa
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000001', false);
 select pg_temp.check(public.materials_access('TST-02'), 'the trainer always sees the materials');
 reset role;
+
+-- ---- 15. test answer keys and scoring in the database ----
+insert into public.question_keys (id, a, e, remap) values (9001, 2, 'because', '{1,2,3,0}'), (9002, 0, 'why', '{0,1,2,3}');
+update public.events set question_ids = '{9001,9002}', pre_open = true, pre_answers = false where code = 'TST-01';
+select set_config('request.jwt.claim.sub', '', false);
+set role anon;
+select pg_temp.expect_error($q$select * from public.question_keys$q$, 'visitors cannot read the answer keys');
+select pg_temp.check((public.submit_assessment('{"test":"pre","session_code":"tst-01","code":"q1","gender":"Male","age_group":"20-30","education":"Undergraduate","answers":[2,0],"seconds":60,"question_ids":[9001,9002]}'::jsonb) ->> 'score')::int = 2, 'a test is scored in the database');
+select pg_temp.check((public.submit_assessment('{"test":"pre","session_code":"TST-01","code":"q2","gender":"Male","age_group":"20-30","education":"Undergraduate","answers":[2,0],"question_ids":[9001,9002]}'::jsonb) -> 'key') = 'null'::jsonb, 'no answer key while answers are off');
+select pg_temp.expect_error($q$select public.submit_assessment('{"test":"post","session_code":"TST-01","code":"q3","answers":[0,0],"question_ids":[9001,9002]}'::jsonb)$q$, 'a closed test is refused');
+insert into public.assessment_results (test, code, gender, age_group, education, answers, score, max_score, session_code, question_ids)
+  values ('pre', 'Q4', 'Male', '20-30', 'Undergraduate', '[1,0]', 0, 2, 'TST-01', '{9001,9002}');
+insert into public.assessment_results (test, code, gender, age_group, education, answers, score, max_score, session_code, question_ids)
+  values ('pre', 'Q5', 'Male', '20-30', 'Undergraduate', '[0,1]', 2, 2, 'TST-01', '{9001,9002}');
+reset role;
+select pg_temp.check((select score = 2 and answers = '[2,0]'::jsonb from public.assessment_results where code = 'Q4'), 'an older page''s answers are put in the new order and scored');
+select pg_temp.check((select score = 0 from public.assessment_results where code = 'Q5'), 'a score sent by the page is not trusted');
+update public.events set pre_answers = true where code = 'TST-01';
+set role anon;
+select pg_temp.check(jsonb_array_length(public.public_review('TST-01', 'pre', 'q1') -> 'key') = 2, 'answers switched on: the review carries the key');
+select pg_temp.check(jsonb_array_length(public.submit_assessment('{"test":"pre","session_code":"TST-01","code":"q6","gender":"Male","age_group":"20-30","education":"Undergraduate","answers":[2,0],"question_ids":[9001,9002]}'::jsonb) -> 'key') = 2, 'answers switched on: the result carries the key');
+reset role;
+set role authenticated;
+select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000003', false);
+select pg_temp.check((select count(*) = 0 from public.question_keys), 'a participant cannot read the answer keys');
+select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000001', false);
+select pg_temp.check((select count(*) = 2 from public.question_keys), 'the trainer reads the answer keys');
+reset role;
