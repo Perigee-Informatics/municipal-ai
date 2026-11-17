@@ -184,7 +184,7 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
     </div>
 
     <div class="tabpanel" id="tab-contents">
-      <p class="row between small" style="margin:10px 0 0"><span class="muted">कक्षा सञ्चालन: माथिको पट्टीबाट जुनसुकै सत्र, क्रियाकलाप वा कार्यक्रम तालिका एकै थिचाइमा खोल्नुहोस्। किबोर्डमा सत्र नम्बर थिच्दा (जस्तै ५, वा १ र १ = ११) सिधै त्यो सत्र खुल्छ।</span>
+      <p class="row between small" style="margin:10px 0 0"><span class="muted">कक्षा सञ्चालन: माथिको पट्टीबाट जुनसुकै सत्र, क्रियाकलाप वा कार्यक्रम तालिका एकै थिचाइमा खोल्नुहोस्। किबोर्डमा सत्र नम्बर थिच्दा (जस्तै ५, वा १ र १ = ११) सिधै त्यो सत्र खुल्छ; अक्षर ठूलो/सानो गर्न + / − थिच्नुहोस्।</span>
         <span><button type="button" id="teachFull">⛶ पूरा स्क्रिन</button> <a id="contOpen" target="_blank" rel="noopener">नयाँ ट्याबमा ↗</a></span></p>
       <iframe class="frame teach" id="contFrame" title="कक्षा सञ्चालन: सत्र र सामग्री" allow="fullscreen" allowfullscreen></iframe>
     </div>
@@ -268,6 +268,7 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
     if (e.ctrlKey || e.metaKey || e.altKey || !$("tab-contents").classList.contains("on")) return;
     var t = e.target; if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
     var k = /^[0-9]$/.test(e.key) ? e.key : ("०१२३४५६७८९".indexOf(e.key) >= 0 ? String("०१२३४५६७८९".indexOf(e.key)) : null);
+    if (e.key === "+" || e.key === "=") k = "+"; else if (e.key === "-" || e.key === "_") k = "-";   // text size
     if (k === null) return;
     try { var tb = $("contFrame").contentWindow.TeachBar; if (tb) tb.key(k); } catch (err) {}
   });

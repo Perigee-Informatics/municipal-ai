@@ -20,7 +20,10 @@
   function css() {
     var s = document.createElement("style");
     s.textContent =
-      ".tb{position:sticky;top:56px;z-index:30;background:var(--surface);border-bottom:1px solid var(--line);padding:8px 12px;display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center}" +
+      ".tb{position:sticky;top:56px;z-index:30;background:var(--surface);border-bottom:1px solid var(--line);padding:8px 12px;display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;align-items:center}" +
+      ".tb-size{display:flex;gap:4px;align-items:center}.tb-size button{font:inherit;font-size:14px;font-weight:700;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);min-width:36px;height:34px;cursor:pointer}" +
+      ".tb-size span{font-size:12px;color:var(--muted);min-width:38px;text-align:center;font-variant-numeric:tabular-nums}" +
+      "body.tb-fit main .wrap{margin-inline:auto}" +
       "body.tb-embed .tb{top:0}" +
       ".tb-rows{min-width:0;display:flex;flex-direction:column;gap:6px}" +
       ".tb-row{display:flex;gap:6px;align-items:center;overflow-x:auto;scrollbar-width:thin;padding-bottom:2px}" +
@@ -61,12 +64,37 @@
     }).join("");
     h = '<button type="button" class="tb-nav" id="tbPrev" aria-label="अघिल्लो"' + (idx <= 0 ? ' disabled' : '') + '>‹</button>' +
       '<div class="tb-rows">' + rows + '</div>' +
-      '<button type="button" class="tb-nav" id="tbNext" aria-label="अर्को"' + (idx < 0 || idx >= order.length - 1 ? ' disabled' : '') + '>›</button>';
+      '<button type="button" class="tb-nav" id="tbNext" aria-label="अर्को"' + (idx < 0 || idx >= order.length - 1 ? ' disabled' : '') + '>›</button>' +
+      '<span class="tb-size" role="group" aria-label="अक्षरको आकार"><button type="button" id="tbSmaller" title="सानो (−)">A−</button><span id="tbZoom"></span><button type="button" id="tbBigger" title="ठूलो (+)">A+</button></span>';
     bar.innerHTML = h;
     var on = bar.querySelector("a[aria-current]");
     if (on) { try { on.scrollIntoView({ block: "nearest", inline: "center" }); } catch (e) {} }
     document.getElementById("tbPrev").onclick = function () { go(idx - 1); };
     document.getElementById("tbNext").onclick = function () { go(idx + 1); };
+    document.getElementById("tbSmaller").onclick = function () { setAdj(adj / 1.12); };
+    document.getElementById("tbBigger").onclick = function () { setAdj(adj * 1.12); };
+    fit();
+  }
+
+  /* Fill the screen: the lesson column (about 1000 px) is enlarged to the window's width and kept in the
+     middle, so in full screen on a projector the text is large and there is no empty right half.
+     A− / A+ (or the − and + keys) adjust it further; the choice is remembered on this device. */
+  var adj = 1;
+  try { adj = parseFloat(localStorage.getItem("tb-zoom")) || 1; } catch (e) {}
+  function fit() {
+    if (!bar) return;
+    var base = Math.max(1, Math.min(2.4, window.innerWidth / 1100));
+    var z = Math.max(0.7, Math.min(3, base * adj));
+    var main = document.getElementById("main") || document.querySelector("main");
+    document.body.classList.add("tb-fit");
+    if (main) main.style.zoom = z.toFixed(3);
+    bar.style.zoom = Math.min(z, 1.5).toFixed(3);
+    var lab = document.getElementById("tbZoom"); if (lab) lab.textContent = dn(Math.round(z * 100)) + "%";
+  }
+  function setAdj(v) {
+    adj = Math.max(0.6, Math.min(2.5, v));
+    try { localStorage.setItem("tb-zoom", String(adj)); } catch (e) {}
+    fit();
   }
   function go(i) { if (i >= 0 && i < order.length) location.hash = order[i]; }
 
@@ -89,6 +117,8 @@
     var t = e.target; if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
     var k = /^[0-9]$/.test(e.key) ? e.key : (DEV.indexOf(e.key) >= 0 ? String(DEV.indexOf(e.key)) : null);   // Nepali keyboards type ०-९
     if (k !== null) digit(k);
+    else if (e.key === "+" || e.key === "=") setAdj(adj * 1.12);
+    else if (e.key === "-" || e.key === "_") setAdj(adj / 1.12);
   }
 
   window.TeachBar = {
@@ -114,9 +144,13 @@
         a.target = "_blank"; a.rel = "noopener";
       }, true);
       render((location.hash || "#home").slice(1) || "home");
+      window.addEventListener("resize", fit);
     },
     update: function (cur) { if (TEACH) render(cur); },
-    key: function (k) { if (TEACH && cfg) digit(String(k)); }   // the event page passes on digits typed while it has the focus
+    key: function (k) {
+      if (!TEACH || !cfg) return;
+      if (k === "+") setAdj(adj * 1.12); else if (k === "-") setAdj(adj / 1.12); else digit(String(k));
+    }   // the event page passes on digits typed while it has the focus
   };
   if (EMBED) { if (document.body) document.body.classList.add("tb-embed"); else document.addEventListener("DOMContentLoaded", function () { document.body.classList.add("tb-embed"); }); }
 })();
