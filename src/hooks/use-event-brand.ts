@@ -18,7 +18,8 @@ const STORE_KEY = "ws-event";
 export function normalizeOrg(raw: string | null | undefined): string {
   const org = (raw ?? "").trim();
   if (!org) return "";
-  return /पालिका/.test(org) ? org : `${org} पालिका`;
+  // A municipality written without "पालिका" gets it; an organisation (a CSO, in English) does not.
+  return /पालिका/.test(org) || /[A-Za-z]/.test(org) ? org : `${org} पालिका`;
 }
 
 function urlCode(): string {
@@ -130,9 +131,9 @@ export async function loadEventBrand(): Promise<EventBrand | null> {
   return null;
 }
 
-/* The header line used on the app pages: "<organiser> · AI तालिम", or "AI तालिम". */
+/* The header line used on the app pages: "<organiser> · AI for ALL", or "AI for ALL". */
 export function brandLine(brand: EventBrand | null): string {
-  return brand ? `${brand.org} · AI तालिम` : "AI तालिम";
+  return brand ? `${brand.org} · AI for ALL` : "AI for ALL";
 }
 
 /* Loads the brand once; when `title` is given, the browser tab becomes "<title> · <organiser>". */

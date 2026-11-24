@@ -18,12 +18,13 @@ import {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "AI तालिम · स्थानीय तहका कर्मचारी र जनप्रतिनिधिका लागि" },
+      { title: "AI for ALL · सबैका लागि व्यावहारिक AI तालिम" },
       {
         name: "description",
         content:
-          "नगरपालिका र गाउँपालिकाका कर्मचारी तथा जनप्रतिनिधिका लागि व्यावहारिक AI तालिम: तालिम सामग्री, परीक्षा र कार्यक्रमका झलक।",
+          "AI for ALL: municipal employees, elected representatives and civil society organisations (CSOs) learn to use AI safely in their daily work. नगरपालिका, गाउँपालिका र नागरिक समाज संस्थाका लागि व्यावहारिक AI तालिम: सामग्री, परीक्षा र कार्यक्रमका झलक।",
       },
+      { property: "og:title", content: "AI for ALL · सबैका लागि व्यावहारिक AI तालिम" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -50,7 +51,9 @@ const C = {
 const body = { fontFamily: "'Mukta', 'Nirmala UI', 'Noto Sans Devanagari', system-ui, sans-serif" };
 const display = { fontFamily: "'Rozha One', 'Mukta', 'Noto Serif Devanagari', Georgia, serif" };
 
-const COURSES = [
+type Course = { course: string; level: string; text: string; lang?: "en" };
+
+const COURSES: Course[] = [
   {
     course: "कर्मचारीका लागि AI",
     level: "नगरपालिका",
@@ -70,6 +73,12 @@ const COURSES = [
     course: "जनप्रतिनिधिका लागि AI",
     level: "गाउँपालिका",
     text: "अध्यक्ष, उपाध्यक्ष, वडाध्यक्ष र सदस्यहरूका लागि सोही एकदिने कार्यशाला, गाउँ सभा र गाउँ कार्यपालिकाको सन्दर्भमा।",
+  },
+  {
+    course: "AI for CSOs",
+    level: "नागरिक समाज संस्था (CSO)",
+    lang: "en",
+    text: "A 5-hour hands-on workshop for programme, M&E, communication, finance and field staff: Nepali voice typing, prompting, minutes and reports, campaigns, proposals and logframes, and the traffic-light rules for safe, responsible AI. Each CSO gets its own use case.",
   },
 ];
 
@@ -112,10 +121,10 @@ function Landing() {
         <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
           <a href="/" className="flex items-baseline gap-2 no-underline" style={{ color: C.ink }}>
             <span style={{ ...display, color: C.accent }} className="text-2xl">
-              AI तालिम
+              AI for ALL
             </span>
             <span className="hidden text-sm sm:inline" style={{ color: C.muted }}>
-              स्थानीय तहका लागि
+              सबैका लागि AI तालिम
             </span>
           </a>
           <nav className="ml-auto flex items-center gap-1 text-[15px] sm:gap-4">
@@ -141,14 +150,19 @@ function Landing() {
         <section className="mx-auto grid max-w-6xl gap-8 px-4 pb-10 pt-10 md:grid-cols-[1.25fr_1fr] md:pt-16">
           <div className="min-w-0">
             <p className="text-sm font-bold tracking-wide" style={{ color: C.accent }}>
-              नगरपालिका र गाउँपालिकाका लागि व्यावहारिक तालिम
+              स्थानीय तह र नागरिक समाजका लागि व्यावहारिक तालिम · Practical AI training
             </p>
             <h1 style={display} className="mt-2 text-4xl leading-tight sm:text-5xl">
-              कर्मचारी र जनप्रतिनिधिका लागि कृत्रिम बौद्धिकता (AI)
+              AI for ALL: सबैका लागि कृत्रिम बौद्धिकता (AI)
             </h1>
             <p className="mt-4 max-w-xl text-lg" style={{ color: C.muted }}>
-              आफ्नै मोबाइलमा, नेपाली भाषामै, निःशुल्क AI उपकरण प्रयोग गरी पत्र, सूचना, प्रतिवेदन,
-              माइन्युट र योजना छनौटजस्ता दैनिक काम छिटो, शुद्ध र जिम्मेवार ढंगले गर्ने सीप।
+              कर्मचारी, जनप्रतिनिधि र नागरिक समाज संस्था (CSO) का कर्मचारीले आफ्नै मोबाइलमा, नेपाली
+              भाषामै, निःशुल्क AI उपकरण प्रयोग गरी पत्र, सूचना, प्रतिवेदन, माइन्युट, अभियान र
+              प्रस्तावजस्ता दैनिक काम छिटो, शुद्ध र जिम्मेवार ढंगले गर्ने सीप।
+            </p>
+            <p className="mt-2 max-w-xl text-[15px]" style={{ color: C.muted }} lang="en">
+              Hands-on AI training for municipal staff, elected representatives and civil society
+              organisations: safe, verified and in your own language.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <a
@@ -176,7 +190,17 @@ function Landing() {
                 <p className="text-xs font-bold tracking-wider" style={{ color: C.accent }}>
                   अहिलेको तालिम
                 </p>
-                <p className="mt-1 text-xl font-bold">{active.name}</p>
+                <p className="mt-1 text-xl font-bold">
+                  {active.name}
+                  {active.course === "cso" && (
+                    <span
+                      className="ml-2 rounded-full px-2 py-0.5 align-middle text-xs font-bold text-white"
+                      style={{ background: C.navy }}
+                    >
+                      AI for CSOs
+                    </span>
+                  )}
+                </p>
                 <p className="mt-1 text-[15px]" style={{ color: C.muted }}>
                   {[active.organizedBy, active.place, active.dates].filter(Boolean).join(" · ")}
                 </p>
@@ -190,18 +214,20 @@ function Landing() {
         <section className="border-y bg-white" style={{ borderColor: C.line }}>
           <div className="mx-auto max-w-6xl px-4 py-12">
             <h2 style={display} className="text-3xl">
-              चार तालिम प्याकेज
+              पाँच तालिम प्याकेज
             </h2>
             <p className="mt-2 max-w-2xl" style={{ color: C.muted }}>
               पाठ उही, सन्दर्भ फरक: नगरपालिका र गाउँपालिकाका पद, कार्यपालिका र सभा अनुसार शब्द र
-              उदाहरण मिलाइएका छन्।
+              उदाहरण मिलाइएका छन्; नागरिक समाज संस्थाका लागि प्रत्येक संस्थाको आफ्नै उपयोग प्रसङ्ग
+              (use case)।
             </p>
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
               {COURSES.map((c) => (
                 <article
                   key={c.course + c.level}
-                  className="rounded-2xl border p-5"
-                  style={{ borderColor: C.line, background: C.bg }}
+                  lang={c.lang}
+                  className={`rounded-2xl border p-5${c.lang === "en" ? " sm:col-span-2" : ""}`}
+                  style={{ borderColor: c.lang === "en" ? C.navy : C.line, background: C.bg }}
                 >
                   <p className="text-sm font-bold" style={{ color: C.accent }}>
                     {c.level}
@@ -308,7 +334,7 @@ function Landing() {
         className="border-t py-8 text-center text-sm"
         style={{ borderColor: C.line, color: C.muted }}
       >
-        AI तालिम · {profile.name}
+        AI for ALL · {profile.name}
         {profile.linkedinUrl && (
           <>
             {" · "}

@@ -62,7 +62,8 @@
     /* org: the organiser as entered ("पाणिनी गाउँपालिका, अर्घाखाँची"); orgName: just the
        municipality ("पाणिनी गाउँपालिका"), used inside the material text; orgShort: "पाणिनी". */
     var org = String(ev.organized_by || "").trim().replace(/\s+/g, " ");
-    if (org && !/पालिका/.test(org)) org += " पालिका";
+    // A municipality written without "पालिका" gets it; an organisation (a CSO, in English) does not.
+    if (org && !/पालिका/.test(org) && !/[A-Za-z]/.test(org)) org += " पालिका";
     var m = org.match(/^(.*?)\s*(उपमहानगरपालिका|महानगरपालिका|नगरपालिका|गाउँपालिका|पालिका)/);
     var orgName = m ? (m[1] ? m[1].trim() + " " : "") + m[2] : org;
     var short = m ? m[1].replace(/[,\s]+$/, "").trim() : "";
@@ -158,15 +159,24 @@
      employee-rural           = employees, rural municipality (गाउँपालिका)
      representative           = representatives, rural municipality         — the representative text as written
      representative-municipal = representatives, municipality */
-  var BASE_LEVEL = { employee: "municipal", representative: "rural" };
-  function courseOf(key) { return String(key || "").indexOf("representative") === 0 ? "representative" : "employee"; }
+  /* cso = AI for CSOs (civil society organisations): one level, English materials (cso/index.html). */
+  var BASE_LEVEL = { employee: "municipal", representative: "rural", cso: "cso" };
+  function courseOf(key) {
+    key = String(key || "");
+    if (key.indexOf("representative") === 0) return "representative";
+    if (key.indexOf("cso") === 0) return "cso";
+    return "employee";
+  }
   function levelOf(key) {
     key = String(key || "");
+    if (courseOf(key) === "cso") return "cso";
     if (/-rural$/.test(key)) return "rural";
     if (/-municipal$/.test(key)) return "municipal";
     return BASE_LEVEL[courseOf(key)];
   }
-  var LEVEL_LABEL = { municipal: "नगरपालिका", rural: "गाउँपालिका" };
+  var LEVEL_LABEL = { municipal: "नगरपालिका", rural: "गाउँपालिका", cso: "CSO" };
+  /* The page of each course's materials. */
+  var COURSE_PAGE = { employee: "/workshop/index.html", representative: "/workshop/representative/index.html", cso: "/workshop/cso/index.html" };
   /* Wording rules that turn text written for the other level into this level. Order matters
      (longer phrases first); no rule's output matches another rule, so applying them twice changes
      nothing. Staff titles (प्रमुख प्रशासकीय अधिकृत, शाखा प्रमुख) and वडाध्यक्ष are the same at both
@@ -212,6 +222,16 @@
   /* The level a course page shows: ?level= (trainer preview), else the event's, else the last one
      shown for this course on this device, else the course's own level. */
   function levelParam() { var l = String(new URLSearchParams(location.search).get("level") || ""); return l === "rural" || l === "municipal" ? l : ""; }
+  /* AD dates in English for the CSO materials: "28 November 2026", "28–29 November 2026". */
+  var EN_MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  function enDate(iso) { var p = String(iso || "").slice(0, 10).split("-").map(Number); return p.length === 3 && !p.some(isNaN) ? p[2] + " " + EN_MONTHS[p[1] - 1] + " " + p[0] : ""; }
+  function enRange(list) {
+    list = (list || []).slice().sort();
+    if (!list.length) return "";
+    if (list.length === 1) return enDate(list[0]);
+    var a = list[0].split("-"), b = list[list.length - 1].split("-");
+    return a[0] === b[0] && a[1] === b[1] ? Number(a[2]) + "–" + enDate(list[list.length - 1]) : enDate(list[0]) + " – " + enDate(list[list.length - 1]);
+  }
   /* Remembered per event code (so a page opened for that event shows its wording at once), and per
      course as a fallback. */
   function rememberLevel(course, level, code) {
@@ -300,18 +320,19 @@
       if (WS.session && !WS.profile) { try { await WS.loadProfile(); } catch (e) {} }
       if (WS.session && !WS.profile) { homePromise = null; return fallback; }
       if (WS.isTrainer()) return { href: "/workshop/admin.html", label: "प्रशिक्षक गृहपृष्ठ" };
-      var rep = { href: "/workshop/representative/index.html", label: "गृहपृष्ठ" };
+      var rep = { href: COURSE_PAGE.representative, label: "गृहपृष्ठ" };
+      var byCourse = function (key) { var c = courseOf(key); return c === "representative" ? rep : c === "cso" ? { href: COURSE_PAGE.cso, label: "Home" } : fallback; };
       if (WS.session && WS.profile && WS.profile.event_id) {
         try {
           var ev = await WS.loadEventForProfile();
           var pk = ((await WS.listPackages()).data || []).filter(function (p) { return ev && p.id === ev.package_id; })[0];
-          if (pk) return courseOf(pk.key) === "representative" ? rep : fallback;
+          if (pk) return byCourse(pk.key);
         } catch (e) {}
       }
       if (!WS.session) return landing;
       // A signed-in participant without an event: the course of the active event.
       var act = await rpc("active_event_brand");
-      return act && courseOf(act.package_key) === "representative" ? rep : fallback;
+      return act ? byCourse(act.package_key) : fallback;
     })();
     return homePromise;
   }
@@ -335,7 +356,7 @@
   /* The link a participant opens for an event: that event's course materials. Someone not signed
      in is asked to sign in (or register) and is then brought back to this same event. */
   function eventLink(code, packageKey) {
-    var page = courseOf(packageKey) === "representative" ? "/workshop/representative/index.html" : "/workshop/index.html";
+    var page = COURSE_PAGE[courseOf(packageKey)];
     return location.origin + page + "?event=" + encodeURIComponent(String(code || "").trim().toUpperCase());
   }
   function qrMatrix(text) {
@@ -364,6 +385,6 @@
     return cv.toDataURL("image/png");
   }
 
-  window.EVI = { eventLink: eventLink, qrSvg: qrSvg, qrPng: qrPng, courseOf: courseOf, levelOf: levelOf, levelRules: levelRules, levelOfEvent: levelOfEvent, levelParam: levelParam,
+  window.EVI = { COURSE_PAGE: COURSE_PAGE, enDate: enDate, enRange: enRange, eventLink: eventLink, qrSvg: qrSvg, qrPng: qrPng, courseOf: courseOf, levelOf: levelOf, levelRules: levelRules, levelOfEvent: levelOfEvent, levelParam: levelParam,
     rememberLevel: rememberLevel, storedLevel: storedLevel, BASE_LEVEL: BASE_LEVEL, LEVEL_LABEL: LEVEL_LABEL, home: home, mountHome: mountHome, resolve: resolve, info: info, toBS: toBS, fmtFull: fmtFull, fmtRange: fmtRange, fill: fill, fillDeep: fillDeep, employeeRules: employeeRules, representativeRules: representativeRules, dn: dn };
 })();

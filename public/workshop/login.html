@@ -95,7 +95,7 @@ a{color:var(--accent)}
 </div>
 
 <script src="account.js?v=20261116c"></script>
-<script src="event-info.js?v=20261114b"></script>
+<script src="event-info.js?v=20261124a"></script>
 <script>EVI.home().then(EVI.mountHome).catch(function () {});</script>
 <script>
 /* Organiser of the event this visitor came for (link with ?event=CODE, or their own event once signed in). */
@@ -133,7 +133,7 @@ EVI.resolve().then(function (ev) { var i = EVI.info(ev); if (i && i.org) documen
   var explicitNext = !!new URLSearchParams(location.search).get("next");
   function destinationFor(ev) {
     if (explicitNext || !ev) return next;
-    var page = window.EVI && EVI.courseOf(ev.package_key) === "representative" ? "representative/index.html" : "index.html";
+    var page = window.EVI ? EVI.COURSE_PAGE[EVI.courseOf(ev.package_key)].replace("/workshop/", "") : "index.html";
     return page + "?event=" + encodeURIComponent(ev.code);
   }
   async function chooseEventThenGo() {
@@ -159,8 +159,8 @@ EVI.resolve().then(function (ev) { var i = EVI.info(ev); if (i && i.org) documen
     card.innerHTML = '<h2 style="margin-top:0">कुन तालिम?</h2><p class="muted">' + esc(name) + 'तपाईं ' + list.length + ' वटा तालिममा सहभागी हुनुहुन्छ। अहिले कुन तालिमको सामग्री र परीक्षा हेर्ने हो, छान्नुहोस्।</p>' +
       list.map(function (ev) {
         var i = window.EVI ? EVI.info(ev) : null;
-        var lvl = window.EVI ? EVI.LEVEL_LABEL[EVI.levelOf(ev.package_key)] : "";
-        var course = window.EVI && EVI.courseOf(ev.package_key) === "representative" ? "जनप्रतिनिधिका लागि AI" : "कर्मचारीका लागि AI";
+        var lvl = window.EVI && EVI.courseOf(ev.package_key) !== "cso" ? EVI.LEVEL_LABEL[EVI.levelOf(ev.package_key)] : "";
+        var course = { representative: "जनप्रतिनिधिका लागि AI", cso: "AI for CSOs", employee: "कर्मचारीका लागि AI" }[window.EVI ? EVI.courseOf(ev.package_key) : "employee"];
         return '<button type="button" class="ev-choice' + (ev.current ? ' cur' : '') + '" data-choose="' + esc(ev.event_id) + '">' +
           '<strong>' + esc(ev.name) + '</strong>' + (ev.current ? ' <span class="small">(अहिलेको)</span>' : '') +
           '<span class="small muted">' + esc([course + (lvl ? " · " + lvl : ""), i && i.org, i && i.dateRange].filter(Boolean).join(" · ")) + '</span></button>';

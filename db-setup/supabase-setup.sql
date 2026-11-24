@@ -694,3 +694,14 @@ returns jsonb language sql stable security definer set search_path = public as $
   order by r.submitted_at asc
   limit 1;
 $$;
+
+-- 22. AI for CSOs (civil society organisations): a third course, key 'cso', with its own page
+--     (cso/index.html, in English), question pool (assessment/pool-cso.js, ids 201-210: every event
+--     uses all 10) and trainer-only facilitator keys (exercise_answers, package_key 'cso').
+--     The answer keys (question_keys 201-210, exercise_answers cso-*) are NOT in this repository:
+--     load them separately, as for the other courses.
+alter table public.exercise_answers drop constraint if exists exercise_answers_package_key_check;
+alter table public.exercise_answers add constraint exercise_answers_package_key_check
+  check (package_key in ('employee', 'representative', 'cso'));
+insert into public.training_packages (key, name) values ('cso', 'AI for CSOs')
+on conflict (key) do nothing;

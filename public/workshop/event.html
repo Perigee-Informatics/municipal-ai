@@ -214,7 +214,7 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
 
 <script src="/workshop/vendor/qrcode.js?v=1.4.4"></script>
 <script src="/workshop/account.js?v=20261116c"></script>
-<script src="/workshop/event-info.js?v=20261114b"></script>
+<script src="/workshop/event-info.js?v=20261124a"></script>
 <script src="/workshop/trainer-nav.js?v=20261116b"></script>
 <script src="/workshop/media.js?v=20261114b"></script>
 <script>
@@ -224,8 +224,9 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
   var dn = EVI.dn;
   var CODE = String(new URLSearchParams(location.search).get("event") || "").trim().toUpperCase();
   var EV = null, PKG = null, PAGE = "/workshop/index.html", loaded = {};
-  /* Feedback questions, in the order the forms send them (representative/index.html QS, index.html FBQ). */
+  /* Feedback questions, in the order the forms send them (representative/index.html QS, cso/index.html QS, index.html FBQ). */
   var QS_BY_PKG = {
+    cso: ["Overall, today was useful for my work", "The pace was right for me", "The language and examples were easy to follow", "There was enough hands-on practice", "The exercises fitted our CSO's real work", "The facilitator and helpers supported me well"],
     representative: ["कार्यशाला मेरो कामका लागि उपयोगी थियो", "सिकाइको गति मलाई ठिक्क थियो", "भाषा बुझ्न सजिलो थियो", "आफैँ गरेर सिक्ने पर्याप्त अवसर मिल्यो", "आयोजना छनौट अभ्यास वास्तविक जस्तो लाग्यो", "सहजकर्ता र सहयोगीबाट राम्रो सहयोग मिल्यो"],
     employee: ["तालिम मेरो कामका लागि उपयोगी थियो", "सिकाइको गति मलाई ठिक्क थियो", "भाषा बुझ्न सजिलो थियो", "आफैँ गरेर सिक्ने पर्याप्त अवसर मिल्यो", "अभ्यास र उदाहरण मेरो दैनिक कामसँग मिल्दा थिए", "विज्ञ र सहयोगीबाट राम्रो सहयोग मिल्यो"]
   };
@@ -523,7 +524,7 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
       step = "प्याकेज";
       var pk = (await WS.listPackages()).data || [];
       PKG = pk.filter(function (p) { return p.id === EV.package_id; })[0] || null;
-      PAGE = PKG && EVI.courseOf(PKG.key) === "representative" ? "/workshop/representative/index.html" : "/workshop/index.html";
+      PAGE = EVI.COURSE_PAGE[PKG ? EVI.courseOf(PKG.key) : "employee"];
       QS = QS_BY_PKG[PKG ? EVI.courseOf(PKG.key) : "employee"];
       step = "विवरण";
       renderHead();

@@ -196,6 +196,16 @@ a.pri-link{background:var(--accent);color:#fff;border-color:var(--accent)}
     
       <div class="grid">
         <section class="card">
+          <h3 style="margin:0 0 4px">AI for CSOs (नागरिक समाज संस्था)</h3>
+          <p class="small muted">५ घण्टे कार्यशाला (अङ्ग्रेजी): सहजकर्ता निर्देशिका, सहभागी पुस्तिका, Ex 1–8, उपयोग प्रसङ्ग १ (लुनिभा) M1–M11, प्रदर्शन D1–D7 र पृष्ठपोषण फाराम।</p>
+          <label class="f">कुन इभेन्टका लागि? (आयोजक, स्थान र मिति यही इभेन्टबाट आउँछ)<select data-mat-ev="cso"><option value="">लोड हुँदैछ…</option></select></label>
+          <p class="small muted" data-mat-info="cso"></p>
+          <div class="row" style="justify-content:flex-start">
+            <button type="button" class="pri" data-show="cso/index.html" data-base="cso/index.html" data-title="AI for CSOs">यहीँ देखाउनुहोस्</button>
+            <a href="cso/index.html" data-base="cso/index.html" target="_blank" rel="noopener">नयाँ ट्याबमा खोल्नुहोस्</a>
+          </div>
+        </section>
+        <section class="card">
           <h3 style="margin:0 0 4px">जनप्रतिनिधिका लागि AI (AI for Municipal Representative)</h3>
           <p class="small muted">कार्ययोजना, सामग्री १–१२, आयोजना छनौट क्याल्कुलेटर र पृष्ठपोषण फाराम।</p>
           <label class="f">कुन इभेन्टका लागि? (आयोजक, स्थान र मिति यही इभेन्टबाट आउँछ)<select data-mat-ev="representative"><option value="">लोड हुँदैछ…</option></select></label>
@@ -264,8 +274,9 @@ a.pri-link{background:var(--accent);color:#fff;border-color:var(--accent)}
 <script src="/workshop/vendor/qrcode.js?v=1.4.4"></script>
 <script src="assessment/pool-employee.js?v=k2"></script>
 <script src="assessment/pool-representative.js?v=k2"></script>
+<script src="assessment/pool-cso.js?v=k1"></script>
 <script src="account.js?v=20261116c"></script>
-<script src="event-info.js?v=20261114b"></script>
+<script src="event-info.js?v=20261124a"></script>
 <script src="trainer-nav.js?v=20261116b"></script>
 <script src="media.js?v=20261114b"></script>
 <script>EVI.home().then(EVI.mountHome).catch(function () {});</script>
@@ -359,7 +370,7 @@ a.pri-link{background:var(--accent);color:#fff;border-color:var(--accent)}
         '<button type="button" data-qr="post" data-ev="' + id + '">पश्च QR</button>' +
         '</div>' +
         '<div class="row" style="justify-content:flex-start;margin-top:6px;gap:8px">' +
-        '<span class="small muted">प्रश्न सेट: ' + (e.question_ids && e.question_ids.length ? e.question_ids.length + ' प्रश्न (सरल ४ · मध्यम १० · जटिल ६)' : 'बनेको छैन') + '</span> ' +
+        '<span class="small muted">प्रश्न सेट: ' + (e.question_ids && e.question_ids.length ? e.question_ids.length + (e.question_ids.length === 20 ? ' प्रश्न (सरल ४ · मध्यम १० · जटिल ६)' : ' प्रश्न (पूरा प्रश्न बैंक)') : 'बनेको छैन') + '</span> ' +
         '<button type="button" data-qset="' + id + '">' + (e.question_ids && e.question_ids.length ? 'प्रश्न सेट पुनः बनाउनुहोस्' : 'प्रश्न सेट बनाउनुहोस्') + '</button>' +
         '</div></div>';
     }).join("");
@@ -406,11 +417,11 @@ a.pri-link{background:var(--accent);color:#fff;border-color:var(--accent)}
     if (ev.question_ids && ev.question_ids.length &&
         !confirm("यो इभेन्टको प्रश्न सेट फेरि बनाउने हो? नयाँ सेट अबदेखि लागू हुन्छ। पूर्व र पश्च परीक्षा फरक सेटमा नपरोस् भनी यो काम परीक्षा सुरु हुनु अघि गर्नुहोस्।")) return;
     var pkg = pkgById(ev.package_id);
-    var isRep = pkg && EVI.courseOf(pkg.key) === "representative";   // both levels use the course's question bank
-    var ids = isRep ? pickRepresentativeSet() : pickEventSet();
+    var course = pkg ? EVI.courseOf(pkg.key) : "employee";   // both levels use the course's question bank
+    var ids = course === "representative" ? pickRepresentativeSet() : course === "cso" ? pickCsoSet() : pickEventSet();
     var r = await WS.updateEvent(evId, { question_ids: ids });
     if (r.error) { flash("evMsg", "प्रश्न सेट सुरक्षित हुन सकेन: " + r.error.message, false); return; }
-    flash("evMsg", "प्रश्न सेट बनियो (२० प्रश्न)।", true);
+    flash("evMsg", "प्रश्न सेट बनियो (" + EVI.dn(ids.length) + " प्रश्न)।", true);
     await loadEvents();
   }
 
@@ -681,7 +692,7 @@ a.pri-link{background:var(--accent);color:#fff;border-color:var(--accent)}
   /* Event name with the organiser as a suffix, so events with similar names can be told apart. */
   function evTitle(e) { var org = (e && e.organized_by || "").trim(); return (e && e.name || "") + (org ? " – " + org : ""); }
   var QS = ["कार्यशाला मेरो कामका लागि उपयोगी थियो","सिकाइको गति मलाई ठिक्क थियो","भाषा बुझ्न सजिलो थियो","आफैँ गरेर सिक्ने पर्याप्त अवसर मिल्यो","आयोजना छनौट अभ्यास वास्तविक जस्तो लाग्यो","सहजकर्ता र सहयोगीबाट राम्रो सहयोग मिल्यो"];
-  var POOL_SIZE = { employee: 50, representative: 50 };
+  var POOL_SIZE = { employee: 50, representative: 50, cso: 10 };
   var NAMES = ["overview", "events", "packages", "users", "materials", "results", "landing"];
   var loaded = {};
 
@@ -764,7 +775,7 @@ a.pri-link{background:var(--accent);color:#fff;border-color:var(--accent)}
     var packages = pk.data || [];
     matEvents = ev.data || [];
     var keyOf = {}; packages.forEach(function (x) { keyOf[x.id] = x.key; });
-    ["representative", "employee"].forEach(function (key) {
+    ["cso", "representative", "employee"].forEach(function (key) {
       // both levels of the course (नगरपालिका / गाउँपालिका); the page shows the event's level
       var list = matEvents.filter(function (e) { return keyOf[e.package_id] && EVI.courseOf(keyOf[e.package_id]) === key; });
       list.forEach(function (e) { e._level = EVI.LEVEL_LABEL[EVI.levelOf(keyOf[e.package_id])]; });

@@ -21,7 +21,7 @@ function load(rel, extra = {}) {
 
 const HTML_FILES = [
   "index.html", "login.html", "admin.html", "profile.html",
-  "assessment/index.html", "representative/index.html", "event.html",
+  "assessment/index.html", "representative/index.html", "cso/index.html", "event.html",
 ];
 
 test("every inline script in the workshop pages compiles", () => {
@@ -36,7 +36,7 @@ test("every inline script in the workshop pages compiles", () => {
 });
 
 test("every standalone workshop script compiles", () => {
-  for (const f of ["account.js", "assessment/pool-employee.js", "assessment/pool-representative.js"]) {
+  for (const f of ["account.js", "event-info.js", "assessment/pool-employee.js", "assessment/pool-representative.js", "assessment/pool-cso.js"]) {
     assert.doesNotThrow(() => new vm.Script(read(f), { filename: f }), `${f} compiles`);
   }
 });
@@ -100,6 +100,38 @@ for (const [name, pool, pick] of [
   });
 }
 
+test("AI for CSOs pool: 10 questions, ids 201-210, no answer keys; every event uses all of them", () => {
+  const ctx = load("assessment/pool-cso.js");
+  const pool = Array.from(ctx.POOL_CSO);
+  assert.deepEqual(pool.map((q) => q.id).sort((a, b) => a - b), Array.from({ length: 10 }, (_, i) => 201 + i));
+  for (const q of pool) {
+    assert.equal(q.o.length, 4, `q${q.id} has 4 options`);
+    assert.ok([0, 1, 2, 3, 4, 5].includes(q.s) && [1, 2, 3].includes(q.c), `q${q.id} topic and complexity`);
+    assert.ok(!("a" in q) && !("e" in q), `q${q.id} carries no correct answer or explanation`);
+  }
+  const emp = load("assessment/pool-employee.js"), rep = load("assessment/pool-representative.js");
+  const others = new Set([...Array.from(emp.POOL_EMPLOYEE, (q) => q.id), ...Array.from(rep.POOL_REPRESENTATIVE, (q) => q.id)]);
+  for (const q of pool) assert.ok(!others.has(q.id), `id ${q.id} unique across pools`);
+  for (let run = 0; run < 50; run++) {
+    const ids = Array.from(ctx.pickCsoSet());
+    assert.deepEqual(ids.slice().sort((a, b) => a - b), Array.from({ length: 10 }, (_, i) => 201 + i));
+  }
+});
+
+test("event-info.js: a cso package is its own course, page and level", () => {
+  const ctx = load("event-info.js", { location: { search: "", origin: "https://x.test", pathname: "/" }, URLSearchParams });
+  const EVI = ctx.window.EVI;
+  assert.equal(EVI.courseOf("cso"), "cso");
+  assert.equal(EVI.courseOf("representative-municipal"), "representative");
+  assert.equal(EVI.courseOf("employee-rural"), "employee");
+  assert.equal(EVI.levelOf("cso"), "cso");
+  assert.equal(EVI.eventLink("aicso001", "cso"), "https://x.test/workshop/cso/index.html?event=AICSO001");
+  assert.equal(EVI.info({ organized_by: "Loo Niva Child Concern Group", event_dates: [] }).org, "Loo Niva Child Concern Group", "an English organiser gets no पालिका");
+  assert.equal(EVI.info({ organized_by: "सन्धिखर्क", event_dates: [] }).org, "सन्धिखर्क पालिका");
+  assert.equal(EVI.enRange(["2026-11-28"]), "28 November 2026");
+  assert.equal(EVI.enRange(["2026-11-29", "2026-11-28"]), "28–29 November 2026");
+});
+
 test("account.js exposes the methods the pages call", () => {
   const ctx = load("account.js");
   const WS = ctx.window.WS;
@@ -122,7 +154,7 @@ test("admin page: the manual registration form sends only email and password", (
 });
 
 test("ideal answers never ship in the public pages: every answer place is empty", () => {
-  const files = ["index.html", "representative/index.html", ...fs.readdirSync(path.join(W, "data")).map((f) => "data/" + f)];
+  const files = ["index.html", "representative/index.html", "cso/index.html", ...fs.readdirSync(path.join(W, "data")).map((f) => "data/" + f)];
   let places = 0;
   for (const f of files) {
     const text = read(f).replace(/\\"/g, '"');
@@ -135,7 +167,7 @@ test("ideal answers never ship in the public pages: every answer place is empty"
 });
 
 test("service-role key is never shipped to the browser", () => {
-  const all = ["account.js", "admin.html", "login.html", "profile.html", "index.html", "assessment/index.html", "representative/index.html"]
+  const all = ["account.js", "admin.html", "login.html", "profile.html", "index.html", "assessment/index.html", "representative/index.html", "cso/index.html", "assessment/pool-cso.js"]
     .map(read).join("\n");
   assert.ok(!/service_role|SERVICE_ROLE|sb_secret_/i.test(all), "no secret key in client files");
 });

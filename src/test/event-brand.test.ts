@@ -66,8 +66,9 @@ describe("event brand", () => {
     expect(normalizeOrg("मालारानी")).toBe("मालारानी पालिका");
     expect(normalizeOrg("मालारानी गाउँपालिका")).toBe("मालारानी गाउँपालिका");
     expect(normalizeOrg("  ")).toBe("");
-    expect(brandLine(null)).toBe("AI तालिम");
-    expect(brandLine({ org: "क", place: "" })).toBe("क · AI तालिम");
+    expect(brandLine(null)).toBe("AI for ALL");
+    expect(brandLine({ org: "क", place: "" })).toBe("क · AI for ALL");
+    expect(normalizeOrg("Loo Niva Child Concern Group")).toBe("Loo Niva Child Concern Group");
   });
 
   it("shows nothing for a visitor without an event link", async () => {
@@ -125,6 +126,8 @@ describe("front page", () => {
     expect(await frontPageTarget()).toBe("/workshop/index.html");
     db.active = [{ package_key: "employee" }];
     expect(await frontPageTarget()).toBe("/workshop/index.html");
+    db.active = [{ package_key: "cso" }];
+    expect(await frontPageTarget()).toBe("/workshop/cso/index.html");
     db.active = [];
     expect(await frontPageTarget()).toBe("/workshop/index.html");
   });

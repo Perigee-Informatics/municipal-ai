@@ -79,17 +79,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "AI तालिम" },
+      { title: "AI for ALL" },
       {
         name: "description",
         content:
-          "नगरपालिका तथा गाउँपालिकाका कर्मचारी र जनप्रतिनिधिका लागि AI क्षमता अभिवृद्धि तालिम",
+          "AI for ALL: practical AI training for municipal employees, elected representatives and civil society organisations (CSOs) in Nepal",
       },
-      { property: "og:title", content: "AI तालिम" },
+      { property: "og:title", content: "AI for ALL" },
       {
         property: "og:description",
         content:
-          "नगरपालिका तथा गाउँपालिकाका कर्मचारी र जनप्रतिनिधिका लागि AI क्षमता अभिवृद्धि तालिम",
+          "AI for ALL: practical AI training for municipal employees, elected representatives and civil society organisations (CSOs) in Nepal",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

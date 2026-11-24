@@ -30,7 +30,9 @@
   function courseLabel(ev) {
     var p = state.packages.filter(function (x) { return x.id === ev.package_id; })[0];
     if (!p) return "";
-    return (EVI.courseOf(p.key) === "representative" ? "जनप्रतिनिधि" : "कर्मचारी") + " · " + (EVI.LEVEL_LABEL[EVI.levelOf(p.key)] || "");
+    var c = EVI.courseOf(p.key);
+    if (c === "cso") return "AI for CSOs";
+    return (c === "representative" ? "जनप्रतिनिधि" : "कर्मचारी") + " · " + (EVI.LEVEL_LABEL[EVI.levelOf(p.key)] || "");
   }
   function sortEvents(list) {
     return list.slice().sort(function (a, b) {

@@ -167,11 +167,12 @@ svg.rp-db{max-width:640px}
 </div>
 
 <script src="../account.js?v=20261116c"></script>
-<script src="../event-info.js?v=20261114b"></script>
+<script src="../event-info.js?v=20261124a"></script>
 <script>EVI.home().then(EVI.mountHome).catch(function () {});</script>
 <script src="../course-outline.js?v=20261116a"></script>
 <script src="pool-employee.js?v=k2"></script>
 <script src="pool-representative.js?v=k2"></script>
+<script src="pool-cso.js?v=k1"></script>
 <script id="sv-src">
 /* Charts and statistics, built into the page (a separate file named stats-… is blocked by some ad blockers).
    Source: public/workshop/assessment/stats-viz.js; tests/workshop/stats-viz.test.mjs checks the two are the same. */
@@ -430,8 +431,8 @@ var SESSIONS = [
   {id:5,label:"गोपनीयता, नैतिकता र सेवा प्रवाह"}
 ];
 
-/* Question pools: pool-employee.js (ids 1-50) and pool-representative.js (ids 101-150). Each event has its own set of 20 pool ids (events.question_ids). */
-var POOL_BY_ID={}; POOL_EMPLOYEE.concat(POOL_REPRESENTATIVE).forEach(function(q){POOL_BY_ID[q.id]=q;});
+/* Question pools: pool-employee.js (ids 1-50), pool-representative.js (ids 101-150) and pool-cso.js (ids 201-210). Each event has its own set of pool ids (events.question_ids): 20 for the municipal courses, all 10 for AI for CSOs. */
+var POOL_BY_ID={}; POOL_EMPLOYEE.concat(POOL_REPRESENTATIVE, typeof POOL_CSO!=="undefined"?POOL_CSO:[]).forEach(function(q){POOL_BY_ID[q.id]=q;});
 /* Questions are worded for one level (नगरपालिका or गाउँपालिका); a test for an event of the other
    level shows them with that level's wording (event-info.js levelRules). Scoring is unchanged. */
 var ASSESS_LEVEL = null, LV_CACHE = {};
@@ -504,8 +505,8 @@ if (DASH_CODE) sessionFilter = DASH_CODE;
 var SB_URL = "https://htcfpqfqkskchdwjnoqo.supabase.co";
 var SB_KEY = "sb_publishable_-eezpn3nkJBKeNZ2lyINsg_g-pdsuLc";
 var TESTS = [
-  {v:"pre",  l:"पूर्व-तालिम परीक्षा (Pre-training, ३० प्रश्न)"},
-  {v:"post", l:"पश्च-तालिम परीक्षा (Post-training, ३० प्रश्न)"}
+  {v:"pre",  l:"पूर्व-तालिम परीक्षा (Pre-training)"},
+  {v:"post", l:"पश्च-तालिम परीक्षा (Post-training)"}
 ];
 function testLabel(t){return t==="post"?"पश्च-तालिम":"पूर्व-तालिम";}
 
@@ -1534,6 +1535,7 @@ var REPORT_MODE=!!REPORT_CODE;
 var REPORT_OPTS={people:false,comments:true};
 var RP={};   // loaded data: ev, pkg, profile, feedback, members
 var FB_QS={
+  cso:["Overall, today was useful for my work","The pace was right for me","The language and examples were easy to follow","There was enough hands-on practice","The exercises fitted our CSO's real work","The facilitator and helpers supported me well"],
   representative:["कार्यशाला मेरो कामका लागि उपयोगी थियो","सिकाइको गति मलाई ठिक्क थियो","भाषा बुझ्न सजिलो थियो","आफैँ गरेर सिक्ने पर्याप्त अवसर मिल्यो","आयोजना छनौट अभ्यास वास्तविक जस्तो लाग्यो","सहजकर्ता र सहयोगीबाट राम्रो सहयोग मिल्यो"],
   employee:["तालिम मेरो कामका लागि उपयोगी थियो","सिकाइको गति मलाई ठिक्क थियो","भाषा बुझ्न सजिलो थियो","आफैँ गरेर सिक्ने पर्याप्त अवसर मिल्यो","अभ्यास र उदाहरण मेरो दैनिक कामसँग मिल्दा थिए","विज्ञ र सहयोगीबाट राम्रो सहयोग मिल्यो"]
 };
@@ -1593,7 +1595,7 @@ function outlineFor(){
   var O=window.COURSE_OUTLINE; if(!O||!RP.pkg) return null;
   var course=EVI.courseOf(RP.pkg.key), base=O[course]; if(!base) return null;
   var level=EVI.levelOf(RP.pkg.key), lv=level!==EVI.BASE_LEVEL[course]?EVI.levelRules(level):null;
-  var info=EVI.info(RP.ev), ev=info?(course==="representative"?EVI.representativeRules(info):EVI.employeeRules(info)):null;
+  var info=EVI.info(RP.ev), ev=info&&course!=="cso"?(course==="representative"?EVI.representativeRules(info):EVI.employeeRules(info)):null;
   var w=function(t){ t=String(t||""); if(lv) t=EVI.fill(t,lv); if(ev) t=EVI.fill(t,ev); return t; };
   return {main:w(base.main),objectives:base.objectives.map(w),outcomes:base.outcomes.map(w),
     sessions:base.sessions.map(function(x){return {n:x.n,day:x.day,start:x.start,end:x.end,title:w(x.title),objective:w(x.objective),content:w(x.content),outcome:w(x.outcome)};})};
@@ -1601,7 +1603,7 @@ function outlineFor(){
 function photoUrl(m,full){ var p=full?m.path:(m.thumb_path||m.path); return p&&window.WS&&WS.publicUrl?WS.publicUrl(p):""; }
 
 function reportHtml(){
-  var ev=RP.ev, i=EVI.info(ev)||{}, pkg=RP.pkg, course=pkg&&EVI.courseOf(pkg.key)==="representative"?"representative":"employee";
+  var ev=RP.ev, i=EVI.info(ev)||{}, pkg=RP.pkg, course=pkg?EVI.courseOf(pkg.key):"employee";
   var pre=records.filter(function(r){return r.test==="pre";}), post=records.filter(function(r){return r.test==="post";});
   var sPre=testStats(pre), sPost=testStats(post), P=pairedRows();
   var gains=P.map(function(p){return p.post.pct-p.pre.pct;}), gM=meanOf(gains);
@@ -1657,7 +1659,7 @@ function reportHtml(){
   if(outline){
     var ob='';
     if(outline.main) ob+='<p><strong>मुख्य उद्देश्य:</strong> '+esc(outline.main)+'</p>';
-    if(outline.objectives.length) ob+='<h3>'+(course==="representative"?"कार्यशाला सकिँदासम्म प्रत्येक सहभागीले":"विशिष्ट उद्देश्य")+'</h3><ol class="rp-list">'+outline.objectives.map(function(x){return '<li>'+esc(x)+'</li>';}).join("")+'</ol>';
+    if(outline.objectives.length) ob+='<h3>'+(course==="representative"?"कार्यशाला सकिँदासम्म प्रत्येक सहभागीले":course==="cso"?"By 16:00, participants will be able to":"विशिष्ट उद्देश्य")+'</h3><ol class="rp-list">'+outline.objectives.map(function(x){return '<li>'+esc(x)+'</li>';}).join("")+'</ol>';
     var oc=outline.outcomes.filter(Boolean);
     if(oc.length) ob+='<h3>अपेक्षित उपलब्धि</h3>'+(oc.length>1?'<ul class="rp-list">'+oc.map(function(x){return '<li>'+esc(x)+'</li>';}).join("")+'</ul>':'<p>'+esc(oc[0])+'</p>');
     sec("तालिमका उद्देश्य",ob);

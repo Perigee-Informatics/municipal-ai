@@ -7,9 +7,9 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({
     meta: [
-      { title: "मेरो खाता · AI तालिम" },
+      { title: "मेरो खाता · AI for ALL" },
       { name: "description", content: "सहभागी खाता विवरण र साइन आउट" },
-      { property: "og:title", content: "मेरो खाता · AI तालिम" },
+      { property: "og:title", content: "मेरो खाता · AI for ALL" },
       { property: "og:description", content: "सहभागी खाता विवरण र साइन आउट" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -43,7 +43,7 @@ function AccountPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data, isPending, error } = useQuery(profileQuery);
-  const brand = useEventBrand("मेरो खाता · AI तालिम");
+  const brand = useEventBrand("मेरो खाता · AI for ALL");
 
   async function handleSignOut() {
     await queryClient.cancelQueries();

@@ -232,5 +232,111 @@ window.COURSE_OUTLINE = {
     "outcome": "व्यक्तिगत कार्ययोजना; हस्ताक्षरित प्रतिबद्धता पत्र"
    }
   ]
+ },
+ "cso": {
+  "main": "CSO staff understand AI, assess it critically, and use it effectively and responsibly in their office work and programmes.",
+  "objectives": [
+   "Explain in plain words what generative AI is, what it does well, and where it fails.",
+   "Type in Nepali by voice on their own mobile phone, and use voice to talk to an AI tool.",
+   "Write structured prompts (R-C-T-F-C) and improve outputs through follow-up questions.",
+   "Use ChatGPT, Claude and NotebookLM for minutes, reports, translation, summaries and document questions.",
+   "Draft campaign and advocacy content for their CSO's issues and audiences.",
+   "Use AI to support concept notes, problem trees, Theory of Change, logframes and donor communication.",
+   "Recognise hallucination, bias, plagiarism and copyright risks, and verify outputs before use.",
+   "Apply the traffic-light rules for privacy, confidentiality and safeguarding, and decide when NOT to use AI."
+  ],
+  "outcomes": [],
+  "sessions": [
+   {
+    "n": "1",
+    "day": 1,
+    "start": "09:45",
+    "end": "10:10",
+    "title": "Opening, pre-assessment and \"AI in my week\"",
+    "objective": "Set the tone, measure the baseline, and link the day to participants' real tasks.",
+    "content": "Welcome and norms (4 min). The host CSO opens. Three norms: phones out for learning, no real personal data in any tool, and no question is too basic. Pre-assessment (8 min). Participants scan a QR code for the 10-item quiz and confidence rating. Collect participant code or name only. \"AI in my week\" (10 min, Ex 1). Each person writes the 2 tasks that take most of their week, one per sticky note. Notes go on a wall with four zones: Office, Campaign, Fundraising, Field. Read out the top three and promise to come back to them. Agenda walk-through (3 min). Link each session to a zone of the wall.",
+    "outcome": "Baseline measured; the day linked to each participant's own tasks."
+   },
+   {
+    "n": "2",
+    "day": 1,
+    "start": "10:10",
+    "end": "10:35",
+    "title": "AI demystified: what it is and what it is not",
+    "objective": "Build a correct mental model of AI, without hype or fear.",
+    "content": "Input (10 min). AI, machine learning and generative AI in one picture. A chatbot predicts likely next words from patterns. It does not \"know\" facts. It is fluent even when it is wrong. The three tools of the day and when to use each. Free versus paid plans, and why data settings matter. Demo D1: \"Brilliant and wrong\" (8 min). Show M11, an AI answer with invented statistics and citations. Participants guess which parts are real. Reveal how to check each claim against the original source. Sort cards (7 min, Ex 2). In pairs, sort 12 cards into \"AI is good at\" and \"AI is weak at\". Debrief the 2–3 cards people disagreed on.",
+    "outcome": "Key message: AI is a fast, capable intern. It is never the final authority."
+   },
+   {
+    "n": "3",
+    "day": 1,
+    "start": "10:35",
+    "end": "11:00",
+    "title": "Nepali voice typing on your phone",
+    "objective": "Every participant can dictate Nepali text into any app and use voice with an AI tool.",
+    "content": "Why it matters (2 min). Field staff can record observations, minutes and messages faster by speaking than by typing Devanagari on a small keyboard. Set-up, step by step (10 min). The facilitator projects their phone screen or uses a large printout. Everyone follows the Nepali voice typing guide, Part A (Android) or Part B (iPhone). Helpers move around the room. Group people by phone type. Practice 1: dictate (5 min). Open any notes app. Read the practice script aloud, including the spoken punctuation. Compare results with a neighbour and fix errors. Practice 2: talk to AI (6 min). In the ChatGPT or Claude app, tap the microphone and dictate in Nepali: \"यो बैठकको टिपोटलाई औपचारिक निर्णयमा बदलिदिनुहोस्\" plus a few spoken meeting points (Demo D7). See how it turns spoken notes into a structured text. Troubleshoot (2 min). Cover the common problems listed in the guide.",
+    "outcome": "Facilitator tip: set up two helper phones (one Android, one iPhone) before the session. Keep a mobile hotspot ready, because Nepali voice typing needs internet."
+   },
+   {
+    "n": "4",
+    "day": 1,
+    "start": "11:00",
+    "end": "11:40",
+    "title": "Prompting lab: R-C-T-F-C",
+    "objective": "Write prompts that give usable output, and improve them through conversation.",
+    "content": "Input (8 min): R-C-T-F-C (Quick reference): R ole, C ontext, T ask, F ormat, C onstraints. Then iterate : \"simpler\", \"3 options\", \"ask me questions first\". Demo D2 (8 min). Run the weak prompt and the strong prompt in ChatGPT, side by side. Then paste the strong prompt into Claude and compare the two tools. Pair practice (19 min, Ex 3 with M9). Each pair takes one weak prompt card, rewrites it with R-C-T-F-C, runs both versions, and records the difference. Pairs that finish early try speaking the prompt by voice. Debrief (5 min). Two pairs show before and after. Verify it: \"What would you still check before using this?\"",
+    "outcome": "Every pair has rewritten a weak prompt into a strong one and compared ChatGPT and Claude."
+   },
+   {
+    "n": "5",
+    "day": 1,
+    "start": "11:55",
+    "end": "12:40",
+    "title": "AI for daily office work (4 stations)",
+    "objective": "Save time on minutes, reporting, translation and document research.",
+    "content": "Format: four stations of 9 minutes, with groups rotating (36 min), then a 9-minute debrief. Each station has its task card (Ex 4) and the printed use-case material. Digital copies are on this page, so participants can copy and paste. Station A: minutes (ChatGPT or Claude, M1). Turn the rough meeting notes into formal minutes with a decisions table (owner, deadline). Then check that nothing was added that is not in the notes. Station B: progress report (Claude, M2). Turn the field activity notes into a one-page monthly progress narrative. Missing data must be marked [DATA NEEDED], not invented. Station C: translation and plain language (ChatGPT, M3). Translate the English donor text into simple Nepali for field staff. Back-translate it into English to check the meaning. Mark any wrong terms. Station D: ask your documents (NotebookLM, M4 + M1 + M2). Create a notebook. Add M4 as a \"Copied text\" source, plus M1 and M2. Ask the 4 questions on the card. Click two citations to check them. Generate a briefing doc. Debrief: Which station saved the most time? Which output needed the most correction? Add new uses to the \"AI in my week\" wall.",
+    "outcome": "Minutes, a progress report, a checked translation and a source-grounded briefing produced with AI."
+   },
+   {
+    "n": "6",
+    "day": 1,
+    "start": "13:25",
+    "end": "14:15",
+    "title": "Campaign and advocacy studio",
+    "objective": "Use AI as a creative partner for campaigns, while keeping the community's voice and human judgment at the centre.",
+    "content": "Demo D3 (8 min). Build a message house with Claude: a core message, 3 pillars, evidence and a call to action. Then ask ChatGPT to critique it from the target audience's point of view. Group challenge (30 min, Ex 5 with M8). Four groups each take one campaign brief. Each group produces: a campaign objective and target audience; a key message in Nepali and English; 3 social media posts; one radio or video script of 60 seconds; one visual concept, described in words or generated as an image in ChatGPT. Gallery walk (8 min). Groups leave feedback as \"one strength, one risk\". Verify it (4 min). Check for stereotypes, cultural and language fit, and made-up statistics. Rule: never create AI images that look like real, identifiable people (especially children or survivors), and never present AI images as real photos.",
+    "outcome": "Each group has a campaign canvas: objective, message, posts, a radio script and a visual concept."
+   },
+   {
+    "n": "7",
+    "day": 1,
+    "start": "14:30",
+    "end": "15:15",
+    "title": "Fundraising and proposals with AI",
+    "objective": "Speed up proposal work while keeping evidence, originality and fit with the donor.",
+    "content": "Demo D4: the proposal workflow (10 min) , using M5 (donor call) and M6 (field evidence). Put M5 into NotebookLM and ask: \"What exactly does this donor want? List the criteria, eligibility and deadlines with citations.\" In Claude, build a problem tree from M6. Turn it into a Theory of Change and a draft logframe with SMART indicators. Group work (22 min, Ex 6). Each group takes one task: (a) a 1-page concept note from M5 + M6; (b) a logframe for one outcome; (c) Demo D5 as an exercise: ask Claude to act as a strict donor reviewer and score the weak draft M7, then improve it; (d) a donor update email or a local business sponsorship pitch. Debrief and verify (13 min). Red flags: invented baseline data, copied wording (plagiarism), generic text that fits any NGO, wrong donor names or priorities. Check whether the donor's rules say anything about AI use.",
+    "outcome": "Key message: AI drafts the structure. The CSO provides the evidence, the voice and the final judgment."
+   },
+   {
+    "n": "8",
+    "day": 1,
+    "start": "15:15",
+    "end": "15:45",
+    "title": "Responsible AI: \"Should I use AI here?\"",
+    "objective": "Know the risks and the safe boundaries.",
+    "content": "Input D6 (10 min): hallucination, bias, deepfakes and misinformation, plagiarism and copyright, confidentiality, data privacy and safeguarding. Nepal's Individual Privacy Act, 2075 (2018) and the CSO's own safeguarding and data policies apply to AI use as well. Scenario game (15 min, Ex 7 with M10). Read each scenario. Everyone raises a green, amber or red card. Two people explain their choice, then the facilitator gives the agreed answer. Agree the rules (5 min). Adopt the traffic light (Quick reference) as a draft for the CSO's own AI use guideline.",
+    "outcome": "A draft traffic-light guideline for the CSO's own AI use."
+   },
+   {
+    "n": "9",
+    "day": 1,
+    "start": "15:45",
+    "end": "16:00",
+    "title": "Action plan, post-assessment and closing",
+    "objective": "Turn the day into next week's practice, and measure the learning gain.",
+    "content": "Action plan (5 min, Ex 8). Each person writes 3 tasks they will use AI for next week, and 1 task where they will not use it. Post-assessment (7 min). The same quiz as the morning, the confidence rating and the feedback form. Closing (3 min). Share the Workbook and prompt library links. Take a group photo, with consent.",
+    "outcome": "Every participant leaves with a personal AI action plan."
+   }
+  ]
  }
 };

@@ -8,12 +8,12 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "साइन इन · AI तालिम" },
+      { title: "साइन इन · AI for ALL" },
       {
         name: "description",
         content: "AI तालिमका सहभागी खाता — साइन इन वा नयाँ दर्ता",
       },
-      { property: "og:title", content: "साइन इन · AI तालिम" },
+      { property: "og:title", content: "साइन इन · AI for ALL" },
       {
         property: "og:description",
         content: "AI तालिमका सहभागी खाता — साइन इन वा नयाँ दर्ता",
@@ -51,7 +51,7 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const brand = useEventBrand("साइन इन · AI तालिम");
+  const brand = useEventBrand("साइन इन · AI for ALL");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

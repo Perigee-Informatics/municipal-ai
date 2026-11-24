@@ -1,6 +1,37 @@
 import { supabase } from "@/integrations/supabase/client";
 import { bsRange } from "@/lib/bs-date";
 
+const EN_MONTHS = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
+/* "28 November 2026" (or "28–29 November 2026"): dates of a CSO event, whose materials are in English. */
+export function enRange(dates: readonly string[] | null | undefined): string {
+  const list = (dates ?? []).map((d) => String(d).slice(0, 10)).sort();
+  const fmt = (iso: string): string => {
+    const [y = 0, m = 0, d = 0] = iso.split("-").map(Number);
+    return `${d} ${EN_MONTHS[m - 1] ?? ""} ${y}`;
+  };
+  const first = list[0];
+  const last = list[list.length - 1];
+  if (!first || !last) return "";
+  if (first === last) return fmt(first);
+  return first.slice(0, 7) === last.slice(0, 7)
+    ? `${Number(first.slice(8))}–${fmt(last)}`
+    : `${fmt(first)} – ${fmt(last)}`;
+}
+
 /* Data for the landing page: the trainer's profile, the active event and the gallery items the
  * trainer marked for it. Everything here is readable without signing in. */
 
@@ -31,8 +62,8 @@ export type ActiveEvent = {
   organizedBy: string;
   place: string;
   dates: string;
-  course: "employee" | "representative";
-  level: "municipal" | "rural";
+  course: "employee" | "representative" | "cso";
+  level: "municipal" | "rural" | "cso";
 };
 
 export const DEFAULT_PROFILE: SiteProfile = {
@@ -83,19 +114,26 @@ export async function loadActiveEvent(): Promise<ActiveEvent | null> {
   const e = data?.[0];
   if (!e) return null;
   const key = e.package_key ?? "";
-  const course = key.startsWith("representative") ? "representative" : "employee";
-  const level = key.endsWith("-rural")
-    ? "rural"
-    : key.endsWith("-municipal")
-      ? "municipal"
-      : course === "representative"
+  const course = key.startsWith("representative")
+    ? "representative"
+    : key.startsWith("cso")
+      ? "cso"
+      : "employee";
+  const level =
+    course === "cso"
+      ? "cso"
+      : key.endsWith("-rural")
         ? "rural"
-        : "municipal";
+        : key.endsWith("-municipal")
+          ? "municipal"
+          : course === "representative"
+            ? "rural"
+            : "municipal";
   return {
     name: e.name,
     organizedBy: (e.organized_by ?? "").replace(/\s+/g, " ").trim(),
     place: (e.address ?? "").trim(),
-    dates: bsRange(e.event_dates),
+    dates: course === "cso" ? enRange(e.event_dates) : bsRange(e.event_dates),
     course,
     level,
   };
