@@ -142,9 +142,9 @@ function AuthPage() {
             role="tab"
             aria-selected={mode === "up"}
             onClick={() => {
-              setMode("up");
-              setError(null);
-              setNotice(null);
+              // New participants register on the full workshop form (re-typed password, gender,
+              // age group, education, office), which the trainer's reports and approvals rely on.
+              window.location.href = "/workshop/login.html#signup";
             }}
             className={`flex-1 rounded-md border px-4 py-2 text-sm font-medium transition-colors ${
               mode === "up"
