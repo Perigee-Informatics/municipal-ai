@@ -85,7 +85,7 @@
     top.innerHTML = '<button type="button" class="tn-menu" id="tnMenu" aria-controls="tnSide" aria-expanded="false">☰ मेनु</button>' +
       '<a class="tn-brand" href="/workshop/admin.html#overview">AI तालिम<small>प्रशिक्षक</small></a>' +
       '<span class="tn-org" id="tnOrg"></span>' +
-      '<span class="tn-act"><a class="tn-wide" href="/" target="_blank" rel="noopener">सार्वजनिक पृष्ठ ↗</a><button type="button" id="tnSignOut">साइन आउट</button></span>';
+      '<span class="tn-act"><a class="tn-wide" href="/ai-for-all" target="_blank" rel="noopener">सार्वजनिक पृष्ठ ↗</a><button type="button" id="tnSignOut">साइन आउट</button></span>';
     var side = document.createElement("nav"); side.className = "tn-side"; side.id = "tnSide"; side.setAttribute("aria-label", "प्रशिक्षक मेनु");
     var scrim = document.createElement("div"); scrim.className = "tn-scrim"; scrim.id = "tnScrim";
     document.body.insertBefore(scrim, document.body.firstChild);
@@ -126,7 +126,12 @@
       var p = state.packages.filter(function (x) { return x.id === act.package_id; })[0];
       h += '<a href="' + esc(EVI.eventLink(act.code, p && p.key)) + '" target="_blank" rel="noopener">सक्रिय इभेन्टको सामग्री ↗</a>';
     }
-    h += '<a href="/" target="_blank" rel="noopener">सार्वजनिक गृहपृष्ठ ↗</a>';
+    h += '<a href="/ai-for-all" target="_blank" rel="noopener">सार्वजनिक गृहपृष्ठ ↗</a>';
+    // the private portal of the same site: calendar, invitations, engagements, portfolio
+    h += '<div class="tn-h"><span>Personal portal</span></div>';
+    h += '<a href="/admin/calendar">My calendar &amp; schedule</a>';
+    h += '<a href="/admin/requests">Invitations / appointments</a>';
+    h += '<a href="/admin">Admin dashboard</a>';
     side.innerHTML = h;
     var org = document.getElementById("tnOrg");
     var shown = state.page === "event" ? state.events.filter(function (e) { return e.code === state.code; })[0] : act;

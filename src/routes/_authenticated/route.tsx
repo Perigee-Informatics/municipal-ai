@@ -14,6 +14,9 @@ export const Route = createFileRoute("/_authenticated")({
         search: { redirect: location.href },
       });
     }
+    // The admin pages read the user from the route context; whether that user may see
+    // them is checked by the admin layout (has_role 'admin') and enforced by RLS.
+    return { user: data.user };
   },
   component: () => <Outlet />,
 });

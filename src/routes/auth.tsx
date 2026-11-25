@@ -64,7 +64,7 @@ function AuthPage() {
           setError(parsed.error.issues[0]?.message ?? "विवरण जाँच्नुहोस्");
           return;
         }
-        const { error: signInError } = await supabase.auth.signInWithPassword({
+        const { data: signedIn, error: signInError } = await supabase.auth.signInWithPassword({
           email: parsed.data.email,
           password: parsed.data.password,
         });
@@ -72,7 +72,12 @@ function AuthPage() {
           setError("इमेल वा पासवर्ड मिलेन। फेरि प्रयास गर्नुहोस्।");
           return;
         }
-        navigate({ to: "/account" });
+        // Dr. Ghimire (admin of the personal portal) goes to the admin area; participants to their account.
+        const { data: isAdmin } = await supabase.rpc("has_role", {
+          _user_id: signedIn.user.id,
+          _role: "admin",
+        });
+        navigate({ to: isAdmin ? "/admin" : "/account" });
       } else {
         // The two passwords must match before anything is sent.
         if (password !== password2) {
@@ -96,9 +101,7 @@ function AuthPage() {
           setError(signUpError.message);
           return;
         }
-        setNotice(
-          "दर्ता भयो। इमेलमा पठाइएको लिङ्क क्लिक गरेर खाता पुष्टि गर्नुहोस्, अनि साइन इन गर्नुहोस्।",
-        );
+        setNotice("दर्ता भयो। इमेलमा पठाइएको लिङ्क क्लिक गरेर खाता पुष्टि गर्नुहोस्, अनि साइन इन गर्नुहोस्।");
         setMode("in");
         setPassword("");
         setPassword2("");

@@ -11,8 +11,28 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AboutRouteImport } from './routes/about'
+import { Route as AiForAllRouteImport } from './routes/ai-for-all'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as EventsRouteImport } from './routes/events'
+import { Route as GalleryRouteImport } from './routes/gallery'
+import { Route as PortfolioDashboardRouteImport } from './routes/portfolio-dashboard'
+import { Route as RequestRouteImport } from './routes/request'
+import { Route as StoryMapRouteImport } from './routes/story-map'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as AuthenticatedAdminCalendarRouteImport } from './routes/_authenticated/admin.calendar'
+import { Route as AuthenticatedAdminCatalogRouteImport } from './routes/_authenticated/admin.catalog'
+import { Route as AuthenticatedAdminPortfolioRouteImport } from './routes/_authenticated/admin.portfolio'
+import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin.settings'
+import { Route as ApiPublicImportStoryMediaRouteImport } from './routes/api/public/import-story-media'
+import { Route as AuthenticatedAdminRequestsIndexRouteImport } from './routes/_authenticated/admin.requests.index'
+import { Route as AuthenticatedAdminRequestsIdRouteImport } from './routes/_authenticated/admin.requests.$id'
+import { Route as AuthenticatedAdminStoriesIndexRouteImport } from './routes/_authenticated/admin.stories.index'
+import { Route as AuthenticatedAdminStoriesIdRouteImport } from './routes/_authenticated/admin.stories.$id'
+import { Route as ApiPublicGoogleCallbackRouteImport } from './routes/api/public/google/callback'
+import { Route as ApiPublicGoogleWebhookRouteImport } from './routes/api/public/google/webhook'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -23,9 +43,44 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AiForAllRoute = AiForAllRouteImport.update({
+  id: '/ai-for-all',
+  path: '/ai-for-all',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EventsRoute = EventsRouteImport.update({
+  id: '/events',
+  path: '/events',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GalleryRoute = GalleryRouteImport.update({
+  id: '/gallery',
+  path: '/gallery',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortfolioDashboardRoute = PortfolioDashboardRouteImport.update({
+  id: '/portfolio-dashboard',
+  path: '/portfolio-dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RequestRoute = RequestRouteImport.update({
+  id: '/request',
+  path: '/request',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StoryMapRoute = StoryMapRouteImport.update({
+  id: '/story-map',
+  path: '/story-map',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
@@ -33,36 +88,249 @@ const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
   path: '/account',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
+const AuthenticatedAdminCalendarRoute =
+  AuthenticatedAdminCalendarRouteImport.update({
+    id: '/calendar',
+    path: '/calendar',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminCatalogRoute =
+  AuthenticatedAdminCatalogRouteImport.update({
+    id: '/catalog',
+    path: '/catalog',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminPortfolioRoute =
+  AuthenticatedAdminPortfolioRouteImport.update({
+    id: '/portfolio',
+    path: '/portfolio',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminSettingsRoute =
+  AuthenticatedAdminSettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const ApiPublicImportStoryMediaRoute =
+  ApiPublicImportStoryMediaRouteImport.update({
+    id: '/api/public/import-story-media',
+    path: '/api/public/import-story-media',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const AuthenticatedAdminRequestsIndexRoute =
+  AuthenticatedAdminRequestsIndexRouteImport.update({
+    id: '/requests/',
+    path: '/requests/',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminRequestsIdRoute =
+  AuthenticatedAdminRequestsIdRouteImport.update({
+    id: '/requests/$id',
+    path: '/requests/$id',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminStoriesIndexRoute =
+  AuthenticatedAdminStoriesIndexRouteImport.update({
+    id: '/stories/',
+    path: '/stories/',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminStoriesIdRoute =
+  AuthenticatedAdminStoriesIdRouteImport.update({
+    id: '/stories/$id',
+    path: '/stories/$id',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const ApiPublicGoogleCallbackRoute = ApiPublicGoogleCallbackRouteImport.update({
+  id: '/api/public/google/callback',
+  path: '/api/public/google/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicGoogleWebhookRoute = ApiPublicGoogleWebhookRouteImport.update({
+  id: '/api/public/google/webhook',
+  path: '/api/public/google/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/ai-for-all': typeof AiForAllRoute
   '/auth': typeof AuthRoute
+  '/events': typeof EventsRoute
+  '/gallery': typeof GalleryRoute
+  '/portfolio-dashboard': typeof PortfolioDashboardRoute
+  '/request': typeof RequestRoute
+  '/story-map': typeof StoryMapRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/admin/calendar': typeof AuthenticatedAdminCalendarRoute
+  '/admin/catalog': typeof AuthenticatedAdminCatalogRoute
+  '/admin/portfolio': typeof AuthenticatedAdminPortfolioRoute
+  '/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/api/public/import-story-media': typeof ApiPublicImportStoryMediaRoute
+  '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/admin/requests/$id': typeof AuthenticatedAdminRequestsIdRoute
+  '/admin/stories/$id': typeof AuthenticatedAdminStoriesIdRoute
+  '/api/public/google/callback': typeof ApiPublicGoogleCallbackRoute
+  '/api/public/google/webhook': typeof ApiPublicGoogleWebhookRoute
+  '/admin/requests/': typeof AuthenticatedAdminRequestsIndexRoute
+  '/admin/stories/': typeof AuthenticatedAdminStoriesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/ai-for-all': typeof AiForAllRoute
   '/auth': typeof AuthRoute
+  '/events': typeof EventsRoute
+  '/gallery': typeof GalleryRoute
+  '/portfolio-dashboard': typeof PortfolioDashboardRoute
+  '/request': typeof RequestRoute
+  '/story-map': typeof StoryMapRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/admin/calendar': typeof AuthenticatedAdminCalendarRoute
+  '/admin/catalog': typeof AuthenticatedAdminCatalogRoute
+  '/admin/portfolio': typeof AuthenticatedAdminPortfolioRoute
+  '/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/api/public/import-story-media': typeof ApiPublicImportStoryMediaRoute
+  '/admin': typeof AuthenticatedAdminIndexRoute
+  '/admin/requests/$id': typeof AuthenticatedAdminRequestsIdRoute
+  '/admin/stories/$id': typeof AuthenticatedAdminStoriesIdRoute
+  '/api/public/google/callback': typeof ApiPublicGoogleCallbackRoute
+  '/api/public/google/webhook': typeof ApiPublicGoogleWebhookRoute
+  '/admin/requests': typeof AuthenticatedAdminRequestsIndexRoute
+  '/admin/stories': typeof AuthenticatedAdminStoriesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/about': typeof AboutRoute
+  '/ai-for-all': typeof AiForAllRoute
   '/auth': typeof AuthRoute
+  '/events': typeof EventsRoute
+  '/gallery': typeof GalleryRoute
+  '/portfolio-dashboard': typeof PortfolioDashboardRoute
+  '/request': typeof RequestRoute
+  '/story-map': typeof StoryMapRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/_authenticated/admin/calendar': typeof AuthenticatedAdminCalendarRoute
+  '/_authenticated/admin/catalog': typeof AuthenticatedAdminCatalogRoute
+  '/_authenticated/admin/portfolio': typeof AuthenticatedAdminPortfolioRoute
+  '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/api/public/import-story-media': typeof ApiPublicImportStoryMediaRoute
+  '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/admin/requests/$id': typeof AuthenticatedAdminRequestsIdRoute
+  '/_authenticated/admin/stories/$id': typeof AuthenticatedAdminStoriesIdRoute
+  '/api/public/google/callback': typeof ApiPublicGoogleCallbackRoute
+  '/api/public/google/webhook': typeof ApiPublicGoogleWebhookRoute
+  '/_authenticated/admin/requests/': typeof AuthenticatedAdminRequestsIndexRoute
+  '/_authenticated/admin/stories/': typeof AuthenticatedAdminStoriesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/account'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/ai-for-all'
+    | '/auth'
+    | '/events'
+    | '/gallery'
+    | '/portfolio-dashboard'
+    | '/request'
+    | '/story-map'
+    | '/account'
+    | '/admin'
+    | '/admin/calendar'
+    | '/admin/catalog'
+    | '/admin/portfolio'
+    | '/admin/settings'
+    | '/api/public/import-story-media'
+    | '/admin/'
+    | '/admin/requests/$id'
+    | '/admin/stories/$id'
+    | '/api/public/google/callback'
+    | '/api/public/google/webhook'
+    | '/admin/requests/'
+    | '/admin/stories/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/account'
-  id: '__root__' | '/' | '/_authenticated' | '/auth' | '/_authenticated/account'
+  to:
+    | '/'
+    | '/about'
+    | '/ai-for-all'
+    | '/auth'
+    | '/events'
+    | '/gallery'
+    | '/portfolio-dashboard'
+    | '/request'
+    | '/story-map'
+    | '/account'
+    | '/admin/calendar'
+    | '/admin/catalog'
+    | '/admin/portfolio'
+    | '/admin/settings'
+    | '/api/public/import-story-media'
+    | '/admin'
+    | '/admin/requests/$id'
+    | '/admin/stories/$id'
+    | '/api/public/google/callback'
+    | '/api/public/google/webhook'
+    | '/admin/requests'
+    | '/admin/stories'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/about'
+    | '/ai-for-all'
+    | '/auth'
+    | '/events'
+    | '/gallery'
+    | '/portfolio-dashboard'
+    | '/request'
+    | '/story-map'
+    | '/_authenticated/account'
+    | '/_authenticated/admin'
+    | '/_authenticated/admin/calendar'
+    | '/_authenticated/admin/catalog'
+    | '/_authenticated/admin/portfolio'
+    | '/_authenticated/admin/settings'
+    | '/api/public/import-story-media'
+    | '/_authenticated/admin/'
+    | '/_authenticated/admin/requests/$id'
+    | '/_authenticated/admin/stories/$id'
+    | '/api/public/google/callback'
+    | '/api/public/google/webhook'
+    | '/_authenticated/admin/requests/'
+    | '/_authenticated/admin/stories/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AboutRoute: typeof AboutRoute
+  AiForAllRoute: typeof AiForAllRoute
   AuthRoute: typeof AuthRoute
+  EventsRoute: typeof EventsRoute
+  GalleryRoute: typeof GalleryRoute
+  PortfolioDashboardRoute: typeof PortfolioDashboardRoute
+  RequestRoute: typeof RequestRoute
+  StoryMapRoute: typeof StoryMapRoute
+  ApiPublicImportStoryMediaRoute: typeof ApiPublicImportStoryMediaRoute
+  ApiPublicGoogleCallbackRoute: typeof ApiPublicGoogleCallbackRoute
+  ApiPublicGoogleWebhookRoute: typeof ApiPublicGoogleWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -81,11 +349,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ai-for-all': {
+      id: '/ai-for-all'
+      path: '/ai-for-all'
+      fullPath: '/ai-for-all'
+      preLoaderRoute: typeof AiForAllRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/events': {
+      id: '/events'
+      path: '/events'
+      fullPath: '/events'
+      preLoaderRoute: typeof EventsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gallery': {
+      id: '/gallery'
+      path: '/gallery'
+      fullPath: '/gallery'
+      preLoaderRoute: typeof GalleryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portfolio-dashboard': {
+      id: '/portfolio-dashboard'
+      path: '/portfolio-dashboard'
+      fullPath: '/portfolio-dashboard'
+      preLoaderRoute: typeof PortfolioDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/request': {
+      id: '/request'
+      path: '/request'
+      fullPath: '/request'
+      preLoaderRoute: typeof RequestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/story-map': {
+      id: '/story-map'
+      path: '/story-map'
+      fullPath: '/story-map'
+      preLoaderRoute: typeof StoryMapRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/account': {
@@ -95,15 +412,135 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAccountRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/': {
+      id: '/_authenticated/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/calendar': {
+      id: '/_authenticated/admin/calendar'
+      path: '/calendar'
+      fullPath: '/admin/calendar'
+      preLoaderRoute: typeof AuthenticatedAdminCalendarRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/catalog': {
+      id: '/_authenticated/admin/catalog'
+      path: '/catalog'
+      fullPath: '/admin/catalog'
+      preLoaderRoute: typeof AuthenticatedAdminCatalogRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/portfolio': {
+      id: '/_authenticated/admin/portfolio'
+      path: '/portfolio'
+      fullPath: '/admin/portfolio'
+      preLoaderRoute: typeof AuthenticatedAdminPortfolioRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/settings': {
+      id: '/_authenticated/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AuthenticatedAdminSettingsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/api/public/import-story-media': {
+      id: '/api/public/import-story-media'
+      path: '/api/public/import-story-media'
+      fullPath: '/api/public/import-story-media'
+      preLoaderRoute: typeof ApiPublicImportStoryMediaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/admin/requests/': {
+      id: '/_authenticated/admin/requests/'
+      path: '/requests'
+      fullPath: '/admin/requests/'
+      preLoaderRoute: typeof AuthenticatedAdminRequestsIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/requests/$id': {
+      id: '/_authenticated/admin/requests/$id'
+      path: '/requests/$id'
+      fullPath: '/admin/requests/$id'
+      preLoaderRoute: typeof AuthenticatedAdminRequestsIdRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/stories/': {
+      id: '/_authenticated/admin/stories/'
+      path: '/stories'
+      fullPath: '/admin/stories/'
+      preLoaderRoute: typeof AuthenticatedAdminStoriesIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/stories/$id': {
+      id: '/_authenticated/admin/stories/$id'
+      path: '/stories/$id'
+      fullPath: '/admin/stories/$id'
+      preLoaderRoute: typeof AuthenticatedAdminStoriesIdRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/api/public/google/callback': {
+      id: '/api/public/google/callback'
+      path: '/api/public/google/callback'
+      fullPath: '/api/public/google/callback'
+      preLoaderRoute: typeof ApiPublicGoogleCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/google/webhook': {
+      id: '/api/public/google/webhook'
+      path: '/api/public/google/webhook'
+      fullPath: '/api/public/google/webhook'
+      preLoaderRoute: typeof ApiPublicGoogleWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
+interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminCalendarRoute: typeof AuthenticatedAdminCalendarRoute
+  AuthenticatedAdminCatalogRoute: typeof AuthenticatedAdminCatalogRoute
+  AuthenticatedAdminPortfolioRoute: typeof AuthenticatedAdminPortfolioRoute
+  AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+  AuthenticatedAdminRequestsIdRoute: typeof AuthenticatedAdminRequestsIdRoute
+  AuthenticatedAdminStoriesIdRoute: typeof AuthenticatedAdminStoriesIdRoute
+  AuthenticatedAdminRequestsIndexRoute: typeof AuthenticatedAdminRequestsIndexRoute
+  AuthenticatedAdminStoriesIndexRoute: typeof AuthenticatedAdminStoriesIndexRoute
+}
+
+const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminCalendarRoute: AuthenticatedAdminCalendarRoute,
+  AuthenticatedAdminCatalogRoute: AuthenticatedAdminCatalogRoute,
+  AuthenticatedAdminPortfolioRoute: AuthenticatedAdminPortfolioRoute,
+  AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
+  AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+  AuthenticatedAdminRequestsIdRoute: AuthenticatedAdminRequestsIdRoute,
+  AuthenticatedAdminStoriesIdRoute: AuthenticatedAdminStoriesIdRoute,
+  AuthenticatedAdminRequestsIndexRoute: AuthenticatedAdminRequestsIndexRoute,
+  AuthenticatedAdminStoriesIndexRoute: AuthenticatedAdminStoriesIndexRoute,
+}
+
+const AuthenticatedAdminRouteWithChildren =
+  AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
+  AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -112,7 +549,17 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AboutRoute: AboutRoute,
+  AiForAllRoute: AiForAllRoute,
   AuthRoute: AuthRoute,
+  EventsRoute: EventsRoute,
+  GalleryRoute: GalleryRoute,
+  PortfolioDashboardRoute: PortfolioDashboardRoute,
+  RequestRoute: RequestRoute,
+  StoryMapRoute: StoryMapRoute,
+  ApiPublicImportStoryMediaRoute: ApiPublicImportStoryMediaRoute,
+  ApiPublicGoogleCallbackRoute: ApiPublicGoogleCallbackRoute,
+  ApiPublicGoogleWebhookRoute: ApiPublicGoogleWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -314,7 +314,7 @@
     if (homePromise) return homePromise;
     homePromise = (async function () {
       var fallback = { href: "/workshop/index.html", label: "गृहपृष्ठ" };
-      var landing = { href: "/", label: "गृहपृष्ठ" };   // visitors: the site's landing page
+      var landing = { href: "/ai-for-all", label: "गृहपृष्ठ" };   // visitors: the site's landing page
       try { if (!WS.ready) await WS.init(); } catch (e) { homePromise = null; return fallback; }
       // Signed in but the profile is not here yet: load it before deciding (and do not keep a guess).
       if (WS.session && !WS.profile) { try { await WS.loadProfile(); } catch (e) {} }

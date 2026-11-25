@@ -1,548 +1,305 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { format, parseISO } from "date-fns";
+import { ArrowRight, ArrowUpRight, BookOpen, CalendarDays, GraduationCap, Images, Mail, MapPin, MapPinned, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
-
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
-import { supabase } from "@/integrations/supabase/client";
+import { PublicShell } from "@/components/site/SiteHeader";
+import { Button } from "@/components/ui/button";
+import { useI18n } from "@/lib/i18n";
+import { portfolioQuery, publicEventsQuery } from "@/lib/queries";
+import { publicStoriesQuery } from "@/lib/stories";
+import { timeRange } from "@/components/site/MonthCalendar";
+import { galleryQuery } from "@/lib/gallery";
 import { frontPageTarget } from "@/lib/front-page";
-import {
-  type ActiveEvent,
-  DEFAULT_PROFILE,
-  destinationAfterSignIn,
-  type GalleryItem,
-  loadActiveEvent,
-  loadGallery,
-  loadProfile,
-  type SiteProfile,
-} from "@/lib/landing-data";
+import { loadActiveEvent, type ActiveEvent } from "@/lib/landing-data";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "AI for ALL · सबैका लागि व्यावहारिक AI तालिम" },
-      {
-        name: "description",
-        content:
-          "AI for ALL: municipal employees, elected representatives and civil society organisations (CSOs) learn to use AI safely in their daily work. नगरपालिका, गाउँपालिका र नागरिक समाज संस्थाका लागि व्यावहारिक AI तालिम: सामग्री, परीक्षा र कार्यक्रमका झलक।",
-      },
-      { property: "og:title", content: "AI for ALL · सबैका लागि व्यावहारिक AI तालिम" },
-    ],
-    links: [
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;700;800&family=Rozha+One&display=swap",
-      },
+      { title: "Dr. Bhoj Raj Ghimire — GIS, e-Governance & Digital Transformation" },
+      { name: "description", content: "Academic, technologist and advisor. Invite Dr. Ghimire for lectures, keynotes, trainings and consultations." },
+      { property: "og:title", content: "Dr. Bhoj Raj Ghimire" },
+      { property: "og:description", content: "GIS, e-governance and digital transformation expert. Request an engagement." },
     ],
   }),
-  component: Landing,
+  loader: ({ context }) =>
+    Promise.all([context.queryClient.ensureQueryData(portfolioQuery), context.queryClient.ensureQueryData(publicEventsQuery)]),
+  component: Home,
 });
 
-/* Colours of the workshop materials, so the site reads as one place. */
-const C = {
-  ink: "#142440",
-  muted: "#556275",
-  accent: "#B3123A",
-  navy: "#1C3A66",
-  soft: "#E6ECF4",
-  bg: "#F4F6F9",
-  line: "#D6DDE6",
-};
-const body = { fontFamily: "'Mukta', 'Nirmala UI', 'Noto Sans Devanagari', system-ui, sans-serif" };
-const display = { fontFamily: "'Rozha One', 'Mukta', 'Noto Serif Devanagari', Georgia, serif" };
-
-type Course = { course: string; level: string; text: string; lang?: "en" };
-
-const COURSES: Course[] = [
-  {
-    course: "कर्मचारीका लागि AI",
-    level: "नगरपालिका",
-    text: "पत्र, टिप्पणी, प्रतिवेदन, तथ्याङ्क विश्लेषण, प्रस्तुतीकरण र सेवा प्रवाहमा AI को सुरक्षित प्रयोग: नगर कार्यपालिकाको कार्यालयका शाखाहरूको दैनिक काम अनुसार।",
-  },
-  {
-    course: "कर्मचारीका लागि AI",
-    level: "गाउँपालिका",
-    text: "उही दुई दिने व्यावहारिक तालिम, गाउँ कार्यपालिकाको कार्यालय र गाउँपालिकाको सन्दर्भमा।",
-  },
-  {
-    course: "जनप्रतिनिधिका लागि AI",
-    level: "नगरपालिका",
-    text: "नगर प्रमुख, उपप्रमुख, वडाध्यक्ष र सदस्यहरूका लागि सूचना, माइन्युट, भाषण र नगर सभाका लागि आयोजना छनौटमा AI।",
-  },
-  {
-    course: "जनप्रतिनिधिका लागि AI",
-    level: "गाउँपालिका",
-    text: "अध्यक्ष, उपाध्यक्ष, वडाध्यक्ष र सदस्यहरूका लागि सोही एकदिने कार्यशाला, गाउँ सभा र गाउँ कार्यपालिकाको सन्दर्भमा।",
-  },
-  {
-    course: "AI for CSOs",
-    level: "नागरिक समाज संस्था (CSO)",
-    lang: "en",
-    text: "A 5-hour hands-on workshop for programme, M&E, communication, finance and field staff: Nepali voice typing, prompting, minutes and reports, campaigns, proposals and logframes, and the traffic-light rules for safe, responsible AI. Each CSO gets its own use case.",
-  },
-];
-
-function initials(name: string): string {
-  const parts = name
-    .replace(/^डा\.\s*/, "")
-    .trim()
-    .split(/\s+/);
-  return (parts[0]?.[0] ?? "") + (parts[parts.length - 1]?.[0] ?? "");
+function SectionHead({ eyebrow, title, action }: { eyebrow?: string; title: string; action?: React.ReactNode }) {
+  return (
+    <div className="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        {eyebrow && <p className="eyebrow">{eyebrow}</p>}
+        <h2 className="mt-2 text-3xl font-semibold text-balance md:text-4xl">{title}</h2>
+      </div>
+      {action}
+    </div>
+  );
 }
 
-function Landing() {
-  const [profile, setProfile] = useState<SiteProfile>(DEFAULT_PROFILE);
-  const [gallery, setGallery] = useState<GalleryItem[] | null>(null);
-  const [active, setActive] = useState<ActiveEvent | null>(null);
-  const [materials, setMaterials] = useState("/workshop/index.html");
-  const [open, setOpen] = useState<GalleryItem | null>(null);
-
-  useEffect(() => {
-    loadProfile()
-      .then(setProfile)
-      .catch(() => {});
-    loadGallery()
-      .then(setGallery)
-      .catch(() => setGallery([]));
-    loadActiveEvent()
-      .then(setActive)
-      .catch(() => {});
-    frontPageTarget()
-      .then(setMaterials)
-      .catch(() => {});
-  }, []);
+function Home() {
+  const { t, pick } = useI18n();
+  const { data } = useSuspenseQuery(portfolioQuery);
+  const { data: events } = useSuspenseQuery(publicEventsQuery);
+  const { data: stories } = useQuery(publicStoriesQuery);
+  const p = data.profile;
+  const today = format(new Date(), "yyyy-MM-dd");
+  const upcoming = events.filter((e) => e.session_date >= today).slice(0, 4);
+  const career = data.experience.filter((e) => e.category !== "consulting").slice(0, 4);
+  const recent = (stories ?? []).filter((s) => s.cover?.url && s.cover.media_type === "image").slice(0, 3);
+  const topDegree = data.education[0];
+  const socials = p
+    ? ([["LinkedIn", p.linkedin], ["Scholar", p.google_scholar], ["ResearchGate", p.researchgate], ["ORCID", p.orcid]] as const).filter(([, u]) => !!u)
+    : [];
 
   return (
-    <div style={{ ...body, background: C.bg, color: C.ink }} className="min-h-screen">
-      <header
-        className="sticky top-0 z-20 border-b backdrop-blur"
-        style={{ borderColor: C.line, background: "rgba(255,255,255,.92)" }}
-      >
-        <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
-          <a href="/" className="flex items-baseline gap-2 no-underline" style={{ color: C.ink }}>
-            <span style={{ ...display, color: C.accent }} className="text-2xl">
-              AI for ALL
+    <PublicShell>
+      {/* Hero */}
+      <section className="relative overflow-hidden bg-hero text-navy-foreground">
+        <div className="bg-grid pointer-events-none absolute inset-0" />
+        <div className="container-page relative grid items-center gap-12 pb-28 pt-14 md:grid-cols-[1.3fr_1fr] md:pb-36 md:pt-20">
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <span className="inline-flex items-center gap-2 rounded-full border border-navy-foreground/15 bg-navy-foreground/5 px-3 py-1 text-xs">
+              <span className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-60" /><span className="relative inline-flex h-2 w-2 rounded-full bg-success" /></span>
+              {t("hero.available")}
             </span>
-            <span className="hidden text-sm sm:inline" style={{ color: C.muted }}>
-              सबैका लागि AI तालिम
-            </span>
-          </a>
-          <nav className="ml-auto flex items-center gap-1 text-[15px] sm:gap-4">
-            <a href="#gallery" className="hidden px-2 sm:inline" style={{ color: C.navy }}>
-              ग्यालरी
-            </a>
-            <a href={materials} className="hidden px-2 sm:inline" style={{ color: C.navy }}>
-              तालिम सामग्री
-            </a>
-            <a
-              href="#signin"
-              className="rounded-full px-4 py-1.5 font-semibold text-white"
-              style={{ background: C.navy }}
-            >
-              साइन इन
-            </a>
-          </nav>
-        </div>
-      </header>
-
-      <main>
-        {/* hero: the programme on the left, the trainer on the right */}
-        <section className="mx-auto grid max-w-6xl gap-8 px-4 pb-10 pt-10 md:grid-cols-[1.25fr_1fr] md:pt-16">
-          <div className="min-w-0">
-            <p className="text-sm font-bold tracking-wide" style={{ color: C.accent }}>
-              स्थानीय तह र नागरिक समाजका लागि व्यावहारिक तालिम · Practical AI training
-            </p>
-            <h1 style={display} className="mt-2 text-4xl leading-tight sm:text-5xl">
-              AI for ALL: सबैका लागि कृत्रिम बौद्धिकता (AI)
-            </h1>
-            <p className="mt-4 max-w-xl text-lg" style={{ color: C.muted }}>
-              कर्मचारी, जनप्रतिनिधि र नागरिक समाज संस्था (CSO) का कर्मचारीले आफ्नै मोबाइलमा, नेपाली
-              भाषामै, निःशुल्क AI उपकरण प्रयोग गरी पत्र, सूचना, प्रतिवेदन, माइन्युट, अभियान र
-              प्रस्तावजस्ता दैनिक काम छिटो, शुद्ध र जिम्मेवार ढंगले गर्ने सीप।
-            </p>
-            <p className="mt-2 max-w-xl text-[15px]" style={{ color: C.muted }} lang="en">
-              Hands-on AI training for municipal staff, elected representatives and civil society
-              organisations: safe, verified and in your own language.
-            </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <a
-                href="#signin"
-                className="rounded-lg px-5 py-2.5 font-semibold text-white"
-                style={{ background: C.accent }}
-              >
-                प्रशिक्षक / सहभागी साइन इन
-              </a>
-              <a
-                href={materials}
-                className="rounded-lg border px-5 py-2.5 font-semibold"
-                style={{ borderColor: C.navy, color: C.navy }}
-              >
-                तालिम सामग्री हेर्नुहोस्
-              </a>
+            <p className="eyebrow mt-6">PhD · PMP · ISO 27001 Lead Auditor</p>
+            <h1 className="mt-3 text-4xl font-semibold leading-[1.05] text-balance md:text-6xl">{pick(p?.full_name, p?.full_name_ne)}</h1>
+            <p className="mt-5 text-xl text-navy-foreground/85 text-balance md:text-2xl">{pick(p?.headline, p?.headline_ne)}</p>
+            <p className="mt-5 max-w-xl leading-relaxed text-navy-foreground/70">{pick(p?.short_bio, p?.short_bio_ne)}</p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Button asChild variant="accent" size="lg" className="rounded-full"><Link to="/request">{t("hero.cta")} <ArrowRight /></Link></Button>
+              <Button asChild variant="heroOutline" size="lg" className="rounded-full"><Link to="/about">{t("hero.about")}</Link></Button>
             </div>
-
-            {active && (
-              <div
-                className="mt-8 rounded-2xl border bg-white p-5"
-                style={{ borderColor: C.line }}
-                aria-live="polite"
-              >
-                <p className="text-xs font-bold tracking-wider" style={{ color: C.accent }}>
-                  अहिलेको तालिम
-                </p>
-                <p className="mt-1 text-xl font-bold">
-                  {active.name}
-                  {active.course === "cso" && (
-                    <span
-                      className="ml-2 rounded-full px-2 py-0.5 align-middle text-xs font-bold text-white"
-                      style={{ background: C.navy }}
-                    >
-                      AI for CSOs
-                    </span>
-                  )}
-                </p>
-                <p className="mt-1 text-[15px]" style={{ color: C.muted }}>
-                  {[active.organizedBy, active.place, active.dates].filter(Boolean).join(" · ")}
-                </p>
-              </div>
-            )}
-          </div>
-
-          <TrainerCard profile={profile} />
-        </section>
-
-        <section className="border-y bg-white" style={{ borderColor: C.line }}>
-          <div className="mx-auto max-w-6xl px-4 py-12">
-            <h2 style={display} className="text-3xl">
-              पाँच तालिम प्याकेज
-            </h2>
-            <p className="mt-2 max-w-2xl" style={{ color: C.muted }}>
-              पाठ उही, सन्दर्भ फरक: नगरपालिका र गाउँपालिकाका पद, कार्यपालिका र सभा अनुसार शब्द र
-              उदाहरण मिलाइएका छन्; नागरिक समाज संस्थाका लागि प्रत्येक संस्थाको आफ्नै उपयोग प्रसङ्ग
-              (use case)।
-            </p>
-            <div className="mt-6 grid gap-4 sm:grid-cols-2">
-              {COURSES.map((c) => (
-                <article
-                  key={c.course + c.level}
-                  lang={c.lang}
-                  className={`rounded-2xl border p-5${c.lang === "en" ? " sm:col-span-2" : ""}`}
-                  style={{ borderColor: c.lang === "en" ? C.navy : C.line, background: C.bg }}
-                >
-                  <p className="text-sm font-bold" style={{ color: C.accent }}>
-                    {c.level}
-                  </p>
-                  <h3 className="mt-1 text-xl font-bold">{c.course}</h3>
-                  <p className="mt-2 text-[15px]" style={{ color: C.muted }}>
-                    {c.text}
-                  </p>
-                </article>
+            <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3 text-sm text-navy-foreground/70">
+              {p?.location && <span className="flex items-center gap-1.5"><MapPin className="h-4 w-4" />{p.location}</span>}
+              {p?.email && <a href={`mailto:${p.email}`} className="flex items-center gap-1.5 hover:text-navy-foreground"><Mail className="h-4 w-4" />{p.email}</a>}
+              {socials.map(([n, u]) => (
+                <a key={n} href={u!} target="_blank" rel="noreferrer" className="inline-flex items-center gap-0.5 hover:text-accent">{n}<ArrowUpRight className="h-3 w-3" /></a>
               ))}
             </div>
           </div>
-        </section>
-
-        <section className="mx-auto max-w-6xl px-4 py-12">
-          <h2 style={display} className="text-3xl">
-            कसरी सहभागी हुने?
-          </h2>
-          <ol className="mt-6 grid gap-4 sm:grid-cols-3">
-            {[
-              ["दर्ता", "तालिममा आउनुअघि आफ्नो इमेलबाट नयाँ खाता बनाउनुहोस्।"],
-              ["स्वीकृति", "प्रशिक्षकले तपाईंलाई तपाईंको तालिम इभेन्टमा स्वीकृत गर्नुहुन्छ।"],
-              [
-                "सामग्री र परीक्षा",
-                "साइन इन गरेपछि तालिम सामग्री, अभ्यास र पूर्व/पश्च परीक्षा। धेरै तालिममा भए एउटा छान्नुहोस्।",
-              ],
-            ].map(([t, d], i) => (
-              <li
-                key={t}
-                className="rounded-2xl border bg-white p-5"
-                style={{ borderColor: C.line }}
-              >
-                <span
-                  className="grid h-9 w-9 place-items-center rounded-full font-bold text-white"
-                  style={{ background: C.navy }}
-                >
-                  {["१", "२", "३"][i]}
-                </span>
-                <p className="mt-3 text-lg font-bold">{t}</p>
-                <p className="mt-1 text-[15px]" style={{ color: C.muted }}>
-                  {d}
-                </p>
-              </li>
-            ))}
-          </ol>
-        </section>
-
-        <section id="gallery" className="border-t bg-white" style={{ borderColor: C.line }}>
-          <div className="mx-auto max-w-6xl px-4 py-12">
-            <h2 style={display} className="text-3xl">
-              तालिमका झलक
-            </h2>
-            {gallery === null ? (
-              <p className="mt-4" style={{ color: C.muted }}>
-                लोड हुँदैछ…
-              </p>
-            ) : gallery.length === 0 ? (
-              <p className="mt-4" style={{ color: C.muted }}>
-                तालिमका फोटो र भिडियो छिट्टै यहाँ देखिनेछन्।
-              </p>
+          <div className="relative mx-auto w-full max-w-xs animate-in fade-in zoom-in-95 duration-700 md:max-w-sm">
+            <div className="absolute -inset-4 rotate-3 rounded-[1.75rem] border border-accent/40" />
+            <div className="absolute -inset-4 -rotate-2 rounded-[1.75rem] bg-accent/10" />
+            {data.photoUrl ? (
+              <img src={data.photoUrl} alt={p?.full_name ?? ""} className="relative aspect-[4/5] w-full rounded-2xl object-cover shadow-2xl" />
             ) : (
-              <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                {gallery.map((g) => (
-                  <button
-                    key={g.id}
-                    type="button"
-                    onClick={() => setOpen(g)}
-                    className="group relative overflow-hidden rounded-xl text-left"
-                    style={{ background: C.soft, aspectRatio: "4 / 3" }}
-                    aria-label={g.caption || g.eventName}
-                  >
-                    {g.thumbUrl && (
-                      <img
-                        src={g.thumbUrl}
-                        alt={g.caption || g.eventName}
-                        loading="lazy"
-                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                    )}
-                    {g.kind === "video" && (
-                      <span className="absolute inset-0 grid place-items-center text-4xl text-white drop-shadow">
-                        ▶
-                      </span>
-                    )}
-                    <span
-                      className="absolute inset-x-0 bottom-0 truncate px-2 py-1 text-xs text-white"
-                      style={{ background: "linear-gradient(transparent, rgba(0,0,0,.65))" }}
-                    >
-                      {g.caption || g.eventName}
-                    </span>
-                  </button>
-                ))}
+              <div className="relative flex aspect-[4/5] w-full items-center justify-center rounded-2xl bg-navy-foreground/5 shadow-2xl">
+                <span className="font-display text-8xl font-semibold text-accent">BRG</span>
+              </div>
+            )}
+            {topDegree && (
+              <div className="absolute -bottom-5 -left-4 max-w-[85%] rounded-xl bg-card px-4 py-3 text-card-foreground shadow-soft">
+                <div className="truncate text-[11px] uppercase tracking-wider text-muted-foreground">{pick(topDegree.institution, topDegree.institution_ne)}</div>
+                <div className="truncate font-display text-sm font-semibold">{pick(topDegree.degree, topDegree.degree_ne)}</div>
               </div>
             )}
           </div>
+        </div>
+      </section>
+
+      {/* Stats band */}
+      {data.highlights.length > 0 && (
+        <section className="container-page relative -mt-16 md:-mt-20">
+          <div className="grid grid-cols-2 overflow-hidden rounded-2xl border border-border bg-card shadow-soft md:grid-cols-4">
+            {data.highlights.slice(0, 4).map((h, i) => (
+              <div key={h.id} className={`p-6 md:p-8 ${i % 2 ? "border-l" : ""} ${i >= 2 ? "border-t md:border-t-0" : ""} ${i === 2 ? "md:border-l" : ""} border-border`}>
+                <div className="font-display text-3xl font-semibold text-primary md:text-4xl">{h.value}</div>
+                <div className="mt-1 text-sm text-muted-foreground">{pick(h.label, h.label_ne)}</div>
+              </div>
+            ))}
+          </div>
         </section>
+      )}
 
-        <section id="signin" className="mx-auto max-w-6xl px-4 py-12">
-          <SignIn />
+      {/* Flagship programme: AI for ALL */}
+      <AiForAll trainings={(stories ?? []).filter((s) => s.training_event_id).length} />
+
+      {/* Expertise */}
+      <section className="container-page py-20">
+        <SectionHead eyebrow={t("home.highlights")} title={t("home.expertise")} />
+        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {data.expertise.map((e, i) => (
+            <div key={e.id} className="card-lift rounded-2xl border border-border bg-card p-6 shadow-soft">
+              <div className="font-display text-sm font-semibold text-accent">{String(i + 1).padStart(2, "0")}</div>
+              <div className="mt-3 text-lg font-semibold">{pick(e.title, e.title_ne)}</div>
+              {e.description && <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{pick(e.description, e.description_ne)}</p>}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Career + upcoming */}
+      <section className="border-y border-border bg-secondary/50">
+        <div className="container-page grid gap-14 py-20 lg:grid-cols-2">
+          <div>
+            <SectionHead title={t("home.journey")} />
+            <ol className="mt-8 space-y-1">
+              {career.map((e) => (
+                <li key={e.id} className="group grid grid-cols-[7rem_1fr] gap-4 rounded-xl p-3 transition-colors hover:bg-card">
+                  <div className="pt-0.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">{e.period}</div>
+                  <div>
+                    <div className="font-medium group-hover:text-primary">{pick(e.title, e.title_ne)}</div>
+                    <div className="text-sm text-muted-foreground">{pick(e.organization, e.organization_ne)}</div>
+                  </div>
+                </li>
+              ))}
+            </ol>
+            <Link to="/about" className="mt-6 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">{t("home.viewAll")}<ArrowRight className="h-4 w-4" /></Link>
+          </div>
+          <div>
+            <SectionHead title={t("home.upcoming")} />
+            <div className="mt-8 space-y-3">
+              {upcoming.length === 0 && <p className="rounded-xl border border-dashed border-border bg-card p-6 text-sm text-muted-foreground">{t("home.noEvents")}</p>}
+              {upcoming.map((e) => (
+                <div key={e.id + e.session_date} className="card-lift flex gap-4 rounded-xl border border-border bg-card p-4">
+                  <div className="flex w-14 shrink-0 flex-col items-center justify-center rounded-lg bg-primary py-2 text-primary-foreground">
+                    <div className="text-[10px] uppercase tracking-wider text-accent">{format(parseISO(e.session_date), "MMM")}</div>
+                    <div className="font-display text-2xl font-semibold leading-none">{format(parseISO(e.session_date), "d")}</div>
+                  </div>
+                  <div className="min-w-0">
+                    <div className="font-medium">{e.event_title}</div>
+                    <div className="text-sm text-muted-foreground">{e.organization} · {pick(e.role, e.role_ne)}</div>
+                    <div className="mt-1 text-xs text-muted-foreground">{timeRange(e.start_time, e.end_time)} {[e.city, e.country].filter(Boolean).join(", ")}</div>
+                  </div>
+                </div>
+              ))}
+              <Link to="/events" className="inline-flex items-center gap-1.5 pt-2 text-sm font-medium text-primary hover:underline"><CalendarDays className="h-4 w-4" />{t("home.allEvents")}</Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Recent engagements from the story map */}
+      {recent.length > 0 && (
+        <section className="container-page py-20">
+          <SectionHead
+            title={t("home.recent")}
+            action={<Link to="/story-map" className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"><MapPinned className="h-4 w-4" />{t("home.mapLink")}</Link>}
+          />
+          <div className="mt-10 grid gap-6 md:grid-cols-3">
+            {recent.map((s) => (
+              <Link key={s.id} to="/story-map" className="card-lift group overflow-hidden rounded-2xl border border-border bg-card">
+                <div className="aspect-[16/10] overflow-hidden bg-muted">
+                  <img src={s.cover!.url} alt="" loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                </div>
+                <div className="p-5">
+                  <div className="text-xs font-medium uppercase tracking-wide text-accent">{format(parseISO(s.event_date), "d MMM yyyy")}{s.event_types && ` · ${pick(s.event_types.name, s.event_types.name_ne)}`}</div>
+                  <div className="mt-2 line-clamp-2 font-medium">{s.title}</div>
+                  {(s.city || s.country) && <div className="mt-1 text-sm text-muted-foreground">{[s.city, s.country].filter(Boolean).join(", ")}</div>}
+                </div>
+              </Link>
+            ))}
+          </div>
         </section>
-      </main>
+      )}
 
-      <footer
-        className="border-t py-8 text-center text-sm"
-        style={{ borderColor: C.line, color: C.muted }}
-      >
-        AI for ALL · {profile.name}
-        {profile.linkedinUrl && (
-          <>
-            {" · "}
-            <a
-              href={profile.linkedinUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: C.navy }}
-            >
-              LinkedIn
-            </a>
-          </>
-        )}
-      </footer>
+      {/* Gallery strip: photos tagged to their events */}
+      <GalleryStrip />
 
-      <Dialog open={!!open} onOpenChange={(v) => !v && setOpen(null)}>
-        <DialogContent className="max-w-4xl border-0 bg-black p-0 text-white">
-          <DialogTitle className="sr-only">
-            {open?.caption || open?.eventName || "तालिमको झलक"}
-          </DialogTitle>
-          <DialogDescription className="sr-only">{open?.eventName}</DialogDescription>
-          {open?.kind === "video" ? (
-            <video
-              src={open.url}
-              poster={open.thumbUrl || undefined}
-              controls
-              autoPlay
-              playsInline
-              className="max-h-[80vh] w-full"
-            />
-          ) : open ? (
-            <img
-              src={open.url}
-              alt={open.caption || open.eventName}
-              className="max-h-[80vh] w-full object-contain"
-            />
-          ) : null}
-          {open && (
-            <p className="px-4 pb-4 text-sm" style={body}>
-              {open.caption && <strong className="mr-2">{open.caption}</strong>}
-              <span className="opacity-80">
-                {[open.eventName, open.organizedBy].filter(Boolean).join(" · ")}
-              </span>
-            </p>
-          )}
-        </DialogContent>
-      </Dialog>
-    </div>
+      {/* Call to action */}
+      <section className="container-page pt-8">
+        <div className="relative overflow-hidden rounded-3xl bg-hero px-6 py-14 text-navy-foreground md:px-14">
+          <div className="bg-grid pointer-events-none absolute inset-0" />
+          <div className="relative flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
+            <div className="max-w-xl">
+              <h2 className="text-3xl font-semibold text-balance md:text-4xl">{t("home.ctaTitle")}</h2>
+              <p className="mt-3 text-navy-foreground/75">{t("home.ctaBody")}</p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Button asChild variant="accent" size="lg" className="rounded-full"><Link to="/request">{t("hero.cta")}<ArrowRight /></Link></Button>
+              {p?.email && <Button asChild variant="heroOutline" size="lg" className="rounded-full"><a href={`mailto:${p.email}`}><Mail />{t("home.contact")}</a></Button>}
+            </div>
+          </div>
+        </div>
+      </section>
+    </PublicShell>
   );
 }
 
-function TrainerCard({ profile }: { profile: SiteProfile }) {
+const PACKAGES = [
+  "AI for Municipal Employees",
+  "AI for Rural Municipal Employees",
+  "AI for Municipal Representatives",
+  "AI for Rural Municipal Representatives",
+  "AI for CSOs",
+];
+
+/** The AI for ALL programme as the main attraction of the home page. */
+function AiForAll({ trainings }: { trainings: number }) {
+  const { t } = useI18n();
+  const [active, setActive] = useState<ActiveEvent | null>(null);
+  const [materials, setMaterials] = useState("/workshop/index.html");
+  useEffect(() => {
+    loadActiveEvent().then(setActive).catch(() => {});
+    frontPageTarget().then(setMaterials).catch(() => {});
+  }, []);
   return (
-    <aside
-      className="h-fit rounded-3xl border bg-white p-6 shadow-sm"
-      style={{ borderColor: C.line }}
-      aria-label="प्रशिक्षकको परिचय"
-    >
-      <div className="flex items-center gap-4">
-        {profile.photoUrl ? (
-          <img
-            src={profile.photoUrl}
-            alt={profile.name}
-            className="h-24 w-24 shrink-0 rounded-full object-cover"
-            style={{ border: `3px solid ${C.soft}` }}
-          />
-        ) : (
-          <span
-            className="grid h-24 w-24 shrink-0 place-items-center rounded-full text-3xl text-white"
-            style={{ ...display, background: C.navy }}
-            aria-hidden
-          >
-            {initials(profile.name)}
-          </span>
-        )}
-        <div className="min-w-0">
-          <p className="text-xs font-bold tracking-wider" style={{ color: C.accent }}>
-            प्रशिक्षक
-          </p>
-          <p className="text-2xl font-bold leading-tight">{profile.name}</p>
-          {(profile.title || profile.organisation) && (
-            <p className="text-[15px]" style={{ color: C.muted }}>
-              {[profile.title, profile.organisation].filter(Boolean).join(", ")}
-            </p>
-          )}
+    <section className="container-page pt-20" aria-labelledby="aiforall-title">
+      <div className="overflow-hidden rounded-3xl border border-border bg-card shadow-soft">
+        <div className="grid gap-10 p-6 md:grid-cols-[1.4fr_1fr] md:p-10">
+          <div>
+            <p className="eyebrow inline-flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5" />{t("prog.eyebrow")}</p>
+            <h2 id="aiforall-title" className="mt-2 text-3xl font-semibold text-balance md:text-4xl">{t("prog.title")}</h2>
+            <p className="mt-4 max-w-2xl leading-relaxed text-muted-foreground">{t("prog.body")}</p>
+            <ul className="mt-5 flex flex-wrap gap-2 text-xs">
+              {PACKAGES.map((p) => (
+                <li key={p} className="rounded-full border border-border bg-secondary/60 px-3 py-1">{p}</li>
+              ))}
+            </ul>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <Button asChild size="lg" className="rounded-full"><Link to="/ai-for-all">{t("prog.cta")} <ArrowRight /></Link></Button>
+              <Button asChild variant="outline" size="lg" className="rounded-full"><a href={materials}><BookOpen />{t("prog.materials")}</a></Button>
+            </div>
+          </div>
+          <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="rounded-2xl bg-secondary/60 p-5">
+                <div className="font-display text-3xl font-semibold text-primary">{trainings || "—"}</div>
+                <div className="mt-1 text-sm text-muted-foreground">{t("prog.trainings")}</div>
+              </div>
+              <div className="rounded-2xl bg-secondary/60 p-5">
+                <div className="font-display text-3xl font-semibold text-primary">{PACKAGES.length}</div>
+                <div className="mt-1 text-sm text-muted-foreground">{t("prog.packages")}</div>
+              </div>
+            </div>
+            {active && (
+              <Link to="/ai-for-all" className="card-lift rounded-2xl border border-accent/50 bg-accent/10 p-5" aria-live="polite">
+                <p className="eyebrow inline-flex items-center gap-1.5"><GraduationCap className="h-3.5 w-3.5" />{t("prog.current")}</p>
+                <p className="mt-1 text-lg font-semibold">{active.name}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{[active.organizedBy, active.place, active.dates].filter(Boolean).join(" · ")}</p>
+              </Link>
+            )}
+          </div>
         </div>
       </div>
-      {profile.bio && (
-        <p className="mt-4 whitespace-pre-line text-[15px] leading-relaxed">{profile.bio}</p>
-      )}
-      {profile.highlights.length > 0 && (
-        <ul className="mt-4 grid gap-2 text-[15px]">
-          {profile.highlights.map((h) => (
-            <li key={h} className="flex gap-2">
-              <span style={{ color: C.accent }} aria-hidden>
-                ●
-              </span>
-              <span>{h}</span>
-            </li>
-          ))}
-        </ul>
-      )}
-      {profile.linkedinUrl && (
-        <a
-          href={profile.linkedinUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-5 inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-semibold"
-          style={{ borderColor: C.line, color: C.navy }}
-        >
-          LinkedIn मा हेर्नुहोस् ↗
-        </a>
-      )}
-    </aside>
+    </section>
   );
 }
 
-function SignIn() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    setBusy(true);
-    try {
-      const { data, error: err } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password,
-      });
-      if (err || !data.user) {
-        setError("इमेल वा पासवर्ड मिलेन। फेरि प्रयास गर्नुहोस्।");
-        return;
-      }
-      window.location.href = await destinationAfterSignIn(data.user.id);
-    } catch {
-      setError("जडानमा समस्या। इन्टरनेट जाँचेर फेरि प्रयास गर्नुहोस्।");
-    } finally {
-      setBusy(false);
-    }
-  }
-
+/** A strip of the newest gallery items; each links to the full, event-tagged gallery. */
+function GalleryStrip() {
+  const { t, pick } = useI18n();
+  const { data } = useQuery(galleryQuery);
+  const items = (data ?? []).filter((g) => g.thumbUrl).slice(0, 8);
+  if (!items.length) return null;
   return (
-    <div
-      className="mx-auto grid max-w-4xl gap-8 rounded-3xl border bg-white p-6 md:grid-cols-2 md:p-8"
-      style={{ borderColor: C.line }}
-    >
-      <div>
-        <h2 style={display} className="text-3xl">
-          साइन इन
-        </h2>
-        <p className="mt-2 text-[15px]" style={{ color: C.muted }}>
-          प्रशिक्षक र स्वीकृत सहभागी यहीँबाट साइन इन गर्नुहोस्। प्रशिक्षक सिधै नियन्त्रण पृष्ठमा
-          पुग्नुहुन्छ; सहभागी आफ्नो तालिमको सामग्री र परीक्षामा। धेरै तालिममा सहभागी हुनुहुन्छ भने
-          साइन इनपछि एउटा तालिम छान्नुहोस्।
-        </p>
-        <p className="mt-4 text-[15px]">
-          खाता छैन?{" "}
-          <a
-            href="/workshop/login.html#signup"
-            className="font-semibold underline"
-            style={{ color: C.navy }}
-          >
-            नयाँ दर्ता गर्नुहोस्
-          </a>
-        </p>
+    <section className="container-page pt-4 pb-12">
+      <SectionHead
+        title={t("home.gallery")}
+        action={<Link to="/gallery" className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"><Images className="h-4 w-4" />{t("home.galleryLink")}</Link>}
+      />
+      <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {items.map((g) => (
+          <Link key={g.id} to="/gallery" className="group relative aspect-[4/3] overflow-hidden rounded-xl bg-muted">
+            <img src={g.thumbUrl} alt={g.caption || pick(g.title, g.titleNe)} loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+            <span className="absolute inset-x-0 bottom-0 truncate bg-gradient-to-t from-black/70 to-transparent px-2 py-1 text-xs text-white">{pick(g.title, g.titleNe)}</span>
+          </Link>
+        ))}
       </div>
-      <form onSubmit={submit} className="grid gap-3" noValidate>
-        <label className="grid gap-1 text-sm font-semibold">
-          इमेल
-          <input
-            type="email"
-            autoComplete="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="rounded-lg border px-3 py-2 text-base font-normal"
-            style={{ borderColor: C.line }}
-          />
-        </label>
-        <label className="grid gap-1 text-sm font-semibold">
-          पासवर्ड
-          <input
-            type="password"
-            autoComplete="current-password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="rounded-lg border px-3 py-2 text-base font-normal"
-            style={{ borderColor: C.line }}
-          />
-        </label>
-        {error && (
-          <p role="alert" className="text-sm font-semibold" style={{ color: C.accent }}>
-            {error}
-          </p>
-        )}
-        <button
-          type="submit"
-          disabled={busy || !email || !password}
-          className="mt-1 rounded-lg px-5 py-2.5 font-semibold text-white disabled:opacity-60"
-          style={{ background: C.navy }}
-        >
-          {busy ? "साइन इन हुँदैछ…" : "साइन इन गर्नुहोस्"}
-        </button>
-      </form>
-    </div>
+    </section>
   );
 }

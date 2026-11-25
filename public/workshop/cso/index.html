@@ -223,7 +223,7 @@ td.st-sel { color: var(--ok); font-weight: 700 } td.st-no { color: var(--accent)
 <header class="top">
   <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="side">Schedule</button>
   <a class="brand" href="#home"><b>AI for ALL</b><span id="brandSub">AI for CSOs · 5-hour workshop</span></a>
-  <a class="home-link" data-home href="/" hidden>⌂ Home</a>
+  <a class="home-link" data-home href="/ai-for-all" hidden>⌂ Home</a>
   <div class="search">
     <input id="q" type="search" placeholder="Search: minutes, logframe, voice typing…" autocomplete="off" aria-label="Search the materials">
     <div class="results" id="results" hidden></div>
@@ -319,7 +319,7 @@ function renderSide(cur) {
   const nn = nowNext();
   const on = ids => ids.includes(cur) ? 'aria-current="page"' : '';
   let h = `<div class="nav-links">
-    <a data-home href="/" hidden>⌂ Home</a>
+    <a data-home href="/ai-for-all" hidden>⌂ Home</a>
     <a href="#home" ${on(['home'])}>Dashboard</a>
     <a href="#agenda" ${on(['agenda'])}>Facilitator guide and agenda</a>
     <a href="#resources" ${on(['resources', ...Object.keys(M)])}>Workbook and materials</a>
