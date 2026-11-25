@@ -87,6 +87,20 @@ export const publicStoriesQuery = queryOptions({
   },
 });
 
+/** Number of AI for ALL trainings in the public list (one engagement per training). */
+export const trainingsCountQuery = queryOptions({
+  queryKey: ["stories", "trainings-count"],
+  queryFn: async () => {
+    const { count, error } = await supabase
+      .from("stories")
+      .select("id", { count: "exact", head: true })
+      .eq("is_public", true)
+      .not("training_event_id", "is", null);
+    if (error) throw error;
+    return count ?? 0;
+  },
+});
+
 export const adminStoriesQuery = queryOptions({
   queryKey: ["admin", "stories"],
   queryFn: async () => {

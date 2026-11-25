@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
 
+import { PublicShell } from "@/components/site/SiteHeader";
 import { brandLine, useEventBrand } from "@/hooks/use-event-brand";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -75,87 +76,89 @@ function AuthPage() {
     "flex-1 rounded-md border px-4 py-2 text-center text-sm font-medium transition-colors";
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="w-full max-w-md">
-        <div className="text-center">
-          <p className="text-sm text-muted-foreground">{brandLine(brand)}</p>
-          <h1 className="mt-2 text-2xl font-bold text-foreground">सहभागी खाता</h1>
-        </div>
-
-        <div className="mt-6 flex gap-2">
-          <span
-            className={`${tab} border-primary bg-primary text-primary-foreground`}
-            aria-current="page"
-          >
-            साइन इन
-          </span>
-          <a
-            href={SIGNUP_URL}
-            className={`${tab} border-input bg-background text-foreground hover:bg-accent`}
-          >
-            नयाँ दर्ता
-          </a>
-        </div>
-
-        <form
-          onSubmit={handleSubmit}
-          className="mt-4 rounded-lg border border-border bg-card p-6 shadow-sm"
-        >
-          <div>
-            <label htmlFor="email" className="text-sm font-medium text-foreground">
-              इमेल
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
-              maxLength={255}
-              className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-foreground"
-            />
-          </div>
-          <div className="mt-4">
-            <label htmlFor="password" className="text-sm font-medium text-foreground">
-              पासवर्ड
-            </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete="current-password"
-              maxLength={128}
-              className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-foreground"
-            />
+    <PublicShell>
+      <div className="flex items-center justify-center bg-background px-4 py-12 md:py-16">
+        <div className="w-full max-w-md">
+          <div className="text-center">
+            <p className="text-sm text-muted-foreground">{brandLine(brand)}</p>
+            <h1 className="mt-2 text-2xl font-bold text-foreground">सहभागी खाता</h1>
           </div>
 
-          {error && (
-            <p className="mt-4 text-sm font-medium text-destructive" role="alert">
-              {error}
-            </p>
-          )}
+          <div className="mt-6 flex gap-2">
+            <span
+              className={`${tab} border-primary bg-primary text-primary-foreground`}
+              aria-current="page"
+            >
+              साइन इन
+            </span>
+            <a
+              href={SIGNUP_URL}
+              className={`${tab} border-input bg-background text-foreground hover:bg-accent`}
+            >
+              नयाँ दर्ता
+            </a>
+          </div>
 
-          <button
-            type="submit"
-            disabled={busy}
-            className="mt-6 w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
+          <form
+            onSubmit={handleSubmit}
+            className="mt-4 rounded-lg border border-border bg-card p-6 shadow-sm"
           >
-            {busy ? "पर्खनुहोस्…" : "साइन इन गर्नुहोस्"}
-          </button>
-        </form>
+            <div>
+              <label htmlFor="email" className="text-sm font-medium text-foreground">
+                इमेल
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
+                maxLength={255}
+                className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-foreground"
+              />
+            </div>
+            <div className="mt-4">
+              <label htmlFor="password" className="text-sm font-medium text-foreground">
+                पासवर्ड
+              </label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
+                maxLength={128}
+                className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-foreground"
+              />
+            </div>
 
-        <p className="mt-4 text-center text-sm text-muted-foreground">
-          खाता छैन?{" "}
-          <a href={SIGNUP_URL} className="font-medium underline hover:text-foreground">
-            नयाँ दर्ता गर्नुहोस्
-          </a>
-          {" · "}
-          <a href="/workshop/index.html" className="underline hover:text-foreground">
-            ⌂ गृहपृष्ठ (तालिम सामग्री)
-          </a>
-        </p>
+            {error && (
+              <p className="mt-4 text-sm font-medium text-destructive" role="alert">
+                {error}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={busy}
+              className="mt-6 w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
+            >
+              {busy ? "पर्खनुहोस्…" : "साइन इन गर्नुहोस्"}
+            </button>
+          </form>
+
+          <p className="mt-4 text-center text-sm text-muted-foreground">
+            खाता छैन?{" "}
+            <a href={SIGNUP_URL} className="font-medium underline hover:text-foreground">
+              नयाँ दर्ता गर्नुहोस्
+            </a>
+            {" · "}
+            <a href="/workshop/index.html" className="underline hover:text-foreground">
+              ⌂ गृहपृष्ठ (तालिम सामग्री)
+            </a>
+          </p>
+        </div>
       </div>
-    </div>
+    </PublicShell>
   );
 }

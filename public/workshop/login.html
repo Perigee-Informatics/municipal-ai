@@ -28,9 +28,29 @@ a{color:var(--accent)}
 .ev-choice{display:grid;gap:2px;width:100%;text-align:left;margin:8px 0;padding:12px 14px;border:1px solid var(--line, #d9dee8);border-radius:10px;background:transparent;font:inherit;cursor:pointer}
 .ev-choice:hover{border-color:currentColor}
 .ev-choice.cur{border-width:2px}
+/* Site frame: the same way back to the main site as every other page */
+.site-top{position:sticky;top:0;z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
+.site-top .in{max-width:960px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.site-top .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font-weight:700;line-height:1.15}
+.site-top .brand b{display:grid;place-items:center;width:34px;height:34px;border-radius:8px;background:#1C2B4A;color:#fff;font-size:13px}
+.site-top .brand small{display:block;font-weight:500;font-size:12px;color:var(--muted)}
+.site-top nav{margin-left:auto;display:flex;gap:4px;flex-wrap:wrap;font-size:15px}
+.site-top nav a{text-decoration:none;padding:5px 10px;border-radius:999px;color:var(--ink)}
+.site-top nav a:hover{background:var(--soft)}
+.site-foot{text-align:center;font-size:14px;color:var(--muted);padding:0 16px 32px}
 </style>
 </head>
 <body>
+<header class="site-top">
+  <div class="in">
+    <a class="brand" href="/"><b>BG</b><span>Dr. Bhoj Raj Ghimire<small>AI for ALL · सबैका लागि AI तालिम</small></span></a>
+    <nav aria-label="Site">
+      <a href="/">← मुख्य पृष्ठ</a>
+      <a href="/ai-for-all">AI for ALL</a>
+      <a href="/workshop/index.html">तालिम सामग्री</a>
+    </nav>
+  </div>
+</header>
 <div class="wrap">
   <p style="margin:0 0 6px"><a data-home href="/workshop/index.html" style="font-weight:600;text-decoration:none">⌂ गृहपृष्ठ</a></p>
   <p class="muted" style="margin:0" id="orgLine">AI तालिम</p>
@@ -96,6 +116,8 @@ a{color:var(--accent)}
     <p id="upMsg" class="msg hide"></p>
   </section>
 </div>
+
+<p class="site-foot"><a href="/">मुख्य पृष्ठमा फर्कनुहोस्</a> · <a href="/ai-for-all">AI for ALL</a> · <a href="/gallery">ग्यालरी</a></p>
 
 <script src="account.js?v=20261116c"></script>
 <script src="event-info.js?v=20261124a"></script>

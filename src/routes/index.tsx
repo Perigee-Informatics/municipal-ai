@@ -7,7 +7,7 @@ import { PublicShell } from "@/components/site/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
 import { portfolioQuery, publicEventsQuery } from "@/lib/queries";
-import { publicStoriesQuery } from "@/lib/stories";
+import { publicStoriesQuery, trainingsCountQuery } from "@/lib/stories";
 import { timeRange } from "@/components/site/MonthCalendar";
 import { galleryQuery } from "@/lib/gallery";
 import { frontPageTarget } from "@/lib/front-page";
@@ -23,7 +23,12 @@ export const Route = createFileRoute("/")({
     ],
   }),
   loader: ({ context }) =>
-    Promise.all([context.queryClient.ensureQueryData(portfolioQuery), context.queryClient.ensureQueryData(publicEventsQuery)]),
+    Promise.all([
+      context.queryClient.ensureQueryData(portfolioQuery),
+      context.queryClient.ensureQueryData(publicEventsQuery),
+      // the AI for ALL counter is part of the first paint, not filled in later
+      context.queryClient.ensureQueryData(trainingsCountQuery).catch(() => 0),
+    ]),
   component: Home,
 });
 
@@ -44,6 +49,7 @@ function Home() {
   const { data } = useSuspenseQuery(portfolioQuery);
   const { data: events } = useSuspenseQuery(publicEventsQuery);
   const { data: stories } = useQuery(publicStoriesQuery);
+  const { data: trainings } = useQuery(trainingsCountQuery);
   const p = data.profile;
   const today = format(new Date(), "yyyy-MM-dd");
   const upcoming = events.filter((e) => e.session_date >= today).slice(0, 4);
@@ -116,7 +122,7 @@ function Home() {
       )}
 
       {/* Flagship programme: AI for ALL */}
-      <AiForAll trainings={(stories ?? []).filter((s) => s.training_event_id).length} />
+      <AiForAll trainings={trainings ?? 0} />
 
       {/* Expertise */}
       <section className="container-page py-20">
