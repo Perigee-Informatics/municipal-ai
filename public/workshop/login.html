@@ -63,6 +63,9 @@ a{color:var(--accent)}
       <input id="upEmail" type="email" autocomplete="email" required>
       <label for="upPass">पासवर्ड (कम्तीमा ८ अक्षर)</label>
       <input id="upPass" type="password" minlength="8" autocomplete="new-password" required>
+      <label for="upPass2">पासवर्ड फेरि टाइप गर्नुहोस् (Re-type password)</label>
+      <input id="upPass2" type="password" minlength="8" autocomplete="new-password" required aria-describedby="upPassHint">
+      <p id="upPassHint" class="msg bad hide" role="alert">दुवै पासवर्ड मिलेनन्। फेरि टाइप गर्नुहोस्। (The two passwords do not match.)</p>
       <label for="upGender">लिङ्ग</label>
       <select id="upGender" required>
         <option value="">— छान्नुहोस् —</option>
@@ -86,7 +89,7 @@ a{color:var(--accent)}
         <option value="Undergraduate">स्नातक (Undergraduate)</option>
         <option value="Masters and Above">स्नातकोत्तर र माथि (Masters and Above)</option>
       </select>
-      <label for="upOffice">कार्यालय वा वडा</label>
+      <label for="upOffice">कार्यालय / शाखा / विभाग (Office / Section / Department)</label>
       <input id="upOffice" type="text" required>
       <button class="primary" type="submit">दर्ता गर्नुहोस्</button>
     </form>
@@ -210,10 +213,22 @@ EVI.resolve().then(function (ev) { var i = EVI.info(ev); if (i && i.org) documen
     } finally { btn.disabled = false; }
   });
 
+  ["upPass", "upPass2"].forEach(function (id) {
+    $(id).addEventListener("input", function () {
+      var a = $("upPass").value, c = $("upPass2").value;
+      if (!c || a === c) $("upPassHint").classList.add("hide");
+    });
+  });
   $("fUp").addEventListener("submit", async function (e) {
     e.preventDefault();
-    var btn = e.target.querySelector("button"); btn.disabled = true;
     var box = $("upMsg"); box.classList.add("hide");
+    // The two passwords must match before anything is sent.
+    if ($("upPass").value !== $("upPass2").value) {
+      $("upPassHint").classList.remove("hide"); $("upPass2").focus(); $("upPass2").select();
+      return;
+    }
+    $("upPassHint").classList.add("hide");
+    var btn = e.target.querySelector("button"); btn.disabled = true;
     var details = {
       full_name: $("upName").value.trim(),
       gender: $("upGender").value,

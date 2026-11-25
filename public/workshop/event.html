@@ -438,7 +438,7 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
     var list = (r.data || []).filter(function (p) { return p.event_id === EV.id && p.role !== "trainer"; });
     if (!list.length) { $("people").textContent = "यो इभेन्टमा अहिलेसम्म कोही स्वीकृत छैनन्।"; return; }
     $("people").classList.remove("muted");
-    $("people").innerHTML = '<p class="small muted">' + dn(list.length) + ' जना</p><div class="scroll"><table class="t"><thead><tr><th>#</th><th>नाम</th><th>कार्यालय</th><th>लिङ्ग</th><th>उमेर</th><th>शिक्षा</th></tr></thead><tbody>' +
+    $("people").innerHTML = '<p class="small muted">' + dn(list.length) + ' जना</p><div class="scroll"><table class="t"><thead><tr><th>#</th><th>नाम</th><th>कार्यालय / शाखा / विभाग</th><th>लिङ्ग</th><th>उमेर</th><th>शिक्षा</th></tr></thead><tbody>' +
       list.map(function (p, k) { return '<tr><td>' + dn(k + 1) + '</td><td>' + esc(p.full_name) + '</td><td>' + esc(p.office || "") + '</td><td>' + esc(p.gender || "") + '</td><td>' + esc(p.age_group || "") + '</td><td>' + esc(p.education || "") + '</td></tr>'; }).join("") +
       '</tbody></table></div>';
   }

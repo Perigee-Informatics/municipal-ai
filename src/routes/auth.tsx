@@ -36,10 +36,7 @@ const signUpSchema = signInSchema.extend({
     .trim()
     .nonempty({ message: "पूरा नाम हाल्नुहोस्" })
     .max(100, { message: "नाम १०० अक्षरभन्दा छोटो हुनुपर्छ" }),
-  password: z
-    .string()
-    .min(8, { message: "पासवर्ड कम्तीमा ८ अक्षरको हुनुपर्छ" })
-    .max(128),
+  password: z.string().min(8, { message: "पासवर्ड कम्तीमा ८ अक्षरको हुनुपर्छ" }).max(128),
 });
 
 function AuthPage() {
@@ -48,6 +45,7 @@ function AuthPage() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [password2, setPassword2] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -76,6 +74,11 @@ function AuthPage() {
         }
         navigate({ to: "/account" });
       } else {
+        // The two passwords must match before anything is sent.
+        if (password !== password2) {
+          setError("दुवै पासवर्ड मिलेनन्। फेरि टाइप गर्नुहोस्। (The two passwords do not match.)");
+          return;
+        }
         const parsed = signUpSchema.safeParse({ email, password, fullName });
         if (!parsed.success) {
           setError(parsed.error.issues[0]?.message ?? "विवरण जाँच्नुहोस्");
@@ -98,6 +101,7 @@ function AuthPage() {
         );
         setMode("in");
         setPassword("");
+        setPassword2("");
       }
     } finally {
       setBusy(false);
@@ -197,6 +201,26 @@ function AuthPage() {
               className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-foreground"
             />
           </div>
+          {mode === "up" && (
+            <div className="mt-4">
+              <label htmlFor="password2" className="text-sm font-medium text-foreground">
+                पासवर्ड फेरि टाइप गर्नुहोस् (Re-type password)
+              </label>
+              <input
+                id="password2"
+                type="password"
+                value={password2}
+                onChange={(e) => setPassword2(e.target.value)}
+                autoComplete="new-password"
+                maxLength={128}
+                aria-invalid={password2.length > 0 && password2 !== password}
+                className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-foreground"
+              />
+              {password2.length > 0 && password2 !== password && (
+                <p className="mt-1 text-sm text-destructive">दुवै पासवर्ड मिलेनन्।</p>
+              )}
+            </div>
+          )}
 
           {error && (
             <p className="mt-4 text-sm font-medium text-destructive" role="alert">
