@@ -234,6 +234,10 @@ const PACKAGES = [
   "AI for CSOs",
 ];
 
+const SHORT_PACKAGES = [
+  "AI for Higher Education",
+];
+
 /** The AI for ALL programme as the main attraction of the home page. */
 function AiForAll({ trainings }: { trainings: number }) {
   const { t } = useI18n();
@@ -256,6 +260,14 @@ function AiForAll({ trainings }: { trainings: number }) {
                 <li key={p} className="rounded-full border border-border bg-secondary/60 px-3 py-1">{p}</li>
               ))}
             </ul>
+            <div className="mt-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Short Training Packages</p>
+              <ul className="mt-2 flex flex-wrap gap-2 text-xs">
+                {SHORT_PACKAGES.map((p) => (
+                  <li key={p} className="rounded-full border border-border bg-secondary/60 px-3 py-1">{p}</li>
+                ))}
+              </ul>
+            </div>
             <div className="mt-7 flex flex-wrap gap-3">
               <Button asChild size="lg" className="rounded-full"><Link to="/ai-for-all">{t("prog.cta")} <ArrowRight /></Link></Button>
               <Button asChild variant="outline" size="lg" className="rounded-full"><a href={materials}><BookOpen />{t("prog.materials")}</a></Button>
@@ -268,7 +280,7 @@ function AiForAll({ trainings }: { trainings: number }) {
                 <div className="mt-1 text-sm text-muted-foreground">{t("prog.trainings")}</div>
               </div>
               <div className="rounded-2xl bg-secondary/60 p-5">
-                <div className="font-display text-3xl font-semibold text-primary">{PACKAGES.length}</div>
+                <div className="font-display text-3xl font-semibold text-primary">{PACKAGES.length + SHORT_PACKAGES.length}</div>
                 <div className="mt-1 text-sm text-muted-foreground">{t("prog.packages")}</div>
               </div>
             </div>

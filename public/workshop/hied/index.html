@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>AI for Higher Education · AI for ALL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;700;800&family=Rozha+One&display=swap">
+<style>
+:root {
+  --bg: #EEF1F4; --surface: #FFFFFF; --ink: #142440; --muted: #556275; --line: #D6DDE6;
+  --accent: #B3123A; --accent-ink: #FFFFFF; --navy: #1C3A66; --soft: #E6ECF4;
+  --prompt-bg: #FFF5DC; --prompt-line: #C98A0B; --prompt-ink: #3B2E10;
+  --warn-bg: #FBE8EC; --warn-line: #B3123A; --doc-bg: #F6F7F9; --ok: #237A52; --ok-bg: #E2F2EA;
+  --f-body: 'Mukta', 'Nirmala UI', system-ui, sans-serif;
+  --f-display: 'Rozha One', 'Mukta', Georgia, serif;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0D1420; --surface: #152033; --ink: #E3E9F2; --muted: #9AA8BB; --line: #26344B;
+  --accent: #F2708C; --accent-ink: #1A0A10; --navy: #93B4E6; --soft: #1B2942;
+  --prompt-bg: #2A2414; --prompt-line: #E2AE45; --prompt-ink: #F3E6C4;
+  --warn-bg: #33161E; --warn-line: #F2708C; --doc-bg: #182436; --ok: #6FD3A2; --ok-bg: #133227;
+  color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0D1420; --surface: #152033; --ink: #E3E9F2; --muted: #9AA8BB; --line: #26344B;
+  --accent: #F2708C; --accent-ink: #1A0A10; --navy: #93B4E6; --soft: #1B2942;
+  --prompt-bg: #2A2414; --prompt-line: #E2AE45; --prompt-ink: #F3E6C4;
+  --warn-bg: #33161E; --warn-line: #F2708C; --doc-bg: #182436; --ok: #6FD3A2; --ok-bg: #133227;
+  color-scheme: dark }
+
+* { box-sizing: border-box }
+html { height: 100% } body { min-height: 100%; margin: 0; background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 16.5px; line-height: 1.6 }
+button { font: inherit; color: inherit; cursor: pointer }
+a { color: var(--navy) }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 4px }
+
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--surface); border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 12px; padding: 10px 16px }
+.brand { display: flex; align-items: baseline; gap: 10px; min-width: 0; text-decoration: none; color: var(--ink) }
+.brand b { font-family: var(--f-display); font-weight: 400; font-size: 22px; color: var(--accent); white-space: nowrap }
+.brand span { font-size: 14px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.search { margin-left: auto; position: relative; flex: 0 1 320px; min-width: 0 }
+.search input { width: 100%; border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 999px; padding: 7px 14px; font: inherit; font-size: 15px }
+.results { position: absolute; right: 0; top: calc(100% + 6px); width: min(440px, 92vw); max-height: 60vh; overflow: auto; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: 0 12px 30px rgba(10,20,40,.18); padding: 6px }
+.results a { display: block; padding: 8px 10px; border-radius: 8px; text-decoration: none; color: var(--ink) }
+.results a:hover, .results a:focus { background: var(--soft) }
+.results small { display: block; color: var(--muted); font-size: 13px; line-height: 1.4 }
+.home-link { white-space: nowrap; text-decoration: none; font-weight: 600; font-size: 15px; color: var(--navy) }
+.menu-btn { display: none; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 5px 12px; font-size: 15px }
+
+.shell { display: grid; grid-template-columns: 300px minmax(0, 1fr); min-height: calc(100vh - 56px) }
+.side { border-right: 1px solid var(--line); background: var(--surface); padding: 16px; position: sticky; top: 56px; height: calc(100vh - 56px); overflow: auto }
+.nav-links { display: grid; gap: 2px; margin-bottom: 14px }
+.nav-links a { text-decoration: none; color: var(--ink); padding: 6px 10px; border-radius: 8px; font-weight: 500 }
+.nav-links a[aria-current="page"] { background: var(--soft); color: var(--navy) }
+.day-h { font-size: 13px; letter-spacing: .04em; color: var(--muted); margin: 14px 0 6px; display: flex; justify-content: space-between; gap: 8px }
+.day-h b { color: var(--ink); font-size: 14px; letter-spacing: 0 }
+.tl { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px }
+.tl a { display: grid; grid-template-columns: 74px minmax(0, 1fr) auto; gap: 8px; align-items: start; padding: 7px 8px; border-radius: 8px; text-decoration: none; color: var(--ink); font-size: 15px; line-height: 1.35 }
+.tl .t { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 13px; padding-top: 2px }
+.tl a:hover { background: var(--soft) }
+.tl a[aria-current="page"] { background: var(--soft); box-shadow: inset 3px 0 0 var(--navy) }
+.chip { font-size: 11.5px; font-weight: 700; border-radius: 999px; padding: 1px 8px; white-space: nowrap; align-self: center }
+.chip.done { background: var(--ok-bg); color: var(--ok) }
+
+main { min-width: 0; padding-block: 28px 80px; padding-inline: clamp(16px, 4vw, 48px) }
+.wrap { max-width: 880px; margin-inline: auto }
+.eyebrow { font-size: 14px; font-weight: 700; color: var(--accent); letter-spacing: .02em; margin: 0 }
+h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(28px, 4.2vw, 42px); line-height: 1.2; margin: 4px 0 10px; text-wrap: balance }
+.meta { color: var(--muted); margin: 0 0 18px }
+.prose h2 { font-size: 23px; margin: 28px 0 10px; color: var(--navy) }
+.prose h3 { font-size: 19px; margin: 22px 0 8px; color: var(--navy) }
+.prose p { margin: 8px 0 }
+.prose ul, .prose ol { padding-left: 1.4em; margin: 8px 0 }
+.prose li { margin: 4px 0 }
+.tbl { overflow-x: auto; margin: 12px 0; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface) }
+table { border-collapse: collapse; width: 100%; font-size: 15px; font-variant-numeric: tabular-nums }
+th { background: var(--soft); text-align: left; font-weight: 700; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: bottom }
+td { padding: 8px 10px; border-top: 1px solid var(--line); vertical-align: top }
+.box { border-radius: var(--r); padding: 12px 16px; margin: 14px 0; border-left: 4px solid var(--navy); background: var(--soft) }
+.box.warn { background: var(--warn-bg); border-left-color: var(--warn-line) }
+.box.trainer { background: var(--ok-bg); border-left-color: var(--ok) }
+.box-t { font-weight: 700; margin: 0 0 4px }
+.prompt { margin: 14px 0; border-radius: var(--r); background: var(--prompt-bg); border: 1px solid var(--prompt-line); overflow: hidden }
+.prompt figcaption { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 12px; font-weight: 700; color: var(--prompt-ink); border-bottom: 1px dashed var(--prompt-line) }
+.prompt pre { margin: 0; padding: 12px 14px; white-space: pre-wrap; font-family: var(--f-body); font-size: 15.5px; color: var(--prompt-ink); line-height: 1.6 }
+.copy, .btn { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 5px 12px; font-size: 14px; font-weight: 500; white-space: nowrap; text-decoration: none; display: inline-flex; align-items: center; gap: 6px }
+.copy { border-color: var(--prompt-line) }
+.btn.primary { background: var(--navy); color: var(--surface); border-color: var(--navy) }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 12px 0 18px }
+.toggle-done[aria-pressed="true"] { background: var(--ok-bg); color: var(--ok); border-color: var(--ok) }
+.pager { display: flex; justify-content: space-between; gap: 12px; margin-top: 28px; padding-top: 16px; border-top: 1px solid var(--line); flex-wrap: wrap }
+.pager a { text-decoration: none; font-weight: 600 }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; margin: 12px 0 }
+.fb-q { margin: 14px 0; padding: 12px; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface) }
+.fb-scale { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px }
+.fb-scale label { border: 1px solid var(--line); border-radius: 8px; padding: 4px 12px; cursor: pointer }
+.fb-scale input { margin-right: 6px }
+.f { display: grid; gap: 4px; margin: 12px 0; font-weight: 600; font-size: 15px }
+.f input, .f textarea { font: inherit; font-weight: 400; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink) }
+.toast { position: fixed; bottom: 20px; right: 20px; background: var(--navy); color: #fff; padding: 8px 14px; border-radius: 8px; font-size: 14px; z-index: 50 }
+
+@media (max-width: 900px) {
+  .menu-btn { display: inline-block }
+  .shell { grid-template-columns: 1fr }
+  .side { position: fixed; inset: 56px auto 0 0; width: min(310px, 86vw); height: auto; z-index: 30; transform: translateX(-100%); transition: transform .2s; box-shadow: none }
+  .side.open { transform: none; box-shadow: 0 0 0 100vmax rgba(0,0,0,.35) }
+}
+@media print {
+  .top, .side, .actions, .pager, .copy, .toast { display: none !important }
+  .shell { display: block }
+  main { padding: 0 }
+  body { background: #fff; color: #000 }
+  .prompt { break-inside: avoid }
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <button type="button" class="menu-btn" id="menuBtn" aria-controls="side" aria-expanded="false">☰ Menu</button>
+  <a class="brand" href="#home"><b>AI for ALL</b><span id="brandSub">AI for Higher Education</span></a>
+  <a class="home-link" data-home href="/ai-for-all" hidden>⌂ Home</a>
+  <div class="search">
+    <input type="search" id="q" placeholder="Search prompts, modules…" aria-label="Search">
+    <div class="results" id="results" hidden></div>
+  </div>
+</header>
+
+<div class="shell">
+  <nav class="side" id="side" aria-label="Session navigation"></nav>
+  <main id="view"></main>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="../account.js"></script>
+<script src="../event-info.js"></script>
+<script src="../teach-bar.js"></script>
+<script>
+(function () {
+"use strict";
+const COURSE = "hied";
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const store = {
+  get(k, d) { try { const v = localStorage.getItem("ai-hied-" + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem("ai-hied-" + k, JSON.stringify(v)); } catch (e) {} }
+};
+let done = new Set(store.get("done", []));
+
+let _pid = 0;
+function promptBox(label, text) {
+  const id = "cp" + (++_pid);
+  return `<figure class="prompt"><figcaption><span>${esc(label)}</span><button type="button" class="copy" data-copy-id="${id}">Copy</button></figcaption><pre id="${id}">${esc(text)}</pre></figure>`;
+}
+
+const MODULES = [
+  {
+    id: "m1", n: 1, time: "0:00–0:08", mins: 8, title: "Opening and why AI",
+    whatToDo: [
+      "Confirm everyone can open claude.ai and has one postgraduate topic and one journal article (PDF) ready.",
+      "Set the session goal: leave with a lesson outline, an article summary and critical appraisal, an assessment, and a slide outline for one topic you teach.",
+      "Frame Claude as a drafting and critique partner — never a replacement for scholarly judgement or source verification."
+    ],
+    body: `<p>In 80 minutes, we will build a complete teaching package for one Master's, MPhil or PhD topic you already teach. Keep your topic and PDF open alongside Claude (<a href="https://claude.ai" target="_blank" rel="noopener">claude.ai</a>) so every step produces something you can actually use in class.</p>`,
+    trainerNote: "Welcome participants and keep the opening brisk (8 minutes max). Ask 2–3 faculty members to name the postgraduate course and topic they brought. Reassure beginners that we will use one tool only (Claude) and copy-paste prompts first before customising."
+  },
+  {
+    id: "m2", n: 2, time: "0:08–0:18", mins: 10, title: "Prompting basics, RTCF",
+    whatToDo: [
+      "Run the weak prompt in Claude and look at how generic the output is.",
+      "Run the strong RTCF prompt in a new chat and compare the depth, postgraduate level, and local relevance.",
+      "Note the four parts of RTCF: Role, Task, Context, Format."
+    ],
+    body: `<p>Better prompts produce postgraduate-level material instead of generic undergraduate summaries. Use <strong>RTCF</strong>: <strong>Role</strong> (who Claude acts as), <strong>Task</strong> (what to produce), <strong>Context</strong> (level, class size, readings, Nepal/South Asian setting), and <strong>Format</strong> (table, sections, length).</p>` +
+      promptBox("Weak prompt (try first)", "Make a lesson on climate change.") +
+      promptBox("Strong prompt (RTCF)", "Role: You are an experienced university professor in environmental science who teaches Master's students.\nTask: Create a seminar outline on \"Climate change and food security\".\nContext: MSc first-semester students, 2-hour seminar, 25 students who have read two assigned journal articles. Course is in Nepal, so use South Asian evidence and policy examples.\nFormat: A table with columns Time, Activity, Teacher does, Students do, Bloom's level."),
+    trainerNote: "Demo both prompts live if time is tight, or let participants run both in 4 minutes. Point out two things: the weak prompt produces a school-level lecture; the strong prompt produces a timed postgraduate seminar with South Asian policy context and Bloom's levels."
+  },
+  {
+    id: "m3", n: 3, time: "0:18–0:33", mins: 15, title: "Lesson outline",
+    whatToDo: [
+      "Copy the prompt below, replace the [BRACKETS] with your own postgraduate topic, level, discipline, class length, size, readings and country/context.",
+      "Run it in Claude and inspect the learning outcomes — check that they sit at the analyse, evaluate or create level of Bloom's taxonomy.",
+      "Refine the outline with one of the follow-up prompts below."
+    ],
+    body: promptBox("Lesson outline prompt", "You are an expert in postgraduate curriculum design.\nCreate a lesson outline for [TOPIC] for [Master's / MPhil / PhD] students in [DISCIPLINE].\nClass length: [MINUTES]. Class size: [NUMBER]. Students have read: [ARTICLES OR CHAPTERS].\nInclude:\n1. Three learning outcomes at the analyse, evaluate or create level of Bloom's taxonomy\n2. A timed sequence: provocation question, short input, student-led critique of the readings, group debate or case analysis, synthesis\n3. Current debates, contested findings and research gaps in this topic\n4. One case or dataset from [COUNTRY/CONTEXT] for students to analyse\n5. A formative task that builds toward their research or thesis skills\nPresent it as a table followed by brief notes.") +
+      `<h3>Follow-up prompts</h3>` +
+      promptBox("Follow-up 1 — Structured debate", "Add a 20-minute structured debate where groups defend opposing positions from the literature.") +
+      promptBox("Follow-up 2 — Align with course objective", "Align the outcomes with this course objective: [paste].") +
+      promptBox("Follow-up 3 — Online class", "Adapt this for an online class on Zoom."),
+    trainerNote: "Give participants 10 minutes to generate and refine their own seminar outline. Walk the room and nudge anyone who left the [BRACKETS] blank. Remind them to keep this chat open — M5 and M6 can build directly on this outline."
+  },
+  {
+    id: "m4", n: 4, time: "0:33–0:46", mins: 13, title: "Summaries: summary, critical appraisal, synthesis",
+    whatToDo: [
+      "Click the paperclip icon in Claude and attach your journal article PDF.",
+      "Run the structured summary and critical appraisal prompt below.",
+      "Check whether Claude respected \"not reported\" instead of guessing missing details.",
+      "Optional: attach 3–4 articles on the same theme and run the synthesis follow-up."
+    ],
+    body: `<p>Attach your journal article PDF using the <strong>paperclip icon</strong> in Claude before sending the prompt.</p>` +
+      promptBox("Article summary and critical appraisal prompt (attach PDF)", "Read the attached journal article and produce:\n1. A structured summary: research question, theory or framework, method, sample, key findings, conclusion\n2. A critical appraisal: strengths, limitations, threats to validity, and whether the conclusions follow from the evidence\n3. How this study fits the wider debate, and the research gap it leaves open\n4. Five seminar discussion questions that push students to evaluate, not recall\nOnly use information from the document. Where the paper does not report something, say \"not reported\".") +
+      `<h3>Multi-paper synthesis follow-up</h3><p>Attach 3–4 articles on the same topic and run:</p>` +
+      promptBox("Synthesis follow-up (attach 3–4 articles)", "Compare these papers in a table by aim, method, context, findings and limitations, then write a 300-word synthesis of where they agree and disagree."),
+    trainerNote: "Emphasise the grounding instruction: \"Only use information from the document. Where the paper does not report something, say 'not reported'.\" Ask one participant to share one limitation or seminar question Claude surfaced from their PDF."
+  },
+  {
+    id: "m5", n: 5, time: "0:46–1:00", mins: 14, title: "Assessments: case-based and analytical questions, rubric, answer key",
+    whatToDo: [
+      "In the same chat as your article or lesson outline, run the assessment prompt below.",
+      "Inspect the multiple-choice distractors, the case scenarios, and the 4×4 essay rubric.",
+      "Try one follow-up prompt (parallel version, Moodle/Google Forms table, or viva questions).",
+      "Solve every question yourself before using the answer key."
+    ],
+    body: promptBox("Assessment and rubric prompt", "Based on [the attached article / the lesson outline above], create an assessment for [Master's / MPhil / PhD] students:\n- 5 multiple-choice questions at application and analysis level only (no simple recall), each with a one-line explanation\n- 2 data or case interpretation questions using a short scenario from [CONTEXT]\n- 1 critical essay question that asks students to evaluate competing arguments\n- A marking rubric for the essay with 4 criteria (argument, use of literature, critical analysis, structure) and 4 performance bands\nMake distractors plausible and put the answer key in a separate section at the end.") +
+      `<h3>Follow-up prompts</h3>` +
+      promptBox("Follow-up 1 — Parallel version", "Make a second version with different questions of equal difficulty.") +
+      promptBox("Follow-up 2 — Google Forms / Moodle table", "Turn this into a table I can paste into Google Forms or Moodle.") +
+      promptBox("Follow-up 3 — Viva / oral exam", "Create 8 viva or oral-exam questions on this topic, each with two probing follow-ups.") +
+      `<div class="box warn"><p class="box-t">Important note</p><p>Check every answer key yourself. AI tools regularly mark a plausible distractor as the correct answer or miscalculate a scenario.</p></div>`,
+    trainerNote: "Have participants generate their assessment and check at least 2 MCQ answers right now. Point out how the viva/oral-exam follow-up is especially useful for MPhil and PhD thesis defences."
+  },
+  {
+    id: "m6", n: 6, time: "1:00–1:12", mins: 12, title: "Presentations",
+    whatToDo: [
+      "In the chat with your seminar outline, run the 10-slide presentation prompt below.",
+      "Review the slide titles, short bullets (max 8 words each), visual suggestions, speaker notes, and flagged items to verify.",
+      "Option B: ask Claude to \"create this as a slide deck\" to generate a finished, downloadable deck."
+    ],
+    body: promptBox("10-slide presentation prompt", "Turn the seminar outline above into a 10-slide presentation for postgraduate students.\nFor each slide give: slide title, 3–5 short bullet points (max 8 words each), a suggestion for a visual, diagram or conceptual framework, and speaker notes of 60–80 words.\nSlide 1 is the title, slide 2 the learning outcomes, one slide maps the key debates, and the last slide poses an open research question.\nMark any study or statistic I need to verify before teaching.") +
+      `<div class="box"><p class="box-t">Option B: downloadable slide deck</p><p>After reviewing the outline, ask Claude: <strong>"create this as a slide deck"</strong> for a finished, downloadable deck.</p></div>`,
+    trainerNote: "If short on time, cut M6 to a live 3-minute demo only — never cut M7. Show how asking Claude to flag studies and statistics to verify saves time and prevents embarrassing citation errors in class."
+  },
+  {
+    id: "m7", n: 7, time: "1:12–1:20", mins: 8, title: "Responsible use and wrap-up",
+    whatToDo: [
+      "Review the six risks below and agree on a practical habit for each.",
+      "Copy the disclosure line to use on AI-assisted teaching materials.",
+      "Open the printable Handout to keep the RTCF formula, starter prompts, checklist and this week's challenge."
+    ],
+    body: `<div class="tbl"><table><thead><tr><th>Risk</th><th>What to do</th></tr></thead><tbody>
+      <tr><td><strong>Wrong facts or invented references</strong></td><td>Check against your own sources; never cite a reference you have not opened.</td></tr>
+      <tr><td><strong>Wrong quiz answer keys</strong></td><td>Solve every question yourself.</td></tr>
+      <tr><td><strong>Bias or out-of-context examples</strong></td><td>Replace with local, discipline-appropriate examples.</td></tr>
+      <tr><td><strong>Student data and privacy</strong></td><td>Never paste student names, marks, IDs or unpublished research.</td></tr>
+      <tr><td><strong>Copyright</strong></td><td>Upload only materials you may use; summarize, don't republish.</td></tr>
+      <tr><td><strong>Academic integrity</strong></td><td>Tell students how AI was used in course materials; set clear rules for their own use in assignments, theses and dissertations.</td></tr>
+    </tbody></table></div>` +
+      promptBox("Suggested disclosure line", "Prepared with the help of an AI tool (Claude) and reviewed by the instructor."),
+    trainerNote: "Never cut M7, even if the session runs late. Walk through the 6 risks briskly, stress student privacy (never paste student scripts, marks or unpublished thesis drafts without consent), and close with this week's challenge from the Handout."
+  }
+];
+
+const M_MAP = Object.fromEntries(MODULES.map(m => [m.id, m]));
+const FB_QS = [
+  "Overall, this session was useful for my teaching",
+  "The pace was right for an 80-minute session",
+  "The prompt examples were clear and relevant to postgraduate teaching",
+  "There was enough hands-on practice with Claude",
+  "The outputs fit Master's / MPhil / PhD level work",
+  "The facilitator explained responsible use clearly"
+];
+
+let ORG = "", PLACE = "", DATES = "", EV_NAME = "", EV_CODE = "";
+let MATERIALS_OK = false;
+
+function isTrainer() { return !!(window.WS && WS.isTrainer && WS.isTrainer()); }
+
+function renderSide(cur) {
+  const on = id => cur === id ? 'aria-current="page"' : "";
+  let h = `<div class="nav-links">
+    <a data-home href="/ai-for-all" hidden>⌂ Home</a>
+    <a href="#home" ${on("home")}>Overview &amp; agenda</a>
+    <a href="#handout" ${on("handout")}>Printable handout</a>
+    <a href="#feedback" ${on("feedback")}>Feedback form</a>
+  </div>`;
+  h += `<p class="day-h"><b>80-minute session</b><span>${esc(DATES || "M1–M7")}</span></p><ul class="tl">`;
+  MODULES.forEach(m => {
+    h += `<li><a href="#${m.id}" ${on(m.id)}><span class="t">${esc(m.time)}</span><span>M${m.n}. ${esc(m.title)}</span>${done.has(m.id) ? '<span class="chip done">Done</span>' : ""}</a></li>`;
+  });
+  h += `</ul>`;
+  $("#side").innerHTML = h;
+  if (HOME && window.EVI) EVI.mountHome(HOME);
+}
+
+function vHome() {
+  const meta = [ORG, PLACE, DATES].filter(Boolean).join(" · ");
+  const agendaRows = MODULES.map(m => `<tr><td>${esc(m.time)}</td><td>${m.mins}</td><td><a href="#${m.id}">M${m.n}. ${esc(m.title)}</a></td></tr>`).join("");
+  return `<div class="wrap prose">
+    <p class="eyebrow">Short Training Packages · AI for Higher Education</p>
+    <h1>Use AI to Develop Lesson Outlines, Summaries, Quizzes and Presentations</h1>
+    <p class="meta">80-minute hands-on session for postgraduate faculty, using Claude (claude.ai).${meta ? "<br>" + esc(meta) : ""}</p>
+    <div class="box"><p class="box-t">Session goal</p><p>Each participant leaves with a lesson outline, an article summary and critical appraisal, an assessment and a slide outline, all for one postgraduate topic they teach.</p></div>
+    <h2>Learning outcomes</h2>
+    <ol>
+      <li>Write a clear prompt using RTCF (Role, Task, Context, Format).</li>
+      <li>Generate a seminar outline aligned to programme outcomes and higher Bloom's levels (analyse, evaluate, create).</li>
+      <li>Summarize and critically appraise a journal article, and synthesize several papers.</li>
+      <li>Build assessments that test analysis, evaluation and application to cases, with answer keys and rubrics.</li>
+      <li>Turn a lesson into a presentation outline or a finished slide deck.</li>
+      <li>Check AI output for accuracy, bias and academic-integrity issues before use.</li>
+    </ol>
+    <h2>Before the session</h2>
+    <ul>
+      <li>Create a free Claude account at <a href="https://claude.ai" target="_blank" rel="noopener">claude.ai</a>.</li>
+      <li>Bring one postgraduate topic you teach (Master's, MPhil or PhD) and one journal article (PDF) from your reading list.</li>
+    </ul>
+    <h2>Agenda (80 minutes)</h2>
+    <div class="tbl"><table><thead><tr><th>Time</th><th>Min</th><th>Module</th></tr></thead><tbody>${agendaRows}</tbody></table></div>
+    ${isTrainer() ? `<div class="box trainer"><p class="box-t">Facilitator notes (visible to trainer only)</p><p>Each module page (M1–M7) includes a green Facilitator note box with what to say in that segment. <strong>Timing rule:</strong> if short on time, cut M6 to a demo only, never cut M7.</p></div>` : ""}
+    <div class="actions">
+      <a class="btn primary" href="#m1">Start Module 1 →</a>
+      <a class="btn" href="#handout">Printable handout</a>
+    </div>
+  </div>`;
+}
+
+function vModule(m) {
+  const prev = m.n > 1 ? MODULES[m.n - 2] : null;
+  const next = m.n < MODULES.length ? MODULES[m.n] : null;
+  return `<div class="wrap prose">
+    <p class="eyebrow">Module ${m.n} of ${MODULES.length} · ${esc(m.time)} (${m.mins} min)</p>
+    <h1>${esc(m.title)}</h1>
+    <div class="actions">
+      <button type="button" class="btn toggle-done" data-sess="${m.id}" aria-pressed="${done.has(m.id)}">${done.has(m.id) ? "✓ Done" : "Mark as done"}</button>
+    </div>
+    <div class="box"><p class="box-t">What to do</p><ul>${m.whatToDo.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>
+    ${m.body}
+    ${isTrainer() ? `<div class="box trainer"><p class="box-t">Facilitator note (trainer only)</p><p>${esc(m.trainerNote)}</p></div>` : ""}
+    <div class="pager">
+      ${prev ? `<a href="#${prev.id}">← M${prev.n}. ${esc(prev.title)}</a>` : `<a href="#home">← Overview</a>`}
+      ${next ? `<a href="#${next.id}">M${next.n}. ${esc(next.title)} →</a>` : `<a href="#handout">Printable handout →</a>`}
+    </div>
+  </div>`;
+}
+
+function vHandout() {
+  return `<div class="wrap prose">
+    <p class="eyebrow">Quick reference · Print / PDF</p>
+    <h1>Postgraduate Faculty AI Handout</h1>
+    <div class="actions"><button type="button" class="btn primary" data-print>🖨 Print / Save as PDF</button></div>
+    <h2>1. The RTCF prompt formula</h2>
+    <div class="tbl"><table><thead><tr><th>Letter</th><th>Meaning</th><th>Example</th></tr></thead><tbody>
+      <tr><td><strong>R</strong></td><td>Role</td><td>You are an experienced university professor in [discipline] who teaches Master's students.</td></tr>
+      <tr><td><strong>T</strong></td><td>Task</td><td>Create a seminar outline / critically appraise this article / draft an assessment.</td></tr>
+      <tr><td><strong>C</strong></td><td>Context</td><td>MSc/MPhil/PhD level, class length, class size, assigned readings, Nepal/South Asian examples.</td></tr>
+      <tr><td><strong>F</strong></td><td>Format</td><td>Timed table with Bloom's levels, 4×4 rubric, 10-slide outline with speaker notes.</td></tr>
+    </tbody></table></div>
+    <h2>2. Starter prompts</h2>
+    <div class="tbl"><table><thead><tr><th>Goal</th><th>Starter prompt</th></tr></thead><tbody>
+      <tr><td><strong>Plan a lesson</strong></td><td>"You are an expert in postgraduate curriculum design. Create a timed seminar outline on [TOPIC] for [LEVEL] students with 3 higher-order Bloom's outcomes, current debates, a local case and a formative task."</td></tr>
+      <tr><td><strong>Summarize an article</strong></td><td>Attach PDF: "Produce a structured summary, critical appraisal, research gap, and 5 evaluative seminar questions. Only use the attached paper; say 'not reported' if missing."</td></tr>
+      <tr><td><strong>Make an assessment</strong></td><td>"Create 5 application/analysis MCQs, 2 case-interpretation questions, 1 critical essay question, a 4×4 rubric, and a separate answer key."</td></tr>
+      <tr><td><strong>Make slides</strong></td><td>"Turn the outline into 10 postgraduate slides (max 8 words/bullet, visual suggestion, 60–80 word speaker notes). Mark any study or statistic to verify."</td></tr>
+      <tr><td><strong>Improve a result</strong></td><td>"Raise the analytical rigour to MPhil/PhD level", "Use a Nepal/South Asian case", "Make the distractors more plausible", or "Adapt for a 20-minute debate".</td></tr>
+    </tbody></table></div>
+    <h2>3. Checklist before using AI output</h2>
+    <ul>
+      <li>Facts and figures are verified against your own sources.</li>
+      <li>Every cited reference actually exists and you have opened it.</li>
+      <li>All quiz answer keys and calculations have been solved by you.</li>
+      <li>Depth, tone and examples suit postgraduate students in your discipline.</li>
+      <li>No student names, marks, IDs or unpublished research were pasted into the tool.</li>
+    </ul>
+    <div class="box"><p class="box-t">This week's challenge</p><p>Build one full lesson package (seminar outline, article appraisal, assessment with rubric, and slide outline) for a class you teach next, and note the time saved.</p></div>
+  </div>`;
+}
+
+function vFeedback() {
+  const code = EV_CODE || new URLSearchParams(location.search).get("event") || "";
+  return `<div class="wrap prose">
+    <p class="eyebrow">Closing</p>
+    <h1>Session Feedback</h1>
+    <p class="meta">Anonymous and takes 1 minute. Rate each statement from 1 (strongly disagree) to 5 (strongly agree).</p>
+    <form id="fbForm">
+      <label class="f">Event code<input id="fbCode" value="${esc(code)}" required placeholder="e.g. HIED001"></label>
+      ${FB_QS.map((q, i) => `<div class="fb-q"><div><strong>${i + 1}.</strong> ${esc(q)}</div><div class="fb-scale">${[1, 2, 3, 4, 5].map(n => `<label><input type="radio" name="r${i}" value="${n}" required>${n}</label>`).join("")}</div></div>`).join("")}
+      <label class="f">Which module was most useful?<input id="fbBest" placeholder="e.g. M4 Summaries & critical appraisal"></label>
+      <label class="f">What could be improved?<textarea id="fbImp" rows="2"></textarea></label>
+      <label class="f">What will you try first in your teaching?<textarea id="fbFirst" rows="2"></textarea></label>
+      <label style="display:flex;align-items:center;gap:8px;margin:12px 0"><input type="checkbox" id="fbRec" checked> I would recommend this session to colleagues.</label>
+      <button type="submit" class="btn primary" id="fbSend">Submit feedback</button>
+      <p id="fbMsg" class="meta" style="margin-top:10px"></p>
+    </form>
+  </div>`;
+}
+
+function gateView() {
+  const signedIn = !!(window.WS && WS.session);
+  const nextUrl = "../login.html?next=" + encodeURIComponent(location.pathname + location.search + location.hash);
+  return `<div class="wrap" style="padding-top:20px"><p class="eyebrow">Private materials</p><h1>${signedIn ? "You are not registered for this training" : "Sign in to see the materials"}</h1>
+  <p class="meta">${signedIn
+    ? "These materials are open only to participants registered for this training. If your registration is still waiting for approval, or you are in another training, contact the trainer."
+    : "These materials are private for now. Participants registered for this training can sign in to see them."}</p>
+  ${signedIn ? "" : `<p class="actions"><a class="btn primary" href="${nextUrl}">Sign in</a> <a class="btn" href="/workshop/login.html#signup">Register</a></p>`}</div>`;
+}
+
+function route() {
+  if (!MATERIALS_OK) { $("#view").innerHTML = gateView(); renderSide("home"); return; }
+  const id = (location.hash || "#home").slice(1) || "home";
+  let html, cur = id;
+  if (M_MAP[id]) html = vModule(M_MAP[id]);
+  else if (id === "handout") html = vHandout();
+  else if (id === "feedback") html = vFeedback();
+  else { html = vHome(); cur = "home"; }
+  $("#view").innerHTML = html;
+  renderSide(cur);
+  closeSide();
+  window.scrollTo({ top: 0 });
+  if (window.TeachBar && TeachBar.on) {
+    TeachBar.mount({
+      days: [{ label: "80-min session", items: MODULES.map(m => ({ id: m.id, kind: "session", start: m.time, title: m.title })) }],
+      titleOf: it => "M" + M_MAP[it.id].n + ". " + M_MAP[it.id].title,
+      num: it => M_MAP[it.id].n,
+      lead: [["home", "Overview"]],
+      tail: [["handout", "Handout"], ["feedback", "Feedback"]]
+    });
+    TeachBar.update(cur);
+  }
+}
+
+function toast(t) { const el = $("#toast"); el.textContent = t; el.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => el.hidden = true, 2200); }
+async function copyText(text) {
+  try { await navigator.clipboard.writeText(text); toast("Copied"); }
+  catch (e) { toast("Select and copy the text manually"); }
+}
+
+document.addEventListener("click", e => {
+  const c = e.target.closest(".copy");
+  if (c) { const pre = document.getElementById(c.dataset.copyId); if (pre) copyText(pre.textContent); return; }
+  const t = e.target.closest(".toggle-done");
+  if (t) { const id = t.dataset.sess; done.has(id) ? done.delete(id) : done.add(id); store.set("done", [...done]); const y = scrollY; route(); scrollTo(0, y); return; }
+  if (e.target.closest("[data-print]")) { window.print(); return; }
+  if (e.target.closest("[data-retry]")) { start(); return; }
+  if (!e.target.closest(".search")) $("#results").hidden = true;
+});
+
+document.addEventListener("submit", async e => {
+  if (e.target.id !== "fbForm") return;
+  e.preventDefault();
+  const msg = $("#fbMsg"), btn = $("#fbSend");
+  const code = $("#fbCode").value.trim().toUpperCase();
+  const ratings = FB_QS.map((_, i) => Number((document.querySelector('input[name="r' + i + '"]:checked') || {}).value || 0));
+  if (!code || ratings.some(x => x < 1)) { msg.textContent = "Please enter the event code and rate all 6 items."; return; }
+  btn.disabled = true; msg.textContent = "Submitting…";
+  const r = await WS.submitFeedback({
+    event_code: code, ratings: ratings,
+    best_session: $("#fbBest").value.trim(),
+    improve: $("#fbImp").value.trim(),
+    first_ai_use: $("#fbFirst").value.trim(),
+    recommend: $("#fbRec").checked
+  });
+  btn.disabled = false;
+  if (r.error) { msg.textContent = "Could not submit: " + r.error.message; return; }
+  msg.textContent = "Thank you! Your feedback has been recorded.";
+  e.target.reset(); $("#fbCode").value = code;
+});
+
+/* Search */
+const INDEX = MODULES.map(m => ({ id: m.id, title: "M" + m.n + ". " + m.title, text: (m.whatToDo.join(" ") + " " + m.body.replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ") }));
+INDEX.push({ id: "handout", title: "Printable handout", text: "RTCF starter prompts checklist challenge" });
+$("#q").addEventListener("input", e => {
+  const q = e.target.value.trim().toLowerCase(), box = $("#results");
+  if (q.length < 2) { box.hidden = true; return; }
+  const hits = INDEX.filter(it => it.title.toLowerCase().includes(q) || it.text.toLowerCase().includes(q));
+  box.innerHTML = hits.length ? hits.map(h => `<a href="#${h.id}"><b>${esc(h.title)}</b></a>`).join("") : '<p style="padding:8px 10px;margin:0;color:var(--muted)">Nothing found.</p>';
+  box.hidden = false;
+});
+$("#results").addEventListener("click", e => { if (e.target.closest("a")) { $("#results").hidden = true; $("#q").value = ""; } });
+
+function closeSide() { $("#side").classList.remove("open"); $("#menuBtn").setAttribute("aria-expanded", "false"); }
+$("#menuBtn").addEventListener("click", () => { const o = $("#side").classList.toggle("open"); $("#menuBtn").setAttribute("aria-expanded", String(o)); });
+window.addEventListener("hashchange", route);
+
+async function applyEvent() {
+  const ev = await EVI.resolve(COURSE);
+  if (!ev) return;
+  const info = EVI.info(ev);
+  ORG = info.org; PLACE = info.place; EV_NAME = info.name; EV_CODE = ev.code || "";
+  DATES = EVI.enRange((info.iso || []).map(d => String(d).slice(0, 10)));
+  $("#brandSub").textContent = "AI for Higher Education" + (ORG ? " · " + ORG : "") + (DATES ? " · " + DATES : "");
+  document.title = (EV_NAME || "AI for Higher Education") + " · AI for ALL";
+}
+
+const withTimeout = (pr, ms) => Promise.race([pr, new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), ms))]);
+let HOME = null;
+async function start() {
+  $("#view").innerHTML = '<div class="wrap"><p class="eyebrow" style="margin-top:20px">Loading…</p></div>';
+  let ok;
+  try {
+    await withTimeout(WS.init(), 7000);
+    ok = isTrainer() || (await withTimeout(WS.materialsAccess(new URLSearchParams(location.search).get("event")), 7000));
+  } catch (e) { ok = e && e.message === "timeout" ? null : false; }
+  if (ok === null) {
+    $("#view").innerHTML = '<div class="wrap" style="padding-top:20px"><p class="eyebrow">Slow connection</p><h1>The materials could not load</h1><p class="meta">Check the internet and try again.</p><p><button class="btn primary" data-retry>Try again</button></p></div>';
+    renderSide("home"); return;
+  }
+  MATERIALS_OK = ok;
+  route();
+  if (window.EVI && !HOME) EVI.home().then(h => { HOME = Object.assign({}, h, { label: /admin/.test(h.href) ? "Trainer console" : "Home" }); EVI.mountHome(HOME); }).catch(() => {});
+  try { await withTimeout(applyEvent(), 7000); const y = scrollY; route(); scrollTo(0, y); } catch (e) {}
+}
+start();
+})();
+</script>
+</body>
+</html>

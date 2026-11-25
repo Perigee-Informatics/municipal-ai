@@ -207,6 +207,14 @@ function Landing() {
                       AI for CSOs
                     </span>
                   )}
+                  {active.course === "hied" && (
+                    <span
+                      className="ml-2 rounded-full px-2 py-0.5 align-middle text-xs font-bold text-white"
+                      style={{ background: C.navy }}
+                    >
+                      AI for Higher Education
+                    </span>
+                  )}
                 </p>
                 <p className="mt-1 text-[15px]" style={{ color: C.muted }}>
                   {[active.organizedBy, active.place, active.dates].filter(Boolean).join(" · ")}
@@ -244,6 +252,25 @@ function Landing() {
                   </p>
                 </article>
               ))}
+            </div>
+            <h3 style={display} className="mt-10 text-2xl" lang="en">
+              Short Training Packages
+            </h3>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <article
+                lang="en"
+                className="rounded-2xl border p-5 sm:col-span-2"
+                style={{ borderColor: C.navy, background: C.bg }}
+              >
+                <p className="text-sm font-bold" style={{ color: C.accent }}>
+                  80-minute hands-on session · Postgraduate faculty
+                </p>
+                <h4 className="mt-1 text-xl font-bold">AI for Higher Education</h4>
+                <p className="mt-2 text-[15px]" style={{ color: C.muted }}>
+                  Use Claude to develop postgraduate seminar outlines, article summaries and critical appraisals,
+                  case-based assessments with rubrics, and presentation decks for Master&apos;s, MPhil and PhD courses.
+                </p>
+              </article>
             </div>
           </div>
         </section>

@@ -184,8 +184,9 @@ EVI.resolve().then(function (ev) { var i = EVI.info(ev); if (i && i.org) documen
     card.innerHTML = '<h2 style="margin-top:0">कुन तालिम?</h2><p class="muted">' + esc(name) + 'तपाईं ' + list.length + ' वटा तालिममा सहभागी हुनुहुन्छ। अहिले कुन तालिमको सामग्री र परीक्षा हेर्ने हो, छान्नुहोस्।</p>' +
       list.map(function (ev) {
         var i = window.EVI ? EVI.info(ev) : null;
-        var lvl = window.EVI && EVI.courseOf(ev.package_key) !== "cso" ? EVI.LEVEL_LABEL[EVI.levelOf(ev.package_key)] : "";
-        var course = { representative: "जनप्रतिनिधिका लागि AI", cso: "AI for CSOs", employee: "कर्मचारीका लागि AI" }[window.EVI ? EVI.courseOf(ev.package_key) : "employee"];
+        var cKey = window.EVI ? EVI.courseOf(ev.package_key) : "employee";
+        var lvl = window.EVI && cKey !== "cso" && cKey !== "hied" ? EVI.LEVEL_LABEL[EVI.levelOf(ev.package_key)] : "";
+        var course = { representative: "जनप्रतिनिधिका लागि AI", cso: "AI for CSOs", hied: "AI for Higher Education", employee: "कर्मचारीका लागि AI" }[cKey];
         return '<button type="button" class="ev-choice' + (ev.current ? ' cur' : '') + '" data-choose="' + esc(ev.event_id) + '">' +
           '<strong>' + esc(ev.name) + '</strong>' + (ev.current ? ' <span class="small">(अहिलेको)</span>' : '') +
           '<span class="small muted">' + esc([course + (lvl ? " · " + lvl : ""), i && i.org, i && i.dateRange].filter(Boolean).join(" · ")) + '</span></button>';

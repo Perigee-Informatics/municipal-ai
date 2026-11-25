@@ -7,11 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.18"
-  }
   public: {
     Tables: {
       app_secrets: {
@@ -157,6 +152,7 @@ export type Database = {
           education: string | null
           gender: string | null
           id: string
+          key_version: number | null
           max_score: number | null
           question_ids: number[] | null
           score: number | null
@@ -173,6 +169,7 @@ export type Database = {
           education?: string | null
           gender?: string | null
           id?: string
+          key_version?: number | null
           max_score?: number | null
           question_ids?: number[] | null
           score?: number | null
@@ -189,6 +186,7 @@ export type Database = {
           education?: string | null
           gender?: string | null
           id?: string
+          key_version?: number | null
           max_score?: number | null
           question_ids?: number[] | null
           score?: number | null
@@ -309,7 +307,15 @@ export type Database = {
           thumb_path?: string
           width?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "event_media_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       event_types: {
         Row: {
@@ -343,6 +349,7 @@ export type Database = {
           event_dates: string[]
           id: string
           is_active: boolean
+          materials_public: boolean
           name: string
           organized_by: string | null
           package_id: string | null
@@ -359,6 +366,7 @@ export type Database = {
           event_dates?: string[]
           id?: string
           is_active?: boolean
+          materials_public?: boolean
           name: string
           organized_by?: string | null
           package_id?: string | null
@@ -375,6 +383,7 @@ export type Database = {
           event_dates?: string[]
           id?: string
           is_active?: boolean
+          materials_public?: boolean
           name?: string
           organized_by?: string | null
           package_id?: string | null
@@ -491,12 +500,12 @@ export type Database = {
         Row: {
           calendar_id: string
           connected_email: string | null
-          id: number
-          refresh_token: string | null
-          updated_at: string
           engagements_calendar_id: string | null
+          id: number
           last_pulled_at: string | null
+          refresh_token: string | null
           sync_token: string | null
+          updated_at: string
           use_main: boolean
           watch_channel_id: string | null
           watch_expires_at: string | null
@@ -505,12 +514,12 @@ export type Database = {
         Insert: {
           calendar_id?: string
           connected_email?: string | null
-          id?: number
-          refresh_token?: string | null
-          updated_at?: string
           engagements_calendar_id?: string | null
+          id?: number
           last_pulled_at?: string | null
+          refresh_token?: string | null
           sync_token?: string | null
+          updated_at?: string
           use_main?: boolean
           watch_channel_id?: string | null
           watch_expires_at?: string | null
@@ -519,12 +528,12 @@ export type Database = {
         Update: {
           calendar_id?: string
           connected_email?: string | null
-          id?: number
-          refresh_token?: string | null
-          updated_at?: string
           engagements_calendar_id?: string | null
+          id?: number
           last_pulled_at?: string | null
+          refresh_token?: string | null
           sync_token?: string | null
+          updated_at?: string
           use_main?: boolean
           watch_channel_id?: string | null
           watch_expires_at?: string | null
@@ -555,6 +564,39 @@ export type Database = {
           value?: string
         }
         Relationships: []
+      }
+      participant_events: {
+        Row: {
+          added_at: string
+          event_id: string
+          profile_id: string
+        }
+        Insert: {
+          added_at?: string
+          event_id: string
+          profile_id: string
+        }
+        Update: {
+          added_at?: string
+          event_id?: string
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "participant_events_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "participant_events_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profile: {
         Row: {
@@ -717,6 +759,27 @@ export type Database = {
         }
         Relationships: []
       }
+      question_keys: {
+        Row: {
+          a: number
+          e: string
+          id: number
+          remap: number[] | null
+        }
+        Insert: {
+          a: number
+          e?: string
+          id: number
+          remap?: number[] | null
+        }
+        Update: {
+          a?: number
+          e?: string
+          id?: number
+          remap?: number[] | null
+        }
+        Relationships: []
+      }
       request_sessions: {
         Row: {
           end_time: string
@@ -821,29 +884,29 @@ export type Database = {
           description: string | null
           description_ne: string | null
           end_date: string | null
+          end_time: string | null
           event_date: string
           event_type_id: string | null
           facebook_post_url: string | null
+          google_event_id: string | null
+          google_sync: boolean
+          google_synced_at: string | null
           id: string
           is_public: boolean
           latitude: number | null
           location_needs_review: boolean
           longitude: number | null
+          online_link: string | null
           organizer: string | null
+          private_notes: string | null
           role_id: string | null
+          source: string
           source_request_id: string | null
+          start_time: string | null
           title: string
           title_ne: string | null
           training_event_id: string | null
           updated_at: string
-          end_time: string | null
-          google_event_id: string | null
-          google_sync: boolean
-          google_synced_at: string | null
-          online_link: string | null
-          private_notes: string | null
-          source: string
-          start_time: string | null
           venue_mode: string
           venue_name: string | null
         }
@@ -855,29 +918,29 @@ export type Database = {
           description?: string | null
           description_ne?: string | null
           end_date?: string | null
+          end_time?: string | null
           event_date: string
           event_type_id?: string | null
           facebook_post_url?: string | null
+          google_event_id?: string | null
+          google_sync?: boolean
+          google_synced_at?: string | null
           id?: string
           is_public?: boolean
           latitude?: number | null
           location_needs_review?: boolean
           longitude?: number | null
+          online_link?: string | null
           organizer?: string | null
+          private_notes?: string | null
           role_id?: string | null
+          source?: string
           source_request_id?: string | null
+          start_time?: string | null
           title: string
           title_ne?: string | null
           training_event_id?: string | null
           updated_at?: string
-          end_time?: string | null
-          google_event_id?: string | null
-          google_sync?: boolean
-          google_synced_at?: string | null
-          online_link?: string | null
-          private_notes?: string | null
-          source?: string
-          start_time?: string | null
           venue_mode?: string
           venue_name?: string | null
         }
@@ -889,40 +952,33 @@ export type Database = {
           description?: string | null
           description_ne?: string | null
           end_date?: string | null
+          end_time?: string | null
           event_date?: string
           event_type_id?: string | null
           facebook_post_url?: string | null
+          google_event_id?: string | null
+          google_sync?: boolean
+          google_synced_at?: string | null
           id?: string
           is_public?: boolean
           latitude?: number | null
           location_needs_review?: boolean
           longitude?: number | null
+          online_link?: string | null
           organizer?: string | null
+          private_notes?: string | null
           role_id?: string | null
+          source?: string
           source_request_id?: string | null
+          start_time?: string | null
           title?: string
           title_ne?: string | null
           training_event_id?: string | null
           updated_at?: string
-          end_time?: string | null
-          google_event_id?: string | null
-          google_sync?: boolean
-          google_synced_at?: string | null
-          online_link?: string | null
-          private_notes?: string | null
-          source?: string
-          start_time?: string | null
           venue_mode?: string
           venue_name?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "stories_training_event_id_fkey"
-            columns: ["training_event_id"]
-            isOneToOne: false
-            referencedRelation: "events"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "stories_cover_fk"
             columns: ["cover_media_id"]
@@ -949,6 +1005,13 @@ export type Database = {
             columns: ["source_request_id"]
             isOneToOne: false
             referencedRelation: "appointment_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stories_training_event_id_fkey"
+            columns: ["training_event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
             referencedColumns: ["id"]
           },
         ]
@@ -998,18 +1061,21 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          is_short: boolean
           key: string
           name: string
         }
         Insert: {
           created_at?: string
           id?: string
+          is_short?: boolean
           key: string
           name: string
         }
         Update: {
           created_at?: string
           id?: string
+          is_short?: boolean
           key?: string
           name?: string
         }
@@ -1108,29 +1174,29 @@ export type Database = {
           package_key: string
         }[]
       }
+      choose_my_event: { Args: { p_event: string }; Returns: undefined }
       event_exists: { Args: { p_code: string }; Returns: boolean }
+      event_package_key: { Args: { p_code: string }; Returns: string }
       event_question_ids: { Args: { p_code: string }; Returns: number[] }
       event_test_open: {
         Args: { p_code: string; p_test: string }
         Returns: boolean
       }
-      is_approved: { Args: never; Returns: boolean }
-      is_trainer: { Args: never; Returns: boolean }
       get_public_events: {
         Args: never
         Returns: {
-          city: string | null
-          country: string | null
-          end_time: string | null
+          city: string
+          country: string
+          end_time: string
           event_title: string
-          event_type: string | null
-          event_type_ne: string | null
+          event_type: string
+          event_type_ne: string
           id: string
           organization: string
-          role: string | null
-          role_ne: string | null
+          role: string
+          role_ne: string
           session_date: string
-          start_time: string | null
+          start_time: string
           venue_mode: string
         }[]
       }
@@ -1141,22 +1207,35 @@ export type Database = {
         }
         Returns: boolean
       }
-      recent_request_count: { Args: { _email: string }; Returns: number }
-      request_is_fresh: { Args: { _id: string }; Returns: boolean }
-      story_is_public: { Args: { _id: string }; Returns: boolean }
+      is_approved: { Args: never; Returns: boolean }
+      is_trainer: { Args: never; Returns: boolean }
       landing_gallery: {
         Args: { p_limit?: number }
         Returns: {
           caption: string
           created_at: string
           event_name: string
-          height: number | null
+          height: number
           id: string
           kind: string
-          organized_by: string | null
+          organized_by: string
           path: string
           thumb_path: string
-          width: number | null
+          width: number
+        }[]
+      }
+      materials_access: { Args: { p_code?: string }; Returns: boolean }
+      my_events: {
+        Args: never
+        Returns: {
+          address: string
+          code: string
+          current: boolean
+          event_dates: string[]
+          event_id: string
+          name: string
+          organized_by: string
+          package_key: string
         }[]
       }
       public_event_brand: {
@@ -1205,6 +1284,8 @@ export type Database = {
         Args: { p_code: string; p_participant: string; p_test: string }
         Returns: Json
       }
+      recent_request_count: { Args: { _email: string }; Returns: number }
+      request_is_fresh: { Args: { _id: string }; Returns: boolean }
       save_my_profile: {
         Args: {
           p_age_group: string
@@ -1216,6 +1297,9 @@ export type Database = {
         Returns: undefined
       }
       set_active_event: { Args: { p_code: string }; Returns: undefined }
+      story_is_public: { Args: { _id: string }; Returns: boolean }
+      story_media_path_is_public: { Args: { _path: string }; Returns: boolean }
+      submit_assessment: { Args: { p: Json }; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "user"
@@ -1350,3 +1434,4 @@ export const Constants = {
     },
   },
 } as const
+

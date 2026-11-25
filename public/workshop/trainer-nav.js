@@ -32,6 +32,7 @@
     if (!p) return "";
     var c = EVI.courseOf(p.key);
     if (c === "cso") return "AI for CSOs";
+    if (c === "hied") return "AI for Higher Education";
     return (c === "representative" ? "जनप्रतिनिधि" : "कर्मचारी") + " · " + (EVI.LEVEL_LABEL[EVI.levelOf(p.key)] || "");
   }
   function sortEvents(list) {

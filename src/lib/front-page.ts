@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 const EMPLOYEE = "/workshop/index.html";
 const REPRESENTATIVE = "/workshop/representative/index.html";
 const CSO = "/workshop/cso/index.html";
+const HIED = "/workshop/hied/index.html";
 
 /* The materials page of a package key (mirrors public/workshop/event-info.js courseOf). Both levels
  * of a municipal course, नगरपालिका and गाउँपालिका, share its page; AI for CSOs ("cso") has its own. */
@@ -10,6 +11,7 @@ export function coursePage(key: string | null | undefined): string {
   const k = key ?? "";
   if (k.startsWith("representative")) return REPRESENTATIVE;
   if (k.startsWith("cso")) return CSO;
+  if (k.startsWith("hied")) return HIED;
   return EMPLOYEE;
 }
 

@@ -160,23 +160,28 @@
      representative           = representatives, rural municipality         — the representative text as written
      representative-municipal = representatives, municipality */
   /* cso = AI for CSOs (civil society organisations): one level, English materials (cso/index.html). */
-  var BASE_LEVEL = { employee: "municipal", representative: "rural", cso: "cso" };
+  /* hied = AI for Higher Education (short training package): one level, English materials (hied/index.html), no assessment. */
+  var BASE_LEVEL = { employee: "municipal", representative: "rural", cso: "cso", hied: "hied" };
   function courseOf(key) {
     key = String(key || "");
     if (key.indexOf("representative") === 0) return "representative";
     if (key.indexOf("cso") === 0) return "cso";
+    if (key.indexOf("hied") === 0) return "hied";
     return "employee";
   }
   function levelOf(key) {
     key = String(key || "");
     if (courseOf(key) === "cso") return "cso";
+    if (courseOf(key) === "hied") return "hied";
     if (/-rural$/.test(key)) return "rural";
     if (/-municipal$/.test(key)) return "municipal";
     return BASE_LEVEL[courseOf(key)];
   }
-  var LEVEL_LABEL = { municipal: "नगरपालिका", rural: "गाउँपालिका", cso: "CSO" };
+  function isShort(key) { return courseOf(key) === "hied"; }
+  function hasAssessment(key) { return courseOf(key) !== "hied"; }
+  var LEVEL_LABEL = { municipal: "नगरपालिका", rural: "गाउँपालिका", cso: "CSO", hied: "Higher Ed" };
   /* The page of each course's materials. */
-  var COURSE_PAGE = { employee: "/workshop/index.html", representative: "/workshop/representative/index.html", cso: "/workshop/cso/index.html" };
+  var COURSE_PAGE = { employee: "/workshop/index.html", representative: "/workshop/representative/index.html", cso: "/workshop/cso/index.html", hied: "/workshop/hied/index.html" };
   /* Wording rules that turn text written for the other level into this level. Order matters
      (longer phrases first); no rule's output matches another rule, so applying them twice changes
      nothing. Staff titles (प्रमुख प्रशासकीय अधिकृत, शाखा प्रमुख) and वडाध्यक्ष are the same at both
@@ -321,7 +326,7 @@
       if (WS.session && !WS.profile) { homePromise = null; return fallback; }
       if (WS.isTrainer()) return { href: "/workshop/admin.html", label: "प्रशिक्षक गृहपृष्ठ" };
       var rep = { href: COURSE_PAGE.representative, label: "गृहपृष्ठ" };
-      var byCourse = function (key) { var c = courseOf(key); return c === "representative" ? rep : c === "cso" ? { href: COURSE_PAGE.cso, label: "Home" } : fallback; };
+      var byCourse = function (key) { var c = courseOf(key); return c === "representative" ? rep : c === "cso" ? { href: COURSE_PAGE.cso, label: "Home" } : c === "hied" ? { href: COURSE_PAGE.hied, label: "Home" } : fallback; };
       if (WS.session && WS.profile && WS.profile.event_id) {
         try {
           var ev = await WS.loadEventForProfile();
@@ -385,6 +390,6 @@
     return cv.toDataURL("image/png");
   }
 
-  window.EVI = { COURSE_PAGE: COURSE_PAGE, enDate: enDate, enRange: enRange, eventLink: eventLink, qrSvg: qrSvg, qrPng: qrPng, courseOf: courseOf, levelOf: levelOf, levelRules: levelRules, levelOfEvent: levelOfEvent, levelParam: levelParam,
+  window.EVI = { COURSE_PAGE: COURSE_PAGE, enDate: enDate, enRange: enRange, eventLink: eventLink, qrSvg: qrSvg, qrPng: qrPng, courseOf: courseOf, levelOf: levelOf, isShort: isShort, hasAssessment: hasAssessment, levelRules: levelRules, levelOfEvent: levelOfEvent, levelParam: levelParam,
     rememberLevel: rememberLevel, storedLevel: storedLevel, BASE_LEVEL: BASE_LEVEL, LEVEL_LABEL: LEVEL_LABEL, home: home, mountHome: mountHome, resolve: resolve, info: info, toBS: toBS, fmtFull: fmtFull, fmtRange: fmtRange, fill: fill, fillDeep: fillDeep, employeeRules: employeeRules, representativeRules: representativeRules, dn: dn };
 })();

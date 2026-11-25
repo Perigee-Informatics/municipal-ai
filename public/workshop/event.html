@@ -227,6 +227,7 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
   /* Feedback questions, in the order the forms send them (representative/index.html QS, cso/index.html QS, index.html FBQ). */
   var QS_BY_PKG = {
     cso: ["Overall, today was useful for my work", "The pace was right for me", "The language and examples were easy to follow", "There was enough hands-on practice", "The exercises fitted our CSO's real work", "The facilitator and helpers supported me well"],
+    hied: ["Overall, this session was useful for my teaching", "The pace was right for an 80-minute session", "The prompt examples were clear and relevant to postgraduate teaching", "There was enough hands-on practice with Claude", "The outputs fit Master's / MPhil / PhD level work", "The facilitator explained responsible use clearly"],
     representative: ["कार्यशाला मेरो कामका लागि उपयोगी थियो", "सिकाइको गति मलाई ठिक्क थियो", "भाषा बुझ्न सजिलो थियो", "आफैँ गरेर सिक्ने पर्याप्त अवसर मिल्यो", "आयोजना छनौट अभ्यास वास्तविक जस्तो लाग्यो", "सहजकर्ता र सहयोगीबाट राम्रो सहयोग मिल्यो"],
     employee: ["तालिम मेरो कामका लागि उपयोगी थियो", "सिकाइको गति मलाई ठिक्क थियो", "भाषा बुझ्न सजिलो थियो", "आफैँ गरेर सिक्ने पर्याप्त अवसर मिल्यो", "अभ्यास र उदाहरण मेरो दैनिक कामसँग मिल्दा थिए", "विज्ञ र सहयोगीबाट राम्रो सहयोग मिल्यो"]
   };
@@ -345,12 +346,24 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
     var qn = (EV.question_ids || []).length;
     var link = function (t) { return location.origin + "/workshop/assessment/index.html?e=" + encodeURIComponent(EV.code) + "&t=" + t; };
     var yes = function (b, on, off) { return b ? '<span class="badge on">' + on + '</span>' : '<span class="badge">' + off + '</span>'; };
-    $("testInfo").innerHTML =
-      '<p>प्रश्न सेट: ' + (qn ? '<strong>' + dn(qn) + ' प्रश्न</strong>' : '<strong style="color:var(--bad)">बनेको छैन</strong>: <a href="/workshop/admin.html#events">इभेन्टहरू</a> ट्याबमा "प्रश्न सेट बनाउनुहोस्" थिच्नुहोस्।') + '</p>' +
-      '<div class="scroll"><table class="t"><thead><tr><th>परीक्षा</th><th>स्थिति</th><th>सही उत्तर</th><th>सार्वजनिक लिङ्क (QR)</th></tr></thead><tbody>' +
-      '<tr><td>पूर्व-तालिम</td><td>' + yes(EV.pre_open, "खुला", "बन्द") + '</td><td>' + yes(EV.pre_answers, "देखिने", "लुकाइएको") + '</td><td class="small"><a href="' + esc(link("pre")) + '" target="_blank" rel="noopener">' + esc(link("pre")) + '</a></td></tr>' +
-      '<tr><td>पश्च-तालिम</td><td>' + yes(EV.post_open, "खुला", "बन्द") + '</td><td>' + yes(EV.post_answers, "देखिने", "लुकाइएको") + '</td><td class="small"><a href="' + esc(link("post")) + '" target="_blank" rel="noopener">' + esc(link("post")) + '</a></td></tr>' +
-      '</tbody></table></div>';
+    var hasTest = EVI.hasAssessment(PKG ? PKG.key : "");
+    document.querySelectorAll('[data-qrkind="pre"], [data-qrkind="post"]').forEach(function (b) { b.classList.toggle("hide", !hasTest); });
+    if (!hasTest && QR_KIND !== "link") QR_KIND = "link";
+    var testCard = $("testInfo").closest("section");
+    if (testCard) testCard.classList.toggle("hide", !hasTest);
+    var resTab = document.querySelector('[data-tab="results"]');
+    if (resTab) resTab.classList.toggle("hide", !hasTest);
+    if ($("reportBtn")) $("reportBtn").classList.toggle("hide", !hasTest);
+    if ($("stPre")) $("stPre").closest(".stat").classList.toggle("hide", !hasTest);
+    if ($("stPost")) $("stPost").closest(".stat").classList.toggle("hide", !hasTest);
+    if (hasTest) {
+      $("testInfo").innerHTML =
+        '<p>प्रश्न सेट: ' + (qn ? '<strong>' + dn(qn) + ' प्रश्न</strong>' : '<strong style="color:var(--bad)">बनेको छैन</strong>: <a href="/workshop/admin.html#events">इभेन्टहरू</a> ट्याबमा "प्रश्न सेट बनाउनुहोस्" थिच्नुहोस्।') + '</p>' +
+        '<div class="scroll"><table class="t"><thead><tr><th>परीक्षा</th><th>स्थिति</th><th>सही उत्तर</th><th>सार्वजनिक लिङ्क (QR)</th></tr></thead><tbody>' +
+        '<tr><td>पूर्व-तालिम</td><td>' + yes(EV.pre_open, "खुला", "बन्द") + '</td><td>' + yes(EV.pre_answers, "देखिने", "लुकाइएको") + '</td><td class="small"><a href="' + esc(link("pre")) + '" target="_blank" rel="noopener">' + esc(link("pre")) + '</a></td></tr>' +
+        '<tr><td>पश्च-तालिम</td><td>' + yes(EV.post_open, "खुला", "बन्द") + '</td><td>' + yes(EV.post_answers, "देखिने", "लुकाइएको") + '</td><td class="small"><a href="' + esc(link("post")) + '" target="_blank" rel="noopener">' + esc(link("post")) + '</a></td></tr>' +
+        '</tbody></table></div>';
+    }
     renderQr();
   }
 

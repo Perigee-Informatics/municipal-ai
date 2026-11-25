@@ -62,8 +62,8 @@ export type ActiveEvent = {
   organizedBy: string;
   place: string;
   dates: string;
-  course: "employee" | "representative" | "cso";
-  level: "municipal" | "rural" | "cso";
+  course: "employee" | "representative" | "cso" | "hied";
+  level: "municipal" | "rural" | "cso" | "hied";
 };
 
 export const DEFAULT_PROFILE: SiteProfile = {
@@ -118,22 +118,26 @@ export async function loadActiveEvent(): Promise<ActiveEvent | null> {
     ? "representative"
     : key.startsWith("cso")
       ? "cso"
-      : "employee";
+      : key.startsWith("hied")
+        ? "hied"
+        : "employee";
   const level =
     course === "cso"
       ? "cso"
-      : key.endsWith("-rural")
-        ? "rural"
-        : key.endsWith("-municipal")
-          ? "municipal"
-          : course === "representative"
-            ? "rural"
-            : "municipal";
+      : course === "hied"
+        ? "hied"
+        : key.endsWith("-rural")
+          ? "rural"
+          : key.endsWith("-municipal")
+            ? "municipal"
+            : course === "representative"
+              ? "rural"
+              : "municipal";
   return {
     name: e.name,
     organizedBy: (e.organized_by ?? "").replace(/\s+/g, " ").trim(),
     place: (e.address ?? "").trim(),
-    dates: course === "cso" ? enRange(e.event_dates) : bsRange(e.event_dates),
+    dates: course === "cso" || course === "hied" ? enRange(e.event_dates) : bsRange(e.event_dates),
     course,
     level,
   };
