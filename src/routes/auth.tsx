@@ -30,86 +30,49 @@ const signInSchema = z.object({
   password: z.string().min(1, { message: "पासवर्ड हाल्नुहोस्" }).max(128),
 });
 
-const signUpSchema = signInSchema.extend({
-  fullName: z
-    .string()
-    .trim()
-    .nonempty({ message: "पूरा नाम हाल्नुहोस्" })
-    .max(100, { message: "नाम १०० अक्षरभन्दा छोटो हुनुपर्छ" }),
-  password: z.string().min(8, { message: "पासवर्ड कम्तीमा ८ अक्षरको हुनुपर्छ" }).max(128),
-});
+/* The one and only sign-up form of the site: re-typed password, gender, age group, education and
+ * office, which the trainer's approvals and reports rely on. Every "register" link points here. */
+const SIGNUP_URL = "/workshop/login.html#signup";
 
 function AuthPage() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"in" | "up">("in");
-  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [password2, setPassword2] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
   const brand = useEventBrand("साइन इन · AI for ALL");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    setNotice(null);
-
     setBusy(true);
     try {
-      if (mode === "in") {
-        const parsed = signInSchema.safeParse({ email, password });
-        if (!parsed.success) {
-          setError(parsed.error.issues[0]?.message ?? "विवरण जाँच्नुहोस्");
-          return;
-        }
-        const { data: signedIn, error: signInError } = await supabase.auth.signInWithPassword({
-          email: parsed.data.email,
-          password: parsed.data.password,
-        });
-        if (signInError) {
-          setError("इमेल वा पासवर्ड मिलेन। फेरि प्रयास गर्नुहोस्।");
-          return;
-        }
-        // Dr. Ghimire (admin of the personal portal) goes to the admin area; participants to their account.
-        const { data: isAdmin } = await supabase.rpc("has_role", {
-          _user_id: signedIn.user.id,
-          _role: "admin",
-        });
-        navigate({ to: isAdmin ? "/admin" : "/account" });
-      } else {
-        // The two passwords must match before anything is sent.
-        if (password !== password2) {
-          setError("दुवै पासवर्ड मिलेनन्। फेरि टाइप गर्नुहोस्। (The two passwords do not match.)");
-          return;
-        }
-        const parsed = signUpSchema.safeParse({ email, password, fullName });
-        if (!parsed.success) {
-          setError(parsed.error.issues[0]?.message ?? "विवरण जाँच्नुहोस्");
-          return;
-        }
-        const { error: signUpError } = await supabase.auth.signUp({
-          email: parsed.data.email,
-          password: parsed.data.password,
-          options: {
-            data: { full_name: parsed.data.fullName },
-            emailRedirectTo: window.location.origin,
-          },
-        });
-        if (signUpError) {
-          setError(signUpError.message);
-          return;
-        }
-        setNotice("दर्ता भयो। इमेलमा पठाइएको लिङ्क क्लिक गरेर खाता पुष्टि गर्नुहोस्, अनि साइन इन गर्नुहोस्।");
-        setMode("in");
-        setPassword("");
-        setPassword2("");
+      const parsed = signInSchema.safeParse({ email, password });
+      if (!parsed.success) {
+        setError(parsed.error.issues[0]?.message ?? "विवरण जाँच्नुहोस्");
+        return;
       }
+      const { data: signedIn, error: signInError } = await supabase.auth.signInWithPassword({
+        email: parsed.data.email,
+        password: parsed.data.password,
+      });
+      if (signInError) {
+        setError("इमेल वा पासवर्ड मिलेन। फेरि प्रयास गर्नुहोस्।");
+        return;
+      }
+      // Dr. Ghimire (admin of the personal portal) goes to the admin area; participants to their account.
+      const { data: isAdmin } = await supabase.rpc("has_role", {
+        _user_id: signedIn.user.id,
+        _role: "admin",
+      });
+      navigate({ to: isAdmin ? "/admin" : "/account" });
     } finally {
       setBusy(false);
     }
   }
+
+  const tab =
+    "flex-1 rounded-md border px-4 py-2 text-center text-sm font-medium transition-colors";
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -119,64 +82,26 @@ function AuthPage() {
           <h1 className="mt-2 text-2xl font-bold text-foreground">सहभागी खाता</h1>
         </div>
 
-        <div className="mt-6 flex gap-2" role="tablist">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={mode === "in"}
-            onClick={() => {
-              setMode("in");
-              setError(null);
-              setNotice(null);
-            }}
-            className={`flex-1 rounded-md border px-4 py-2 text-sm font-medium transition-colors ${
-              mode === "in"
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-input bg-background text-foreground hover:bg-accent"
-            }`}
+        <div className="mt-6 flex gap-2">
+          <span
+            className={`${tab} border-primary bg-primary text-primary-foreground`}
+            aria-current="page"
           >
             साइन इन
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={mode === "up"}
-            onClick={() => {
-              // New participants register on the full workshop form (re-typed password, gender,
-              // age group, education, office), which the trainer's reports and approvals rely on.
-              window.location.href = "/workshop/login.html#signup";
-            }}
-            className={`flex-1 rounded-md border px-4 py-2 text-sm font-medium transition-colors ${
-              mode === "up"
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-input bg-background text-foreground hover:bg-accent"
-            }`}
+          </span>
+          <a
+            href={SIGNUP_URL}
+            className={`${tab} border-input bg-background text-foreground hover:bg-accent`}
           >
             नयाँ दर्ता
-          </button>
+          </a>
         </div>
 
         <form
           onSubmit={handleSubmit}
           className="mt-4 rounded-lg border border-border bg-card p-6 shadow-sm"
         >
-          {mode === "up" && (
-            <div>
-              <label htmlFor="fullName" className="text-sm font-medium text-foreground">
-                पूरा नाम
-              </label>
-              <input
-                id="fullName"
-                type="text"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                autoComplete="name"
-                maxLength={100}
-                className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-foreground"
-              />
-            </div>
-          )}
-          <div className={mode === "up" ? "mt-4" : ""}>
+          <div>
             <label htmlFor="email" className="text-sm font-medium text-foreground">
               इमेल
             </label>
@@ -192,47 +117,22 @@ function AuthPage() {
           </div>
           <div className="mt-4">
             <label htmlFor="password" className="text-sm font-medium text-foreground">
-              पासवर्ड{mode === "up" ? " (कम्तीमा ८ अक्षर)" : ""}
+              पासवर्ड
             </label>
             <input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              autoComplete={mode === "up" ? "new-password" : "current-password"}
+              autoComplete="current-password"
               maxLength={128}
               className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-foreground"
             />
           </div>
-          {mode === "up" && (
-            <div className="mt-4">
-              <label htmlFor="password2" className="text-sm font-medium text-foreground">
-                पासवर्ड फेरि टाइप गर्नुहोस् (Re-type password)
-              </label>
-              <input
-                id="password2"
-                type="password"
-                value={password2}
-                onChange={(e) => setPassword2(e.target.value)}
-                autoComplete="new-password"
-                maxLength={128}
-                aria-invalid={password2.length > 0 && password2 !== password}
-                className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-foreground"
-              />
-              {password2.length > 0 && password2 !== password && (
-                <p className="mt-1 text-sm text-destructive">दुवै पासवर्ड मिलेनन्।</p>
-              )}
-            </div>
-          )}
 
           {error && (
             <p className="mt-4 text-sm font-medium text-destructive" role="alert">
               {error}
-            </p>
-          )}
-          {notice && (
-            <p className="mt-4 text-sm font-medium text-primary" role="status">
-              {notice}
             </p>
           )}
 
@@ -241,11 +141,16 @@ function AuthPage() {
             disabled={busy}
             className="mt-6 w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
           >
-            {busy ? "पर्खनुहोस्…" : mode === "in" ? "साइन इन गर्नुहोस्" : "दर्ता गर्नुहोस्"}
+            {busy ? "पर्खनुहोस्…" : "साइन इन गर्नुहोस्"}
           </button>
         </form>
 
         <p className="mt-4 text-center text-sm text-muted-foreground">
+          खाता छैन?{" "}
+          <a href={SIGNUP_URL} className="font-medium underline hover:text-foreground">
+            नयाँ दर्ता गर्नुहोस्
+          </a>
+          {" · "}
           <a href="/workshop/index.html" className="underline hover:text-foreground">
             ⌂ गृहपृष्ठ (तालिम सामग्री)
           </a>
