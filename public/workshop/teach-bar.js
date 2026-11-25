@@ -20,7 +20,7 @@
   function css() {
     var s = document.createElement("style");
     s.textContent =
-      ".tb{position:sticky;top:56px;z-index:30;background:var(--surface);border-bottom:1px solid var(--line);padding:8px 12px;display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;align-items:center}" +
+      ".tb{position:sticky;top:56px;z-index:30;background:var(--surface);border-bottom:1px solid var(--line);padding:8px 12px;display:grid;grid-template-columns:auto 1fr auto auto auto;gap:8px;align-items:center}" +
       ".tb-size{display:flex;gap:4px;align-items:center}.tb-size button{font:inherit;font-size:14px;font-weight:700;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);min-width:36px;height:34px;cursor:pointer}" +
       ".tb-size span{font-size:12px;color:var(--muted);min-width:38px;text-align:center;font-variant-numeric:tabular-nums}" +
       "body.tb-fit main .wrap{margin-inline:auto}" +
@@ -37,6 +37,8 @@
       ".tb a.tb-x{color:var(--muted)}" +
       ".tb-nav{font:inherit;font-size:20px;line-height:1;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);width:40px;height:40px;cursor:pointer}" +
       ".tb-nav[disabled]{opacity:.35;cursor:default}" +
+      ".tb-fs{font:inherit;font-size:14px;font-weight:700;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);height:40px;padding:0 12px;cursor:pointer;white-space:nowrap}" +
+      ".tb-fs.on{background:var(--accent);border-color:var(--accent);color:#fff}" +
       ".tb-jump{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%);background:rgba(20,30,50,.88);color:#fff;font-size:40px;font-weight:800;padding:14px 30px;border-radius:16px;z-index:99;pointer-events:none}" +
       "body.tb-embed .top,body.tb-embed .side,body.tb-embed .menu-btn{display:none!important}" +
       "body.tb-embed .shell{display:block!important;grid-template-columns:none!important}" +
@@ -65,6 +67,7 @@
     h = '<button type="button" class="tb-nav" id="tbPrev" aria-label="अघिल्लो"' + (idx <= 0 ? ' disabled' : '') + '>‹</button>' +
       '<div class="tb-rows">' + rows + '</div>' +
       '<button type="button" class="tb-nav" id="tbNext" aria-label="अर्को"' + (idx < 0 || idx >= order.length - 1 ? ' disabled' : '') + '>›</button>' +
+      '<button type="button" class="tb-fs' + (fsEl() ? ' on' : '') + '" id="tbFull" title="' + (fsEl() ? 'पूरा स्क्रिनबाट बाहिर (Esc)' : 'पूरा स्क्रिन') + '">' + (fsEl() ? '✕ पूरा स्क्रिन बन्द' : '⛶ पूरा स्क्रिन') + '</button>' +
       '<span class="tb-size" role="group" aria-label="अक्षरको आकार"><button type="button" id="tbSmaller" title="सानो (−)">A−</button><span id="tbZoom"></span><button type="button" id="tbBigger" title="ठूलो (+)">A+</button></span>';
     bar.innerHTML = h;
     var on = bar.querySelector("a[aria-current]");
@@ -73,6 +76,7 @@
     document.getElementById("tbNext").onclick = function () { go(idx + 1); };
     document.getElementById("tbSmaller").onclick = function () { setAdj(adj / 1.12); };
     document.getElementById("tbBigger").onclick = function () { setAdj(adj * 1.12); };
+    document.getElementById("tbFull").onclick = toggleFull;
     fit();
   }
 
@@ -96,6 +100,31 @@
     try { localStorage.setItem("tb-zoom", String(adj)); } catch (e) {}
     fit();
   }
+  /* Full screen can be left at any time: the bar's button, or Esc. Inside the event page the frame is
+     what goes full screen, so the parent page's state is checked (same origin). */
+  function docs() {
+    var list = [document];
+    try { if (window.parent !== window && window.parent.document) list.push(window.parent.document); } catch (e) {}
+    return list;
+  }
+  function fsEl() {
+    var d = docs();
+    for (var i = 0; i < d.length; i++) { var el = d[i].fullscreenElement || d[i].webkitFullscreenElement; if (el) return el; }
+    return null;
+  }
+  function exitFull() {
+    docs().forEach(function (d) {
+      if (!(d.fullscreenElement || d.webkitFullscreenElement)) return;
+      var f = d.exitFullscreen || d.webkitExitFullscreen;
+      try { var r = f && f.call(d); if (r && r.catch) r.catch(function () {}); } catch (e) {}
+    });
+  }
+  function toggleFull() {
+    if (fsEl()) { exitFull(); return; }
+    var el = window.frameElement || document.documentElement, f = el.requestFullscreen || el.webkitRequestFullscreen;
+    try { var r = f && f.call(el); if (r && r.catch) r.catch(function () {}); } catch (e) {}
+  }
+  function onFsChange() { var b = document.getElementById("tbFull"); if (b) { var on = !!fsEl(); b.classList.toggle("on", on); b.textContent = on ? "✕ पूरा स्क्रिन बन्द" : "⛶ पूरा स्क्रिन"; b.title = on ? "पूरा स्क्रिनबाट बाहिर (Esc)" : "पूरा स्क्रिन"; } fit(); }
   function go(i) { if (i >= 0 && i < order.length) location.hash = order[i]; }
 
   /* type a session number to jump there */
@@ -116,6 +145,7 @@
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     var t = e.target; if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
     var k = /^[0-9]$/.test(e.key) ? e.key : (DEV.indexOf(e.key) >= 0 ? String(DEV.indexOf(e.key)) : null);   // Nepali keyboards type ०-९
+    if (e.key === "Escape" && fsEl()) { exitFull(); return; }
     if (k !== null) digit(k);
     else if (e.key === "+" || e.key === "=") setAdj(adj * 1.12);
     else if (e.key === "-" || e.key === "_") setAdj(adj / 1.12);
@@ -145,6 +175,7 @@
       }, true);
       render((location.hash || "#home").slice(1) || "home");
       window.addEventListener("resize", fit);
+      docs().forEach(function (d) { d.addEventListener("fullscreenchange", onFsChange); d.addEventListener("webkitfullscreenchange", onFsChange); });
     },
     update: function (cur) { if (TEACH) render(cur); },
     key: function (k) {

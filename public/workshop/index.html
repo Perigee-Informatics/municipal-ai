@@ -35,7 +35,7 @@
   color-scheme: dark }
 
 * { box-sizing: border-box }
-html, body { height: 100% }
+html { height: 100% } body { min-height: 100% }   /* not a fixed height: the sticky header must stay on screen past the first screenful */
 body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 16.5px; line-height: 1.6; }
 button { font: inherit; color: inherit; cursor: pointer }
 a { color: var(--navy) }
@@ -56,7 +56,7 @@ a { color: var(--navy) }
 .home-link { white-space: nowrap; text-decoration: none; font-weight: 600; font-size: 15px; color: var(--navy) }
 .menu-btn { display: none; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 5px 12px; font-size: 15px }
 
-.shell { display: grid; grid-template-columns: 320px minmax(0, 1fr); min-height: calc(100% - 56px) }
+.shell { display: grid; grid-template-columns: 320px minmax(0, 1fr); min-height: calc(100vh - 56px) }
 .side { border-right: 1px solid var(--line); background: var(--surface); padding: 16px; position: sticky; top: 56px; height: calc(100vh - 56px); overflow: auto }
 .nav-links { display: grid; gap: 2px; margin-bottom: 14px }
 .nav-links a { text-decoration: none; color: var(--ink); padding: 6px 10px; border-radius: 8px; font-weight: 500 }
@@ -75,14 +75,14 @@ a { color: var(--navy) }
 .chip.done { background: var(--ok-bg); color: var(--ok) }
 
 main { min-width: 0; padding-block: 28px 80px; padding-inline: clamp(16px, 4vw, 48px) }
-.wrap { max-width: 860px }
+.wrap { max-width: 880px; margin-inline: auto }   /* centred: even space on both sides */
 .eyebrow { font-size: 14px; font-weight: 700; color: var(--accent); letter-spacing: .02em; margin: 0 }
 h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(30px, 4.6vw, 44px); line-height: 1.2; margin: 4px 0 10px; text-wrap: balance }
 .meta { color: var(--muted); margin: 0 0 18px }
 .prose h2.sec-h { font-size: 24px; margin: 30px 0 10px }
 .prose h3 { font-size: 21px; margin: 30px 0 8px; color: var(--navy); text-wrap: balance }
 .prose h4 { font-size: 17.5px; margin: 20px 0 6px }
-.prose p { margin: 8px 0; max-width: 68ch }
+.prose p { margin: 8px 0 }   /* same width as lists, tables and prompt boxes: one even text edge */
 .prose ul, .prose ol { padding-left: 1.4em; margin: 8px 0 }
 .prose li { margin: 4px 0 }
 .prose .note { color: var(--muted); font-size: 14.5px }
@@ -113,6 +113,8 @@ code.ic { font-family: var(--f-body); background: var(--prompt-bg); color: var(-
 .plan dt { font-size: 13px; font-weight: 700; color: var(--muted); letter-spacing: .03em }
 .plan dd { margin: 2px 0 0; font-size: 15px; line-height: 1.5 }
 .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 18px }
+.actions.done-end { margin: 32px 0 0; padding-top: 18px; border-top: 1px solid var(--line) }   /* the second "mark as done", at the end of the session */
+.done-end + .pager { margin-top: 18px }
 .toggle-done[aria-pressed="true"] { background: var(--ok-bg); color: var(--ok); border-color: var(--ok) }
 
 .related { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; margin: 12px 0 }
@@ -230,7 +232,7 @@ a.block:hover { background: var(--soft) }
 <script src="data/agenda.js"></script>
 <script src="account.js?v=20261116c"></script>
 <script src="event-info.js?v=20261124a"></script>
-<script src="/workshop/teach-bar.js?v=20261117a"></script>
+<script src="/workshop/teach-bar.js?v=20261125a"></script>
 <script>
 const DATA = { SESS: [window.D_VOICE,window.D_S1,window.D_S2,window.D_S3,window.D_S4,window.D_S5,window.D_S6,window.D_S7,window.D_S8,window.D_S9,window.D_S10], REFS: [window.D_RKA,window.D_RKHA,window.D_RGA,window.D_RGHA,window.D_RNGA], APPX: [window.D_PROMPTS,window.D_GLOSSARY,window.D_REMINDER,window.D_HOWTO], AGENDA_HTML: window.D_AGENDA, ...window.D_META };
 const DEV = '०१२३४५६७८९';
@@ -403,6 +405,7 @@ function vSession(s) {
     ${plan}
     ${rel || s.dl ? `<h3>यो सत्रका लागि सामग्री</h3>${rel ? `<div class="related">${rel}</div>` : ''}${s.dl ? `<div class="dl-list">${dlButtons(s.dl)}</div>` : ''}` : ''}
     <div class="prose">${s.html}${data}</div>
+    <div class="actions done-end"><button class="btn toggle-done" data-sess="${s.id}" aria-pressed="${done.has(s.id)}">${done.has(s.id) ? '✓ सत्र पूरा भयो' : 'सत्र पूरा भएको चिनो लगाउनुहोस्'}</button></div>
     <nav class="pager">${prev ? `<a class="card" href="#${prev.id}"><span class="s">← अघिल्लो</span><b>सत्र ${prev.n}: ${prev.title}</b></a>` : '<span></span>'}${next ? `<a class="card" href="#${next.id}" style="text-align:right"><span class="s">अर्को →</span><b>सत्र ${next.n}: ${next.title}</b></a>` : ''}</nav>`;
 }
 function vOther(id) {
@@ -606,7 +609,7 @@ document.addEventListener('click', e => {
   const m = e.target.closest('.mini-copy');
   if (m) { copyText(m.dataset.copy, m.previousElementSibling); return; }
   const t = e.target.closest('.toggle-done');
-  if (t) { const id = t.dataset.sess; done.has(id) ? done.delete(id) : done.add(id); store.set('done', [...done]); route(); return; }
+  if (t) { const id = t.dataset.sess; done.has(id) ? done.delete(id) : done.add(id); store.set('done', [...done]); const y = scrollY; route(); scrollTo(0, y); return; }   // stay where the button was pressed
   const d = e.target.closest('[data-day]');
   if (d) { today = +d.dataset.day; store.set('day', today); route(); return; }
   const f = e.target.closest('.dlbtn');

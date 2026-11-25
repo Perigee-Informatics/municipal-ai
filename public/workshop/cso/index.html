@@ -33,7 +33,7 @@
   color-scheme: dark }
 
 * { box-sizing: border-box }
-html, body { height: 100% }
+html { height: 100% } body { min-height: 100% }   /* not a fixed height: the sticky header must stay on screen past the first screenful */
 body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 16.5px; line-height: 1.6; }
 button { font: inherit; color: inherit; cursor: pointer }
 a { color: var(--navy) }
@@ -54,7 +54,7 @@ a { color: var(--navy) }
 .home-link { white-space: nowrap; text-decoration: none; font-weight: 600; font-size: 15px; color: var(--navy) }
 .menu-btn { display: none; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 5px 12px; font-size: 15px }
 
-.shell { display: grid; grid-template-columns: 320px minmax(0, 1fr); min-height: calc(100% - 56px) }
+.shell { display: grid; grid-template-columns: 320px minmax(0, 1fr); min-height: calc(100vh - 56px) }
 .side { border-right: 1px solid var(--line); background: var(--surface); padding: 16px; position: sticky; top: 56px; height: calc(100vh - 56px); overflow: auto }
 .nav-links { display: grid; gap: 2px; margin-bottom: 14px }
 .nav-links a { text-decoration: none; color: var(--ink); padding: 6px 10px; border-radius: 8px; font-weight: 500 }
@@ -73,14 +73,14 @@ a { color: var(--navy) }
 .chip.done { background: var(--ok-bg); color: var(--ok) }
 
 main { min-width: 0; padding-block: 28px 80px; padding-inline: clamp(16px, 4vw, 48px) }
-.wrap { max-width: 860px }
+.wrap { max-width: 880px; margin-inline: auto }   /* centred: even space on both sides */
 .eyebrow { font-size: 14px; font-weight: 700; color: var(--accent); letter-spacing: .02em; margin: 0 }
 h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(30px, 4.6vw, 44px); line-height: 1.2; margin: 4px 0 10px; text-wrap: balance }
 .meta { color: var(--muted); margin: 0 0 18px }
 .prose h2.sec-h { font-size: 24px; margin: 30px 0 10px }
 .prose h3 { font-size: 21px; margin: 30px 0 8px; color: var(--navy); text-wrap: balance }
 .prose h4 { font-size: 17.5px; margin: 20px 0 6px }
-.prose p { margin: 8px 0; max-width: 68ch }
+.prose p { margin: 8px 0 }   /* same width as lists, tables and prompt boxes: one even text edge */
 .prose ul, .prose ol { padding-left: 1.4em; margin: 8px 0 }
 .prose li { margin: 4px 0 }
 .prose .note { color: var(--muted); font-size: 14.5px }
@@ -111,6 +111,8 @@ code.ic { font-family: var(--f-body); background: var(--prompt-bg); color: var(-
 .plan dt { font-size: 13px; font-weight: 700; color: var(--muted); letter-spacing: .03em }
 .plan dd { margin: 2px 0 0; font-size: 15px; line-height: 1.5 }
 .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 18px }
+.actions.done-end { margin: 32px 0 0; padding-top: 18px; border-top: 1px solid var(--line) }   /* the second "mark as done", at the end of the session */
+.done-end + .pager { margin-top: 18px }
 .toggle-done[aria-pressed="true"] { background: var(--ok-bg); color: var(--ok); border-color: var(--ok) }
 
 .related { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; margin: 12px 0 }
@@ -240,7 +242,7 @@ window.D_CSO = {"INTRO":"Everything for the day in one place: the session plan, 
 </script>
 <script src="/workshop/account.js?v=20261116c"></script>
 <script src="/workshop/event-info.js?v=20261124a"></script>
-<script src="/workshop/teach-bar.js?v=20261117a"></script>
+<script src="/workshop/teach-bar.js?v=20261125a"></script>
 <script>
 /* If a supporting file did not load, say so instead of leaving a blank page. */
 (function () {
@@ -382,6 +384,7 @@ function vSession(s) {
     <h3>Materials for this session</h3><div class="related">${rel}</div>
     ${s.tool === 'feedback' ? fbHtml() : ''}
     <div class="prose">${matBody(s.mats)}</div>
+    <div class="actions done-end"><button class="btn toggle-done" data-sess="${s.id}" aria-pressed="${done.has(s.id)}">${done.has(s.id) ? '✓ Session done' : 'Mark session as done'}</button></div>
     <nav class="pager">${prev ? `<a class="card" href="#${prev.id}"><span class="s">← Previous</span><b>Session ${prev.n}: ${prev.title}</b></a>` : '<span></span>'}${next ? `<a class="card" href="#${next.id}" style="text-align:right"><span class="s">Next →</span><b>Session ${next.n}: ${next.title}</b></a>` : ''}</nav>`;
 }
 function usersOf(id) {
@@ -541,7 +544,7 @@ document.addEventListener('click', e => {
   const c = e.target.closest('.copy');
   if (c) { const pre = document.getElementById(c.dataset.copyId); copyText(pre.textContent, pre); return; }
   const t = e.target.closest('.toggle-done');
-  if (t) { const id = t.dataset.sess; done.has(id) ? done.delete(id) : done.add(id); store.set('done', [...done]); route(); return; }
+  if (t) { const id = t.dataset.sess; done.has(id) ? done.delete(id) : done.add(id); store.set('done', [...done]); const y = scrollY; route(); scrollTo(0, y); return; }   // stay where the button was pressed
   if (e.target.closest('[data-print]')) { window.print(); return; }
   if (!e.target.closest('.search')) $('#results').hidden = true;
 });

@@ -259,6 +259,8 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
     var b = e.target.closest("button[data-tab]");
     if (b) { showTab(b.dataset.tab); return; }
     if (e.target.id === "teachFull") {
+      // A second press (or Esc, or the button in the teaching bar) leaves full screen.
+      if (document.fullscreenElement || document.webkitFullscreenElement) { var ex = document.exitFullscreen || document.webkitExitFullscreen; if (ex) ex.call(document); return; }
       var fr = $("contFrame"), go = fr.requestFullscreen || fr.webkitRequestFullscreen;
       if (go) go.call(fr); else window.open($("contOpen").href, "_blank");
     }
@@ -266,6 +268,7 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
   window.addEventListener("hashchange", function () { if (EV) showTab(location.hash.slice(1)); });
   /* While teaching, a session number typed on this page (not only inside the materials) jumps there. */
   document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && (document.fullscreenElement || document.webkitFullscreenElement)) { var ex = document.exitFullscreen || document.webkitExitFullscreen; if (ex) ex.call(document); return; }
     if (e.ctrlKey || e.metaKey || e.altKey || !$("tab-contents").classList.contains("on")) return;
     var t = e.target; if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
     var k = /^[0-9]$/.test(e.key) ? e.key : ("०१२३४५६७८९".indexOf(e.key) >= 0 ? String("०१२३४५६७८९".indexOf(e.key)) : null);
