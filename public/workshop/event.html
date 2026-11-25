@@ -231,6 +231,7 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
     employee: ["तालिम मेरो कामका लागि उपयोगी थियो", "सिकाइको गति मलाई ठिक्क थियो", "भाषा बुझ्न सजिलो थियो", "आफैँ गरेर सिक्ने पर्याप्त अवसर मिल्यो", "अभ्यास र उदाहरण मेरो दैनिक कामसँग मिल्दा थिए", "विज्ञ र सहयोगीबाट राम्रो सहयोग मिल्यो"]
   };
   var QS = QS_BY_PKG.employee;
+  var FRESH = Date.now().toString(36);
   var TABS = ["details", "contents", "results", "people", "feedback", "gallery"];
   function url(path, hash) { return path + "?event=" + encodeURIComponent(CODE) + (hash ? "#" + hash : ""); }
   function show(id) { ["needLogin", "notFound", "loading", "panel"].forEach(function (x) { $(x).classList.toggle("hide", x !== id); }); }
@@ -247,7 +248,8 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
     if (loaded[name]) { if (name === "contents" && frameAt !== "home") try { $("contFrame").contentWindow.location.hash = frameAt; } catch (e) {} return; }
     loaded[name] = true;
     if (name === "contents") {
-      $("contFrame").src = PAGE + "?event=" + encodeURIComponent(CODE) + "&teach=1&embed=1#" + frameAt;
+      // fresh=: a new address each time this page loads, so the frame never shows a cached, older copy of the course page
+      $("contFrame").src = PAGE + "?event=" + encodeURIComponent(CODE) + "&teach=1&embed=1&fresh=" + FRESH + "#" + frameAt;
       $("contOpen").href = PAGE + "?event=" + encodeURIComponent(CODE) + "&teach=1&embed=1#" + frameAt;
     }
     if (name === "results") { var r = "/workshop/assessment/index.html?dash=" + encodeURIComponent(CODE); $("resFrame").src = r; $("resOpen").href = r; }

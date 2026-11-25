@@ -802,7 +802,8 @@ a.pri-link{background:var(--accent);color:#fff;border-color:var(--accent)}
     if (b.dataset.tab) showTab(b.dataset.tab);
     else if (b.dataset.go) showTab(b.dataset.go);
     else if (b.dataset.show) {
-      $("matFrame").src = b.dataset.show;
+      // fresh=: a new address each time, so the frame never shows a cached, older copy of the course page
+      $("matFrame").src = b.dataset.show + (b.dataset.show.indexOf("?") < 0 ? "?" : "&") + "fresh=" + Date.now().toString(36);
       $("frameTitle").textContent = b.dataset.title || "";
       $("frameOpen").href = b.dataset.show;
       $("frameBox").classList.remove("hide");
