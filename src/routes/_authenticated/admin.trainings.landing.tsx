@@ -1,3 +1,4 @@
+import { Tx } from "@/lib/admin-i18n";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -85,7 +86,7 @@ function ProgrammePage() {
         <Button asChild variant="outline" size="sm">
           <a href="/ai-for-all" target="_blank" rel="noopener">
             <ExternalLink />
-            View the page
+            <Tx>View the page</Tx>
           </a>
         </Button>
       }
@@ -104,7 +105,7 @@ function ProgrammePage() {
               <div className="space-y-1">
                 <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-input bg-background px-3 py-1.5 text-sm hover:bg-muted">
                   <Camera className="h-4 w-4" />
-                  Change photo
+                  <Tx>Change photo</Tx>
                   <input type="file" accept="image/*" hidden onChange={(e) => (photo(e.target.files?.[0]), (e.target.value = ""))} />
                 </label>
                 <p className="text-xs text-muted-foreground">{photoMsg || "A square face photo works best; it is made 800 px on upload."}</p>

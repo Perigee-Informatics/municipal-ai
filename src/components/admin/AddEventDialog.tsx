@@ -1,3 +1,4 @@
+import { Tx } from "@/lib/admin-i18n";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { lazy, Suspense, useEffect, useState } from "react";
@@ -117,7 +118,7 @@ export function AddEventDialog({ open, onOpenChange, date, onCreated }: { open: 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Add engagement</DialogTitle>
+          <DialogTitle><Tx>Add engagement</Tx></DialogTitle>
           <DialogDescription>Goes on your calendar, the Story Map list and Google Calendar (when connected). No email is sent.</DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} className="space-y-5" noValidate>
@@ -142,7 +143,7 @@ export function AddEventDialog({ open, onOpenChange, date, onCreated }: { open: 
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5 sm:col-span-2"><Label htmlFor="ae-title">Title *</Label><Input id="ae-title" name="title" required maxLength={200} /></div>
-            <div className="space-y-1.5 sm:col-span-2"><Label htmlFor="ae-org">Organizer</Label><OrganizerInput id="ae-org" name="organizer" maxLength={200} /></div>
+            <div className="space-y-1.5 sm:col-span-2"><Label htmlFor="ae-org"><Tx>Organizer</Tx></Label><OrganizerInput id="ae-org" name="organizer" maxLength={200} /></div>
             <div className="space-y-1.5">
               <Label htmlFor="ae-type">Event type</Label>
               <select id="ae-type" name="event_type_id" className={sel} defaultValue="">
@@ -222,12 +223,12 @@ export function AddEventDialog({ open, onOpenChange, date, onCreated }: { open: 
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5"><Label htmlFor="ae-desc">Description</Label><Textarea id="ae-desc" name="description" rows={3} /></div>
+            <div className="space-y-1.5"><Label htmlFor="ae-desc"><Tx>Description</Tx></Label><Textarea id="ae-desc" name="description" rows={3} /></div>
             <div className="space-y-1.5"><Label htmlFor="ae-notes">Private notes</Label><Textarea id="ae-notes" name="private_notes" rows={3} /></div>
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}><Tx>Cancel</Tx></Button>
             <Button type="submit" disabled={busy}>{busy ? "Saving…" : "Add engagement"}</Button>
           </DialogFooter>
         </form>

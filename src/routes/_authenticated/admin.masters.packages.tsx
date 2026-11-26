@@ -1,3 +1,4 @@
+import { Tx } from "@/lib/admin-i18n";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -87,7 +88,7 @@ function Packages() {
                         </div>
                         <Button size="sm" variant="outline" onClick={() => setEditing(p.id)}>
                           <Pencil />
-                          Edit
+                          <Tx>Edit</Tx>
                         </Button>
                       </div>
                     )}
@@ -148,9 +149,9 @@ function PackageForm({ p, onDone }: { p: TrainingPackage; onDone: () => void }) 
         <Input type="number" value={f.sort_order} onChange={(e) => set("sort_order", e.target.value)} />
       </Field>
       <div className="flex items-end gap-2">
-        <Button type="submit">Save</Button>
+        <Button type="submit"><Tx>Save</Tx></Button>
         <Button type="button" variant="ghost" onClick={onDone}>
-          Cancel
+          <Tx>Cancel</Tx>
         </Button>
       </div>
     </form>

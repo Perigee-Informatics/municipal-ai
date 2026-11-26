@@ -1,3 +1,4 @@
+import { Tx } from "@/lib/admin-i18n";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { ArrowDown, ArrowUp, Pencil, Plus, Trash2 } from "lucide-react";
@@ -60,7 +61,7 @@ export function TableEditor({ table, title, fields, display }: { table: TableNam
   return (
     <section className="rounded-xl border border-border bg-card">
       <div className="flex items-center justify-between border-b border-border p-4">
-        <h2 className="font-semibold">{title}</h2>
+        <h2 className="font-semibold"><Tx>{title}</Tx></h2>
         <Button size="sm" onClick={() => setEditing({})}><Plus />Add</Button>
       </div>
       {editing && (
@@ -82,8 +83,8 @@ export function TableEditor({ table, title, fields, display }: { table: TableNam
             </div>
           ))}
           <div className="flex gap-2 md:col-span-2">
-            <Button size="sm" onClick={save}>Save</Button>
-            <Button size="sm" variant="ghost" onClick={() => setEditing(null)}>Cancel</Button>
+            <Button size="sm" onClick={save}><Tx>Save</Tx></Button>
+            <Button size="sm" variant="ghost" onClick={() => setEditing(null)}><Tx>Cancel</Tx></Button>
           </div>
         </div>
       )}

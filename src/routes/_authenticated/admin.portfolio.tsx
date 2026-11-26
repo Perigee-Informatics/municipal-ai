@@ -1,3 +1,4 @@
+import { Tx } from "@/lib/admin-i18n";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -17,7 +18,7 @@ const s = (v: unknown) => (v ? String(v) : "");
 function Portfolio() {
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6">
-      <div className="border-b border-border pb-5"><h1 className="text-2xl font-semibold md:text-3xl">Portfolio content</h1><p className="mt-1.5 text-sm text-muted-foreground">Your profile, highlights, expertise, education, career and certifications shown on the home, About and Portfolio pages.</p></div>
+      <div className="border-b border-border pb-5"><h1 className="text-2xl font-semibold md:text-3xl"><Tx>Portfolio content</Tx></h1><p className="mt-1.5 text-sm text-muted-foreground"><Tx>Your profile, highlights, expertise, education, career and certifications shown on the home, About and Portfolio pages.</Tx></p></div>
       <Tabs defaultValue="profile">
         <TabsList className="flex h-auto flex-wrap">
           {["profile", "highlights", "expertise", "education", "experience", "publications", "certifications"].map((t) => <TabsTrigger key={t} value={t} className="capitalize">{t}</TabsTrigger>)}

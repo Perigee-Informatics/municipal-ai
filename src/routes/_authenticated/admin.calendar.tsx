@@ -1,3 +1,4 @@
+import { Tx } from "@/lib/admin-i18n";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { forwardRef, useRef, useState } from "react";
@@ -68,9 +69,9 @@ function CalendarPage() {
   return (
     <div className="mx-auto w-full max-w-[1400px] space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3 border-b border-border pb-5">
-        <div><h1 className="text-2xl font-semibold md:text-3xl">Calendar & schedule</h1><p className="mt-1.5 text-sm text-muted-foreground">Every engagement, the same list as the Story Map. Click one to edit it.</p></div>
+        <div><h1 className="text-2xl font-semibold md:text-3xl"><Tx>Calendar & schedule</Tx></h1><p className="mt-1.5 text-sm text-muted-foreground"><Tx>Every engagement, the same list as the Story Map. Click one to edit it.</Tx></p></div>
         <div className="flex flex-wrap items-center gap-3">
-          <Button onClick={() => setAdding({})}><Plus />Add engagement</Button>
+          <Button onClick={() => setAdding({})}><Plus /><Tx>Add engagement</Tx></Button>
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={showTentative} onChange={(e) => setShowTentative(e.target.checked)} />Show open requests</label>
           <div className="inline-flex rounded-md border border-border p-0.5 text-sm">
             {(["month", "week"] as const).map((v) => <button key={v} onClick={() => setView(v)} className={`rounded px-3 py-1.5 capitalize ${view === v ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>{v}</button>)}
@@ -103,7 +104,7 @@ function CalendarPage() {
             <h3 className="text-lg font-semibold">Week of {format(weekStart, "d MMM yyyy")}</h3>
             <div className="flex gap-1">
               <Button size="icon" variant="ghost" onClick={() => setCursor(addWeeks(cursor, -1))}><ChevronLeft /></Button>
-              <Button size="sm" variant="ghost" onClick={() => setCursor(new Date())}>Today</Button>
+              <Button size="sm" variant="ghost" onClick={() => setCursor(new Date())}><Tx>Today</Tx></Button>
               <Button size="icon" variant="ghost" onClick={() => setCursor(addWeeks(cursor, 1))}><ChevronRight /></Button>
             </div>
           </div>

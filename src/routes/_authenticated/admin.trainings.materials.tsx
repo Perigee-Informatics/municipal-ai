@@ -1,3 +1,4 @@
+import { Tx } from "@/lib/admin-i18n";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -105,7 +106,7 @@ function CourseCard({
         <Button asChild size="sm" variant="outline">
           <a href={url} target="_blank" rel="noopener">
             <ExternalLink />
-            Open in new tab
+            <Tx>Open in new tab</Tx>
           </a>
         </Button>
       </div>

@@ -1,3 +1,4 @@
+import { Tx } from "@/lib/admin-i18n";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
@@ -27,11 +28,11 @@ function Inbox() {
   );
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6">
-      <div className="border-b border-border pb-5"><h1 className="text-2xl font-semibold md:text-3xl">Invitations & appointments</h1><p className="mt-1.5 text-sm text-muted-foreground">Invitations from the request form. Accepting one adds it to your engagements and Google Calendar.</p></div>
+      <div className="border-b border-border pb-5"><h1 className="text-2xl font-semibold md:text-3xl"><Tx>Invitations & appointments</Tx></h1><p className="mt-1.5 text-sm text-muted-foreground"><Tx>Invitations from the request form. Accepting one adds it to your engagements and Google Calendar.</Tx></p></div>
       <div className="flex flex-wrap items-center gap-3">
         <div className="inline-flex flex-wrap rounded-md border border-border p-0.5 text-sm">
           {(["all", "pending", "tentative", "accepted", "declined"] as const).map((s) => (
-            <button key={s} onClick={() => navigate({ search: { status: s } })} className={`rounded px-3 py-1.5 capitalize ${status === s ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>{s}</button>
+            <button key={s} onClick={() => navigate({ search: { status: s } })} className={`rounded px-3 py-1.5 capitalize ${status === s ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}><Tx>{s}</Tx></button>
           ))}
         </div>
       </div>
@@ -54,7 +55,7 @@ function Inbox() {
         <div className="overflow-x-auto rounded-xl border border-border bg-card">
           <table className="w-full text-sm">
             <thead className="bg-muted/50 text-left text-xs uppercase text-muted-foreground">
-              <tr><th className="p-3">Event</th><th className="p-3">Requester</th><th className="p-3">Dates</th><th className="p-3">Type / Role</th><th className="p-3">Status</th></tr>
+              <tr><th className="p-3"><Tx>Event</Tx></th><th className="p-3">Requester</th><th className="p-3">Dates</th><th className="p-3">Type / Role</th><th className="p-3">Status</th></tr>
             </thead>
             <tbody className="divide-y divide-border">
               {rows.length === 0 && <tr><td colSpan={5} className="p-6 text-center text-muted-foreground">No requests.</td></tr>}

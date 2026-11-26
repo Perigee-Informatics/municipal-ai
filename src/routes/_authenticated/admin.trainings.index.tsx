@@ -1,3 +1,4 @@
+import { Tx } from "@/lib/admin-i18n";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -104,7 +105,7 @@ function TrainingEvents() {
         !formOpen && (
           <Button onClick={() => navigate({ search: { new: 1 } })}>
             <Plus />
-            New training event
+            <Tx>New training event</Tx>
           </Button>
         )
       }
@@ -217,7 +218,7 @@ function EventRow({
               {eventTitle(ev)}
             </Link>
             <span className="font-mono text-xs text-muted-foreground">[{ev.code}]</span>
-            {ev.is_active && <Pill tone="ok">Active</Pill>}
+            {ev.is_active && <Pill tone="ok"><Tx>Active</Tx></Pill>}
             {ph && <Pill tone={ph === "upcoming" ? "info" : ph === "today" ? "warn" : "neutral"}>{phaseLabel[ph]}</Pill>}
             <Pill>{ev.materials_public ? "Materials public" : "Materials private"}</Pill>
           </div>
@@ -227,7 +228,7 @@ function EventRow({
         <div className="flex flex-wrap gap-2">
           <Button asChild size="sm">
             <Link to="/admin/trainings/event/$code" params={{ code: ev.code }}>
-              Open
+              <Tx>Open</Tx>
             </Link>
           </Button>
           <Button size="sm" variant="outline" onClick={onQr}>
@@ -236,13 +237,13 @@ function EventRow({
           </Button>
           <Button size="sm" variant="outline" onClick={onEdit}>
             <Pencil />
-            Edit
+            <Tx>Edit</Tx>
           </Button>
           {test && (
             <Button asChild size="sm" variant="ghost">
               <a href={`/workshop/assessment/index.html?report=${encodeURIComponent(ev.code)}`} target="_blank" rel="noopener">
                 <FileText />
-                Report
+                <Tx>Report</Tx>
               </a>
             </Button>
           )}
@@ -273,7 +274,7 @@ function Flag({ label, on, onChange }: { label: string; on: boolean; onChange: (
   return (
     <label className="flex items-center gap-2">
       <Switch checked={on} onCheckedChange={onChange} />
-      <span className={on ? "" : "text-muted-foreground"}>{label}</span>
+      <span className={on ? "" : "text-muted-foreground"}><Tx>{label}</Tx></span>
     </label>
   );
 }

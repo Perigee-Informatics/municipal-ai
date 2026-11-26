@@ -1,3 +1,4 @@
+import { Tx } from "@/lib/admin-i18n";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
@@ -182,7 +183,7 @@ function Participants() {
                         ))}
                       </select>
                       <Button size="sm" variant="ghost" onClick={() => setStatus(p.id, "pending", null)}>
-                        Revoke
+                        <Tx>Revoke</Tx>
                       </Button>
                     </div>
                   </div>
@@ -223,10 +224,10 @@ function PendingRow({ p, events, onApprove, onReject }: { p: Participant; events
         </select>
         <Button size="sm" onClick={() => (ev ? onApprove(ev) : toast.error("Choose the event first."))}>
           <Check />
-          Approve
+          <Tx>Approve</Tx>
         </Button>
         <Button size="sm" variant="ghost" onClick={onReject}>
-          Reject
+          <Tx>Reject</Tx>
         </Button>
       </div>
     </li>
@@ -324,7 +325,7 @@ function ManualAccounts({ events, onDone }: { events: TrainingEvent[]; onDone: (
             </Field>
             <Button type="submit" disabled={busy}>
               <UserPlus />
-              Create account
+              <Tx>Create account</Tx>
             </Button>
           </form>
         ) : (
@@ -334,7 +335,7 @@ function ManualAccounts({ events, onDone }: { events: TrainingEvent[]; onDone: (
             </Field>
             <Button onClick={submitBulk} disabled={busy}>
               <UserPlus />
-              Create all
+              <Tx>Create all</Tx>
             </Button>
           </div>
         )}

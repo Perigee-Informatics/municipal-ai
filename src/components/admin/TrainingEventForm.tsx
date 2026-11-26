@@ -1,3 +1,4 @@
+import { Tx } from "@/lib/admin-i18n";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { X } from "lucide-react";
@@ -108,7 +109,7 @@ export function TrainingEventForm({ ev, onDone }: { ev?: TrainingEvent | null | 
         <div className="flex flex-wrap items-center gap-2">
           <Input type="date" value={dateIn} onChange={(e) => setDateIn(e.target.value)} className="w-auto" />
           <Button type="button" variant="outline" size="sm" onClick={() => addDate()}>
-            Add date
+            <Tx>Add date</Tx>
           </Button>
           {dates.map((d) => (
             <span key={d} className="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-xs">
@@ -135,7 +136,7 @@ export function TrainingEventForm({ ev, onDone }: { ev?: TrainingEvent | null | 
           {busy ? "Saving…" : ev ? "Save changes" : "Create event"}
         </Button>
         <Button type="button" variant="ghost" onClick={() => onDone()}>
-          Cancel
+          <Tx>Cancel</Tx>
         </Button>
       </div>
     </form>

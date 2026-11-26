@@ -24,6 +24,8 @@ import {
   Users,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { Tx } from "@/lib/admin-i18n";
+import { LangToggle } from "@/components/site/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { allRequestsQuery } from "@/lib/admin-data";
@@ -132,7 +134,7 @@ function AdminLayout() {
         <h1 className="text-2xl font-semibold">Not authorized</h1>
         <p className="text-muted-foreground">This account ({user.email}) does not have administrator access.</p>
         <Button variant="outline" onClick={signOut}>
-          Sign out
+          <Tx>Sign out</Tx>
         </Button>
       </div>
     );
@@ -163,16 +165,17 @@ function AdminLayout() {
           </Button>
           <nav aria-label="Breadcrumb" className="min-w-0 truncate text-sm text-muted-foreground">
             <Link to="/admin" className="hover:text-foreground">
-              Admin
+              <Tx>Admin</Tx>
             </Link>
-            {crumb && crumb.group !== "Overview" && <span> › {crumb.group}</span>}
-            {crumb && <span className="text-foreground"> › {crumb.page}</span>}
+            {crumb && crumb.group !== "Overview" && <span> › <Tx>{crumb.group}</Tx></span>}
+            {crumb && <span className="text-foreground"> › <Tx>{crumb.page}</Tx></span>}
           </nav>
-          <div className="ml-auto flex items-center gap-1">
+          <div className="ml-auto flex items-center gap-2">
+            <LangToggle />
             <Button asChild variant="ghost" size="sm">
               <Link to="/">
                 <ExternalLink />
-                <span className="hidden sm:inline">View site</span>
+                <span className="hidden sm:inline"><Tx>View site</Tx></span>
               </Link>
             </Button>
           </div>
@@ -236,7 +239,7 @@ function SideNav({ path, email, onSignOut }: { path: string; email: string; onSi
                 aria-expanded={expanded}
                 className="flex w-full items-center justify-between rounded-md px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider opacity-60 hover:bg-sidebar-accent hover:opacity-100"
               >
-                {g.label}
+                <Tx>{g.label}</Tx>
                 {expanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
               </button>
               {expanded && (
@@ -259,7 +262,7 @@ function SideNav({ path, email, onSignOut }: { path: string; email: string; onSi
           className="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-sm opacity-80 hover:bg-sidebar-accent hover:opacity-100"
         >
           <LogOut className="h-4 w-4" />
-          Sign out
+          <Tx>Sign out</Tx>
         </button>
       </div>
     </>
@@ -275,7 +278,7 @@ function NavItem({ item, path, badges }: { item: Item; path: string; badges: Rec
   const inner = (
     <>
       <item.icon className="h-4 w-4 shrink-0" />
-      <span className="min-w-0 flex-1 truncate">{item.label}</span>
+      <span className="min-w-0 flex-1 truncate"><Tx>{item.label}</Tx></span>
       {n > 0 && (
         <span className="rounded-full bg-accent px-1.5 text-[11px] font-bold text-accent-foreground" aria-label={`${n} waiting`}>
           {n}

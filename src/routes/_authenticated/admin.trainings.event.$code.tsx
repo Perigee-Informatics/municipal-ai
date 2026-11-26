@@ -1,3 +1,4 @@
+import { Tx } from "@/lib/admin-i18n";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -93,7 +94,7 @@ function TrainingEventPage() {
           <span>{ev.name}</span>
           <span className="font-mono text-xs">[{ev.code}]</span>
           <span>· {pkg?.name ?? "No package"}</span>
-          {ev.is_active && <Pill tone="ok">Active</Pill>}
+          {ev.is_active && <Pill tone="ok"><Tx>Active</Tx></Pill>}
           {ph && <Pill tone={ph === "upcoming" ? "info" : "neutral"}>{phaseLabel[ph]}</Pill>}
         </span>
       }
@@ -107,7 +108,7 @@ function TrainingEventPage() {
               className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs ${!ev.materials_public ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
             >
               <Lock className="h-3 w-3" />
-              Private
+              <Tx>Private</Tx>
             </button>
             <button
               role="radio"
@@ -116,7 +117,7 @@ function TrainingEventPage() {
               className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs ${ev.materials_public ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
             >
               <Globe className="h-3 w-3" />
-              Public
+              <Tx>Public</Tx>
             </button>
           </div>
           <Button variant={ev.is_active ? "secondary" : "outline"} size="sm" onClick={() => setActive(!ev.is_active)}>
@@ -125,13 +126,13 @@ function TrainingEventPage() {
           </Button>
           <Button variant="outline" size="sm" onClick={() => navigate({ search: { tab, edit: 1 } })}>
             <Pencil />
-            Edit
+            <Tx>Edit</Tx>
           </Button>
           {test && (
             <Button asChild size="sm">
               <a href={`/workshop/assessment/index.html?report=${encodeURIComponent(ev.code)}`} target="_blank" rel="noopener">
                 <FileText />
-                Generate report
+                <Tx>Generate report</Tx>
               </a>
             </Button>
           )}
@@ -156,7 +157,7 @@ function TrainingEventPage() {
             search={{ tab: t }}
             className={`-mb-px whitespace-nowrap border-b-2 px-3 py-2 text-sm ${tab === t ? "border-accent font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
           >
-            {label}
+            <Tx>{label}</Tx>
           </Link>
         ))}
       </nav>
@@ -203,7 +204,7 @@ function Details({ ev, pkgKey, pkgName, course, test }: { ev: TrainingEvent; pkg
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
         <Panel title="Event details">
           <dl className="grid grid-cols-[8rem_1fr] gap-x-4 gap-y-2 text-sm">
-            <dt className="text-muted-foreground">Organizer</dt>
+            <dt className="text-muted-foreground"><Tx>Organizer</Tx></dt>
             <dd>{ev.organized_by || "—"}</dd>
             <dt className="text-muted-foreground">Place</dt>
             <dd>{ev.address || "—"}</dd>
@@ -243,7 +244,7 @@ function Row({ label, on, onChange }: { label: string; on: boolean; onChange: (v
   return (
     <label className="flex items-center gap-2">
       <Switch checked={on} onCheckedChange={onChange} />
-      <span className={on ? "" : "text-muted-foreground"}>{label}</span>
+      <span className={on ? "" : "text-muted-foreground"}><Tx>{label}</Tx></span>
     </label>
   );
 }
@@ -268,7 +269,7 @@ function ClassView({ ev, course, onBack }: { ev: TrainingEvent; course: string; 
       <div className="flex items-center gap-2 border-b border-border bg-card px-3 py-1.5 text-sm">
         <Button size="sm" variant="ghost" onClick={onBack}>
           <ArrowLeft />
-          Back to event
+          <Tx>Back to event</Tx>
         </Button>
         <span className="min-w-0 flex-1 truncate text-muted-foreground">
           <span className="font-medium text-foreground">{ev.organized_by || ev.name}</span>
@@ -277,7 +278,7 @@ function ClassView({ ev, course, onBack }: { ev: TrainingEvent; course: string; 
         <Button asChild size="sm" variant="ghost">
           <a href={`${page}?event=${encodeURIComponent(ev.code)}&teach=1`} target="_blank" rel="noopener">
             <ExternalLink />
-            New tab
+            <Tx>New tab</Tx>
           </a>
         </Button>
       </div>
@@ -294,7 +295,7 @@ function Framed({ src, title, note }: { src: string; title: string; note: string
         <Button asChild size="sm" variant="ghost">
           <a href={src} target="_blank" rel="noopener">
             <ExternalLink />
-            New tab
+            <Tx>New tab</Tx>
           </a>
         </Button>
       </div>
@@ -330,11 +331,11 @@ function People({ ev }: { ev: TrainingEvent }) {
             <thead className="bg-muted/50 text-left text-xs text-muted-foreground">
               <tr>
                 <th className="px-4 py-2">#</th>
-                <th className="px-4 py-2">Name</th>
+                <th className="px-4 py-2"><Tx>Name</Tx></th>
                 <th className="px-4 py-2">Office / section</th>
                 <th className="px-4 py-2">Gender</th>
                 <th className="px-4 py-2">Age group</th>
-                <th className="px-4 py-2">Education</th>
+                <th className="px-4 py-2"><Tx>Education</Tx></th>
               </tr>
             </thead>
             <tbody>

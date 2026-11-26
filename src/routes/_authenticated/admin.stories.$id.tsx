@@ -1,3 +1,4 @@
+import { Tx } from "@/lib/admin-i18n";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -125,7 +126,7 @@ function StoryEditor() {
       <Link to="/admin/stories" className="text-sm text-muted-foreground hover:underline">← All engagements</Link>
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-5">
         <h1 className="text-2xl font-semibold md:text-3xl">{story.title}</h1>
-        <div className="flex gap-2"><Button variant="destructive" size="sm" onClick={remove}><Trash2 />Delete</Button><Button onClick={save}>Save</Button></div>
+        <div className="flex gap-2"><Button variant="destructive" size="sm" onClick={remove}><Trash2 /><Tx>Delete</Tx></Button><Button onClick={save}><Tx>Save</Tx></Button></div>
       </div>
 
       <section className="grid gap-4 rounded-xl border border-border bg-card p-6 md:grid-cols-2">

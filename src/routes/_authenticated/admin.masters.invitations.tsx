@@ -1,3 +1,4 @@
+import { Tx } from "@/lib/admin-i18n";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -63,12 +64,12 @@ function InvitationSettings() {
       actions={
         <>
           <Button asChild variant="outline" size="sm">
-            <Link to="/admin/catalog">Event types & roles</Link>
+            <Link to="/admin/catalog"><Tx>Event types & roles</Tx></Link>
           </Button>
           <Button asChild variant="outline" size="sm">
             <a href="/request" target="_blank" rel="noopener">
               <ExternalLink />
-              View the form
+              <Tx>View the form</Tx>
             </a>
           </Button>
         </>

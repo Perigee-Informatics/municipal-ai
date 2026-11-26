@@ -1,3 +1,4 @@
+import { Tx } from "@/lib/admin-i18n";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -59,9 +60,9 @@ function StoriesList() {
   return (
     <div className="mx-auto w-full max-w-[1400px] space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3 border-b border-border pb-5">
-        <div><h1 className="text-2xl font-semibold md:text-3xl">All engagements</h1><p className="mt-1.5 text-sm text-muted-foreground">One list for the Events calendar and the Story Map. Public ones show on both.</p></div>
+        <div><h1 className="text-2xl font-semibold md:text-3xl"><Tx>All engagements</Tx></h1><p className="mt-1.5 text-sm text-muted-foreground"><Tx>One list for the Events calendar and the Story Map. Public ones show on both.</Tx></p></div>
         <div className="flex flex-wrap gap-2">
-          <Button onClick={() => setAdding(true)}><Plus />Add engagement</Button>
+          <Button onClick={() => setAdding(true)}><Plus /><Tx>Add engagement</Tx></Button>
         </div>
       </div>
       <GoogleSyncBar />
@@ -69,15 +70,15 @@ function StoriesList() {
         <div className="flex flex-wrap items-center gap-3">
           <div className="inline-flex rounded-md border border-border p-0.5 text-sm">
             {(["upcoming", "completed", "all"] as const).map((w) => (
-              <button key={w} onClick={() => setWhen(w)} className={`rounded px-3 py-1.5 capitalize ${when === w ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>{w} <span className="opacity-70">{count[w]}</span></button>
+              <button key={w} onClick={() => setWhen(w)} className={`rounded px-3 py-1.5 capitalize ${when === w ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}><Tx>{w}</Tx> <span className="opacity-70">{count[w]}</span></button>
             ))}
           </div>
           <div className="inline-flex rounded-md border border-border p-0.5 text-sm">
             {(["all", "public", "private"] as const).map((v) => (
-              <button key={v} onClick={() => setVis(v)} className={`rounded px-3 py-1.5 capitalize ${vis === v ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>{v}</button>
+              <button key={v} onClick={() => setVis(v)} className={`rounded px-3 py-1.5 capitalize ${vis === v ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}><Tx>{v}</Tx></button>
             ))}
           </div>
-          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={onlyReview} onChange={(e) => setOnlyReview(e.target.checked)} />Location needs review only</label>
+          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={onlyReview} onChange={(e) => setOnlyReview(e.target.checked)} /><Tx>Location needs review only</Tx></label>
         </div>
         <FilterBar
           q={q}
@@ -108,8 +109,8 @@ function StoriesList() {
                   <div className="flex min-w-0 items-center gap-2">
                     <span className="truncate font-medium">{s.title}</span>
                     {isOver(s, now)
-                      ? <Pill>Completed</Pill>
-                      : s.event_date <= now.date ? <Pill tone="info">Today</Pill> : <Pill tone="ok">Upcoming</Pill>}
+                      ? <Pill><Tx>Completed</Tx></Pill>
+                      : s.event_date <= now.date ? <Pill tone="info"><Tx>Today</Tx></Pill> : <Pill tone="ok"><Tx>Upcoming</Tx></Pill>}
                   </div>
                   <div className="truncate text-sm text-muted-foreground">{storyDate(s)} · {s.event_types?.name} · {s.roles?.name} · {[s.city, s.country].filter(Boolean).join(", ")}</div>
                 </div>

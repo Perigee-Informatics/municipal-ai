@@ -2,6 +2,8 @@ import { useState, type ReactNode } from "react";
 import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/lib/i18n";
+import { tr } from "@/lib/admin-i18n";
 import { selectCls } from "@/components/admin/AdminPage";
 import { cn } from "@/lib/utils";
 
@@ -66,12 +68,14 @@ export function FilterBar({
   total?: number;
   children?: ReactNode;
 }) {
+  const { lang } = useI18n();
+  const T = (x: string) => tr(lang, x) as string;
   const active = !!q.trim() || filters.some((f) => values[f.key]);
   return (
     <div className="flex flex-wrap items-center gap-2" role="search">
       <div className="relative">
         <Search className="pointer-events-none absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-        <Input value={q} onChange={(e) => onQ(e.target.value)} placeholder={placeholder} className="h-9 w-56 pl-8" aria-label="Search" />
+        <Input value={q} onChange={(e) => onQ(e.target.value)} placeholder={T(placeholder)} className="h-9 w-56 pl-8" aria-label={T("Search")} />
       </div>
       {filters.map((f) => (
         <select
@@ -79,12 +83,12 @@ export function FilterBar({
           className={cn(selectCls, f.width ?? "w-40", values[f.key] ? "border-primary font-medium" : "text-muted-foreground")}
           value={values[f.key] ?? ""}
           onChange={(e) => onChange(f.key, e.target.value)}
-          aria-label={f.label}
+          aria-label={T(f.label)}
         >
-          <option value="">{f.label}</option>
+          <option value="">{T(f.label)}</option>
           {f.options.map((o) => (
             <option key={o.value} value={o.value}>
-              {o.label}
+              {T(o.label)}
               {o.count != null ? ` (${o.count})` : ""}
             </option>
           ))}
@@ -101,12 +105,12 @@ export function FilterBar({
           }}
         >
           <X />
-          Clear
+          {T("Clear")}
         </Button>
       )}
       {shown != null && total != null && (
         <span className="ml-auto text-sm text-muted-foreground">
-          {shown === total ? `${total}` : `${shown} of ${total}`}
+          {shown === total ? `${total}` : lang === "ne" ? `${total} मध्ये ${shown}` : `${shown} of ${total}`}
         </span>
       )}
     </div>

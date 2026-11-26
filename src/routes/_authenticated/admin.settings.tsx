@@ -1,3 +1,4 @@
+import { Tx } from "@/lib/admin-i18n";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -18,7 +19,7 @@ export const Route = createFileRoute("/_authenticated/admin/settings")({
 });
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
-  return <section className="space-y-4 rounded-xl border border-border bg-card p-6"><h2 className="font-semibold">{title}</h2>{children}</section>;
+  return <section className="space-y-4 rounded-xl border border-border bg-card p-6"><h2 className="font-semibold"><Tx>{title}</Tx></h2>{children}</section>;
 }
 
 function Settings() {
@@ -66,7 +67,7 @@ function Settings() {
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6">
-      <div className="border-b border-border pb-5"><h1 className="text-2xl font-semibold md:text-3xl">Site & integrations</h1><p className="mt-1.5 text-sm text-muted-foreground">Profile photo, CV, social numbers, Google Calendar and photo import.</p></div>
+      <div className="border-b border-border pb-5"><h1 className="text-2xl font-semibold md:text-3xl"><Tx>Site & integrations</Tx></h1><p className="mt-1.5 text-sm text-muted-foreground"><Tx>Profile photo, CV, social numbers, Google Calendar and photo import.</Tx></p></div>
       <div className="grid gap-6 lg:grid-cols-2">
         <Card title="Profile photo">
           <div className="flex items-center gap-4">

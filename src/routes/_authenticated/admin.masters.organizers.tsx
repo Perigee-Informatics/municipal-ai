@@ -1,3 +1,4 @@
+import { Tx } from "@/lib/admin-i18n";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
@@ -67,7 +68,7 @@ function Organizers() {
       actions={
         <Button onClick={() => setEditing({ kind: "other", active: true, country: "Nepal" })}>
           <Plus />
-          Add organizer
+          <Tx>Add organizer</Tx>
         </Button>
       }
       wide
@@ -116,12 +117,12 @@ function Organizers() {
             <table className="w-full text-sm">
               <thead className="bg-muted/50 text-left text-xs text-muted-foreground">
                 <tr>
-                  <th className="px-4 py-2">Name</th>
-                  <th className="px-4 py-2">Type</th>
-                  <th className="px-4 py-2">City</th>
+                  <th className="px-4 py-2"><Tx>Name</Tx></th>
+                  <th className="px-4 py-2"><Tx>Type</Tx></th>
+                  <th className="px-4 py-2"><Tx>City</Tx></th>
                   <th className="px-4 py-2">Contact</th>
                   <th className="px-4 py-2 text-right">Trainings</th>
-                  <th className="px-4 py-2 text-right">Engagements</th>
+                  <th className="px-4 py-2 text-right"><Tx>Engagements</Tx></th>
                   <th className="px-4 py-2" />
                 </tr>
               </thead>
@@ -246,14 +247,14 @@ function OrganizerForm({ o, usage, onDone }: { o: Partial<Organizer>; usage: { t
         </label>
       )}
       <div className="flex flex-wrap gap-2">
-        <Button type="submit">Save</Button>
+        <Button type="submit"><Tx>Save</Tx></Button>
         <Button type="button" variant="ghost" onClick={onDone}>
-          Cancel
+          <Tx>Cancel</Tx>
         </Button>
         {o.id && (
           <Button type="button" variant="ghost" className="ml-auto text-destructive" onClick={remove}>
             <Trash2 />
-            Delete
+            <Tx>Delete</Tx>
           </Button>
         )}
       </div>

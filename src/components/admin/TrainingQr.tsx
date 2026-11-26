@@ -1,3 +1,4 @@
+import { Tx } from "@/lib/admin-i18n";
 import { useEffect, useState } from "react";
 import { Copy, Download, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -115,7 +116,7 @@ export function TrainingQr({
               </Button>
               <Button size="sm" variant="outline" onClick={print}>
                 <Printer />
-                Print
+                <Tx>Print</Tx>
               </Button>
             </div>
           </div>

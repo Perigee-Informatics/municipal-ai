@@ -1,3 +1,4 @@
+import { Tx } from "@/lib/admin-i18n";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -30,7 +31,7 @@ function Results() {
           <Button asChild size="sm" variant="ghost">
             <a href={dash} target="_blank" rel="noopener">
               <ExternalLink />
-              New tab
+              <Tx>New tab</Tx>
             </a>
           </Button>
         }
