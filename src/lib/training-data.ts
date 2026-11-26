@@ -181,6 +181,14 @@ export const FEEDBACK_QS: Record<string, string[]> = {
     "The outputs fit Master's / MPhil / PhD level work",
     "The facilitator explained responsible use clearly",
   ],
+  judiciary: [
+    "Overall, this session was useful for my work in the courts",
+    "The pace was right for a 2-hour session",
+    "The Foundations segment (Nepali voice typing, prompt vocabulary) was clear",
+    "There was enough hands-on practice in the group exercise",
+    "The sample case materials fitted real court work",
+    "The guardrails on what AI must not do were explained clearly",
+  ],
   representative: [
     "कार्यशाला मेरो कामका लागि उपयोगी थियो",
     "सिकाइको गति मलाई ठिक्क थियो",
@@ -205,19 +213,24 @@ export function courseOfKey(key: string | null | undefined) {
   if (k.startsWith("representative")) return "representative";
   if (k.startsWith("cso")) return "cso";
   if (k.startsWith("hied")) return "hied";
+  if (k.startsWith("judiciary")) return "judiciary";
   return "employee";
 }
-export const hasAssessmentKey = (key: string | null | undefined) => courseOfKey(key) !== "hied";
+/** Short training packages (one session, no pre/post test). */
+export const isShortKey = (key: string | null | undefined) => ["hied", "judiciary"].includes(courseOfKey(key));
+export const hasAssessmentKey = (key: string | null | undefined) => !isShortKey(key);
 export const COURSE_LABEL: Record<string, string> = {
   employee: "Employees",
   representative: "Representatives",
   cso: "AI for CSOs",
   hied: "AI for Higher Education",
+  judiciary: "AI in Judiciary",
 };
 export const COURSE_PAGE: Record<string, string> = {
   employee: "/workshop/index.html",
   representative: "/workshop/representative/index.html",
   cso: "/workshop/cso/index.html",
   hied: "/workshop/hied/index.html",
+  judiciary: "/workshop/judiciary/index.html",
 };
 export const POOL_SIZE: Record<string, number> = { employee: 50, representative: 50, cso: 10 };

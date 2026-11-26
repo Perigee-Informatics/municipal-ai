@@ -1,0 +1,797 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>AI in Judiciary · AI for ALL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;700;800&family=Rozha+One&display=swap">
+<style>
+:root {
+  --bg: #EEF1F4; --surface: #FFFFFF; --ink: #142440; --muted: #556275; --line: #D6DDE6;
+  --accent: #B3123A; --accent-ink: #FFFFFF; --navy: #1C3A66; --soft: #E6ECF4;
+  --prompt-bg: #FFF5DC; --prompt-line: #C98A0B; --prompt-ink: #3B2E10;
+  --warn-bg: #FBE8EC; --warn-line: #B3123A; --doc-bg: #F6F7F9; --ok: #237A52; --ok-bg: #E2F2EA;
+  --f-body: 'Mukta', 'Nirmala UI', system-ui, sans-serif;
+  --f-display: 'Rozha One', 'Mukta', Georgia, serif;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0D1420; --surface: #152033; --ink: #E3E9F2; --muted: #9AA8BB; --line: #26344B;
+  --accent: #F2708C; --accent-ink: #1A0A10; --navy: #93B4E6; --soft: #1B2942;
+  --prompt-bg: #2A2414; --prompt-line: #E2AE45; --prompt-ink: #F3E6C4;
+  --warn-bg: #33161E; --warn-line: #F2708C; --doc-bg: #182436; --ok: #6FD3A2; --ok-bg: #133227;
+  color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0D1420; --surface: #152033; --ink: #E3E9F2; --muted: #9AA8BB; --line: #26344B;
+  --accent: #F2708C; --accent-ink: #1A0A10; --navy: #93B4E6; --soft: #1B2942;
+  --prompt-bg: #2A2414; --prompt-line: #E2AE45; --prompt-ink: #F3E6C4;
+  --warn-bg: #33161E; --warn-line: #F2708C; --doc-bg: #182436; --ok: #6FD3A2; --ok-bg: #133227;
+  color-scheme: dark }
+
+* { box-sizing: border-box }
+html { height: 100% } body { min-height: 100%; margin: 0; background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 16.5px; line-height: 1.6 }
+button { font: inherit; color: inherit; cursor: pointer }
+a { color: var(--navy) }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 4px }
+
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--surface); border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 12px; padding: 10px 16px }
+.brand { display: flex; align-items: baseline; gap: 10px; min-width: 0; text-decoration: none; color: var(--ink) }
+.brand b { font-family: var(--f-display); font-weight: 400; font-size: 22px; color: var(--accent); white-space: nowrap }
+.brand span { font-size: 14px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.search { margin-left: auto; position: relative; flex: 0 1 320px; min-width: 0 }
+.search input { width: 100%; border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 999px; padding: 7px 14px; font: inherit; font-size: 15px }
+.results { position: absolute; right: 0; top: calc(100% + 6px); width: min(440px, 92vw); max-height: 60vh; overflow: auto; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: 0 12px 30px rgba(10,20,40,.18); padding: 6px }
+.results a { display: block; padding: 8px 10px; border-radius: 8px; text-decoration: none; color: var(--ink) }
+.results a:hover, .results a:focus { background: var(--soft) }
+.results small { display: block; color: var(--muted); font-size: 13px; line-height: 1.4 }
+.home-link { white-space: nowrap; text-decoration: none; font-weight: 600; font-size: 15px; color: var(--navy) }
+.menu-btn { display: none; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 5px 12px; font-size: 15px }
+
+.shell { display: grid; grid-template-columns: 300px minmax(0, 1fr); min-height: calc(100vh - 56px) }
+.side { border-right: 1px solid var(--line); background: var(--surface); padding: 16px; position: sticky; top: 56px; height: calc(100vh - 56px); overflow: auto }
+.nav-links { display: grid; gap: 2px; margin-bottom: 14px }
+.nav-links a { text-decoration: none; color: var(--ink); padding: 6px 10px; border-radius: 8px; font-weight: 500 }
+.nav-links a[aria-current="page"] { background: var(--soft); color: var(--navy) }
+.day-h { font-size: 13px; letter-spacing: .04em; color: var(--muted); margin: 14px 0 6px; display: flex; justify-content: space-between; gap: 8px }
+.day-h b { color: var(--ink); font-size: 14px; letter-spacing: 0 }
+.tl { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px }
+.tl a { display: grid; grid-template-columns: 74px minmax(0, 1fr) auto; gap: 8px; align-items: start; padding: 7px 8px; border-radius: 8px; text-decoration: none; color: var(--ink); font-size: 15px; line-height: 1.35 }
+.tl .t { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 13px; padding-top: 2px }
+.tl a:hover { background: var(--soft) }
+.tl a[aria-current="page"] { background: var(--soft); box-shadow: inset 3px 0 0 var(--navy) }
+.chip { font-size: 11.5px; font-weight: 700; border-radius: 999px; padding: 1px 8px; white-space: nowrap; align-self: center }
+.chip.done { background: var(--ok-bg); color: var(--ok) }
+
+main { min-width: 0; padding-block: 28px 80px; padding-inline: clamp(16px, 4vw, 48px) }
+.wrap { max-width: 880px; margin-inline: auto }
+.eyebrow { font-size: 14px; font-weight: 700; color: var(--accent); letter-spacing: .02em; margin: 0 }
+h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(28px, 4.2vw, 42px); line-height: 1.2; margin: 4px 0 10px; text-wrap: balance }
+.meta { color: var(--muted); margin: 0 0 18px }
+.prose h2 { font-size: 23px; margin: 28px 0 10px; color: var(--navy) }
+.prose h3 { font-size: 19px; margin: 22px 0 8px; color: var(--navy) }
+.prose p { margin: 8px 0 }
+.prose ul, .prose ol { padding-left: 1.4em; margin: 8px 0 }
+.prose li { margin: 4px 0 }
+.tbl { overflow-x: auto; margin: 12px 0; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface) }
+table { border-collapse: collapse; width: 100%; font-size: 15px; font-variant-numeric: tabular-nums }
+th { background: var(--soft); text-align: left; font-weight: 700; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: bottom }
+td { padding: 8px 10px; border-top: 1px solid var(--line); vertical-align: top }
+.box { border-radius: var(--r); padding: 12px 16px; margin: 14px 0; border-left: 4px solid var(--navy); background: var(--soft) }
+.box.warn { background: var(--warn-bg); border-left-color: var(--warn-line) }
+.box.trainer { background: var(--ok-bg); border-left-color: var(--ok) }
+.box-t { font-weight: 700; margin: 0 0 4px }
+.prompt { margin: 14px 0; border-radius: var(--r); background: var(--prompt-bg); border: 1px solid var(--prompt-line); overflow: hidden }
+.prompt figcaption { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 12px; font-weight: 700; color: var(--prompt-ink); border-bottom: 1px dashed var(--prompt-line) }
+.prompt pre { margin: 0; padding: 12px 14px; white-space: pre-wrap; font-family: var(--f-body); font-size: 15.5px; color: var(--prompt-ink); line-height: 1.6 }
+.copy, .btn { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 5px 12px; font-size: 14px; font-weight: 500; white-space: nowrap; text-decoration: none; display: inline-flex; align-items: center; gap: 6px }
+.copy { border-color: var(--prompt-line) }
+.btn.primary { background: var(--navy); color: var(--surface); border-color: var(--navy) }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 12px 0 18px }
+.toggle-done[aria-pressed="true"] { background: var(--ok-bg); color: var(--ok); border-color: var(--ok) }
+.pager { display: flex; justify-content: space-between; gap: 12px; margin-top: 28px; padding-top: 16px; border-top: 1px solid var(--line); flex-wrap: wrap }
+.pager a { text-decoration: none; font-weight: 600 }
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; margin: 12px 0 }
+.card-grid .card { margin: 0; text-decoration: none; color: var(--ink) }
+.card-grid .card:hover { border-color: var(--navy) }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; margin: 12px 0 }
+.fb-q { margin: 14px 0; padding: 12px; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface) }
+.fb-scale { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px }
+.fb-scale label { border: 1px solid var(--line); border-radius: 8px; padding: 4px 12px; cursor: pointer }
+.fb-scale input { margin-right: 6px }
+.f { display: grid; gap: 4px; margin: 12px 0; font-weight: 600; font-size: 15px }
+.f input, .f textarea { font: inherit; font-weight: 400; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink) }
+.toast { position: fixed; bottom: 20px; right: 20px; background: var(--navy); color: #fff; padding: 8px 14px; border-radius: 8px; font-size: 14px; z-index: 50 }
+
+@media (max-width: 900px) {
+  .menu-btn { display: inline-block }
+  .shell { grid-template-columns: 1fr }
+  .side { position: fixed; inset: 56px auto 0 0; width: min(310px, 86vw); height: auto; z-index: 30; transform: translateX(-100%); transition: transform .2s; box-shadow: none }
+  .side.open { transform: none; box-shadow: 0 0 0 100vmax rgba(0,0,0,.35) }
+}
+@media print {
+  .top, .side, .actions, .pager, .copy, .toast { display: none !important }
+  .shell { display: block }
+  main { padding: 0 }
+  body { background: #fff; color: #000 }
+  .prompt { break-inside: avoid }
+}
+</style>
+<link rel="stylesheet" href="/workshop/site-theme.css?v=20261126a">
+</head>
+<body>
+<header class="top">
+  <button type="button" class="menu-btn" id="menuBtn" aria-controls="side" aria-expanded="false">☰ Menu</button>
+  <a class="brand" href="#home"><b>AI for ALL</b><span id="brandSub">AI in Judiciary</span></a>
+  <a class="home-link" data-home href="/ai-for-all" hidden>⌂ Home</a>
+  <div class="search">
+    <input type="search" id="q" placeholder="Search prompts, exercises, case papers…" aria-label="Search">
+    <div class="results" id="results" hidden></div>
+  </div>
+</header>
+
+<div class="shell">
+  <nav class="side" id="side" aria-label="Session navigation"></nav>
+  <main id="view"></main>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="../account.js"></script>
+<script src="../event-info.js?v=20261126c"></script>
+<script src="../teach-bar.js"></script>
+<script>
+(function () {
+"use strict";
+const COURSE = "judiciary";
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const store = {
+  get(k, d) { try { const v = localStorage.getItem("ai-judiciary-" + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem("ai-judiciary-" + k, JSON.stringify(v)); } catch (e) {} }
+};
+let done = new Set(store.get("done", []));
+
+let _pid = 0;
+function promptBox(label, text) {
+  const id = "cp" + (++_pid);
+  return `<figure class="prompt"><figcaption><span>${esc(label)}</span><button type="button" class="copy" data-copy-id="${id}">Copy</button></figcaption><pre id="${id}">${esc(text)}</pre></figure>`;
+}
+const ul = items => `<ul>${items.map(x => `<li>${x}</li>`).join("")}</ul>`;
+const ol = items => `<ol>${items.map(x => `<li>${x}</li>`).join("")}</ol>`;
+const table = (head, rows) => `<div class="tbl"><table><thead><tr>${head.map(h => `<th>${h}</th>`).join("")}</tr></thead><tbody>${rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+
+const SC_POLICY = "https://kathmandupost.com/national/2026/07/03/nepal-s-courts-embrace-ai-keep-judgment-writing-human";
+const INDIA_REF = "https://www.ictworks.org/how-5-judicial-ai-solutions-are-proving-skeptics-wrong-in-india/";
+
+/* ---------- Shared content ---------- */
+const TOOLS = [
+  ["a. Legal research", "Gemini, or Perplexity", "Gemini's web-grounded answers work well under one login; Perplexity's free tier always shows its source links, so an officer can verify a claim before trusting it — valuable given AI's tendency to cite \"incorrect or even non-existent laws.\""],
+  ["b. Analysis &amp; summary of a Likhat", "Google NotebookLM", "Answers only from the document you upload, not from general training data — the single most important safeguard for legal accuracy. Handles Nepali/Devanagari text."],
+  ["c. Translation of a Likhat", "Google Translate (compare with DeepL)", "The most mature Nepali-language support of the free tools, free and unlimited, handles full documents. DeepL also supports Nepali and is worth a side-by-side comparison — pair either with bilingual human review for legal terms."],
+  ["d. Bayan, Bakapatra, Bahas preparation", "Gemini or ChatGPT", "Used conversationally: feed in the facts, ask for a structured statement or argument outline, then the officer finalises the wording and legal substance."],
+  ["e. Drafting a Likhat", "Gemini or ChatGPT", "Produces a first-draft structure from a checklist of facts and required clauses; a human still supplies and checks the legal content."],
+  ["f. Case management", "Gemini, especially with Google Sheets", "Best free option for building trackers, hearing-prep checklists and case-status summaries. Frame this as organising a workflow, not adopting one product."]
+];
+const VOCAB = [
+  ["Prompt", "the instruction or question you type or say to the AI."],
+  ["Context", "the background you give it (facts, a document, earlier messages); more relevant context usually means a better answer."],
+  ["Follow-up", "a second message that refines or narrows the first answer, rather than starting over."],
+  ["Hallucination", "when an AI states something confidently that is false or doesn't exist, including a law or case citation. This is why verification matters."],
+  ["Grounding / source", "an answer tied to a specific document or a cited source, as opposed to the model's general training. Grounded answers (like NotebookLM's) are safer for factual work."]
+];
+const GUARDRAILS = [
+  "<strong>AI drafts, summarises, translates and organises — it never decides.</strong> Nothing produced today should go into a judgment, a writ petition, or any output requiring judicial discretion or legal reasoning. This mirrors Nepal's own Supreme Court AI policy adopted 3 July 2026.",
+  "<strong>Always verify.</strong> A general AI chatbot can state a law or precedent that does not exist, with full confidence. Every AI-assisted research or drafting output must be checked against a verified source before it is relied on.",
+  "<strong>Prefer grounded tools for facts.</strong> Document-grounded tools (like NotebookLM) are safer for factual summary work than general chatbots, because they can only draw on the document you gave them.",
+  "<strong>Never input real case material.</strong> Never put real, confidential or under-adjudication case material into a free/public AI tool. Treat every free tool as if its inputs could be seen by someone else — with a free consumer account, they might be.",
+  "<strong>You stay accountable.</strong> The human officer remains accountable for anything that leaves their desk, whether AI helped produce it or not."
+];
+const PROMPTS = [
+  ["Legal research", "What are the standard grounds for [legal issue] under Nepali [area of law]? List the relevant provisions and explain each briefly."],
+  ["Likhat summary (NotebookLM)", "Summarise this document in one page for a judge who has not read it. Then list the key dates and parties as a timeline."],
+  ["Translation", "Translate the following into [language], preserving legal terms of art as closely as possible: [paste excerpt]"],
+  ["Bahas/Bayan drafting", "Based on these facts: [facts], draft a structured outline of the main arguments a party could raise, organised by issue."],
+  ["Likhat drafting", "Draft a first-draft structure for a [type] Likhat covering these facts and required clauses: [list]. Flag anything you are unsure belongs in this type of document."],
+  ["Case management", "I have [N] pending cases of these types: [types], oldest filed [date]. Propose a simple tracker structure and one prioritisation rule."]
+];
+const RTCF_EXAMPLE = "You are assisting a court researching Nepali civil procedure. Summarise the standard grounds for setting aside an ex-parte decree, using the attached Likhat as context. Answer in three short bullet points.";
+
+const GBOARD_ANDROID = [
+  "Settings &gt; System &gt; Languages &amp; input &gt; On-screen keyboard &gt; Manage keyboards &gt; turn on <strong>Gboard</strong> (pre-installed on most Android phones).",
+  "Gboard settings &gt; Languages &gt; Add a keyboard &gt; search <strong>\"Nepali\"</strong> &gt; add it.",
+  "Gboard settings &gt; <strong>Voice typing</strong> &gt; turn on; then open the Google app &gt; Settings &gt; Voice &gt; Languages &gt; add Nepali as a voice-input language.",
+  "To use: tap the <strong>microphone</strong> icon on the Gboard keyboard and speak in Nepali — the text appears in Devanagari."
+];
+
+/* ---------- Sample case materials (fictional) ---------- */
+const CASES = [
+  {
+    id: "c1", code: "M1", title: "Sample Likhat — land sale deed (जग्गा रजिनामा पारित लिखत)",
+    text: `जग्गा रजिनामा पारित लिखत
+(नमूना — तालिमको लागि मात्र, काल्पनिक)
+
+श्री मालपोत कार्यालय, कैलाशपुर जिल्लामा दर्ता हुने गरी यो रजिनामा जग्गा लिखत देहाय बमोजिम लेखी दिएको विवरणः
+
+लिखत लेखी दिने (बिक्रेता): कृष्ण बहादुर थापा, ठेगानाः गाउँथली गाउँपालिका वडा नं. ३, कैलाशपुर जिल्ला, नागरिकता प्रमाणपत्र नं. XX-XX-XX-XXXXX।
+लिखत लेखी लिने (खरिदकर्ता): मिना कुमारी गुरुङ, ठेगानाः गाउँथली गाउँपालिका वडा नं. ३, कैलाशपुर जिल्ला।
+
+जग्गाको विवरणः किट्टा नं. १४२, क्षेत्रफल २ रोपनी ३ आना, गाउँथली गाउँपालिका वडा नं. ३ मा अवस्थित। चार किल्ला: पूर्व — सार्वजनिक बाटो, पश्चिम — खोला, उत्तर — विष्णु प्रसाद शर्माको जग्गा, दक्षिण — रामु थापाको जग्गा।
+
+मूल्यः रु. १५,००,०००।- (अक्षरुपी पन्ध्र लाख रुपैयाँ मात्र), मिति २०७५ साल फागुन ५ गते यसै लिखतबमोजिम बुझी लिएको व्यहोरा दुबै पक्षले मन्जुर गरेका छौं। आफ्नो स्वेच्छाले, कुनै दबाब वा धम्की विना लेखी दिएका हौं।
+
+साक्षीः (१) हरि प्रसाद अधिकारी (२) सीता देवी तामाङ
+मितिः २०७५।११।०५`,
+    gloss: "Land sale deed — Krishna Bahadur Thapa (seller) transfers Kitta No. 142 (2 Ropani 3 Aana), Ward 3, Gaunthali Rural Municipality, to Mina Kumari Gurung (buyer) for NPR 1,500,000, dated 2075/11/05 BS (~Feb 2019). Boundaries: east — public road, west — a stream, north — Bishnu Prasad Sharma's land, south — Ramu Thapa's land. Two witnesses."
+  },
+  {
+    id: "c2", code: "M2", title: "Sample Bayan — party statement (बयान)",
+    text: `बयान
+(नमूना — तालिमको लागि मात्र, काल्पनिक)
+
+बयान दिनेः मिना कुमारी गुरुङ, जिल्ला अदालत कैलाशपुरमा दर्ता मुद्दा नं. ०८१-सी.आई.-०४५६ सम्बन्धमा।
+
+म मिना कुमारी गुरुङले सो जग्गा मिति २०७५ साल फागुन ५ गते कृष्ण बहादुर थापाबाट रजिनामा लिखतद्वारा खरिद गरेको हुँ। खरिद गरेपछि देखि हालसम्म निरन्तर भोगचलन गर्दै आएको छु। गत वर्षायाम खोलाको धार परिवर्तन भई जग्गाको पश्चिमी किल्लामा केही हेरफेर आएको हो, तर यसले मेरो स्वामित्वमा कुनै असर पार्दैन भन्ने मेरो भनाइ छ। प्रतिवादी रामु थापाले मेरो जग्गाको दक्षिणी भागमा अतिक्रमण गरी बार लगाइएको हुनाले यो उजुरी गरेको हुँ।
+
+मैले भनेको व्यहोरा साँचो हो, झुटो ठहरे कानून बमोजिम सहुँला बुझाउँला।
+
+बयान गर्नेको सहीः मिना कुमारी गुरुङ
+मितिः २०८१।०७।१२`,
+    gloss: "Mina Kumari Gurung's statement in Case No. 081-CI-0456 — bought the land from Krishna Bahadur Thapa in 2075 BS and has continuously occupied it since; last monsoon the stream's course shifted, altering the western boundary, but she maintains this does not affect her ownership; alleges defendant Ramu Thapa encroached on the southern portion with a fence, hence this complaint."
+  },
+  {
+    id: "c3", code: "M3", title: "Sample Bakapatra — sworn witness statement (बकपत्र)",
+    text: `बकपत्र
+(नमूना — तालिमको लागि मात्र, काल्पनिक)
+
+म हरि प्रसाद अधिकारी, गाउँथली गाउँपालिका वडा नं. ३ को स्थायी बासिन्दा, उमेर २५ वर्ष, ले देहायबमोजिम बकपत्र गरी बुझाउँदछुः
+
+मिति २०७५ साल फागुन ५ गते कृष्ण बहादुर थापाले आफ्नो किट्टा नं. १४२ को जग्गा मिना कुमारी गुरुङलाई रजिनामा गरी बिक्री गर्दा म साक्षी बसेको थिएँ। सो समयमा जग्गाको पश्चिमी किल्लामा सानो खोला रहेको र पूर्वमा सार्वजनिक बाटो रहेको प्रत्यक्ष देखेको व्यहोरा साँचो हो। हालसालै खोलाको धार केही पश्चिमतर्फ सरेको पनि मैले आफ्नै आँखाले देखेको छु।
+
+माथि लेखिए बमोजिमको व्यहोरा ठीक साँचो हो, झुटो ठहरे कानून बमोजिम सहुँला बुझाउँला भनी यो बकपत्र गरी दिएको छु।
+
+बकपत्र गर्नेको सहीः हरि प्रसाद अधिकारी
+मितिः २०८१।०७।१५`,
+    gloss: "Hari Prasad Adhikari's sworn statement — confirms he witnessed the 2075 BS sale deed between Krishna Bahadur Thapa and Mina Kumari Gurung; attests that at that time the western boundary was a stream and the eastern boundary a public road; has personally observed the stream's course shifting westward in recent times."
+  },
+  {
+    id: "c4", code: "M4", title: "One-page case fact pattern summary",
+    html: `<p><strong>Case No. 081-CI-0456, District Court, Kailashpur</strong> — boundary dispute over Kitta No. 142 (2 Ropani 3 Aana), Ward 3, Gaunthali Rural Municipality.</p>
+    <p>Mina Kumari Gurung purchased the land from Krishna Bahadur Thapa by registered deed dated 2075/11/05 BS (<a href="#c1">M1</a>). The deed records the western boundary as a stream and the southern boundary as neighbour Ramu Thapa's land. Following monsoon flooding, the stream's course shifted westward, leaving a strip of newly dry land. Ramu Thapa fenced this strip, claiming it was always part of his southern plot (<a href="#c2">M2</a>). A neighbouring witness's sworn statement corroborates the original 2075 BS boundary as the stream, and confirms the recent shift (<a href="#c3">M3</a>).</p>
+    <h3>Issues for discussion</h3>
+    <ol>
+      <li>Does a natural shift in a stream boundary change a registered property boundary under Nepali land law?</li>
+      <li>How should the weight of a 2075 BS registered deed, a 2081 Bayan, and a corroborating Bakapatra be compared?</li>
+      <li>What case-management steps would move this case toward a site inspection (मुचुल्का / स्थलगत मुआयना) and a hearing date?</li>
+    </ol>
+    <div class="box warn"><p class="box-t">Not a question to decide today</p><p>This fact pattern is for group discussion and tool practice. No group should attempt to reach a ruling on it.</p></div>`,
+    copy: "Case No. 081-CI-0456, District Court, Kailashpur — boundary dispute over Kitta No. 142 (2 Ropani 3 Aana), Ward 3, Gaunthali Rural Municipality.\nMina Kumari Gurung purchased the land from Krishna Bahadur Thapa by registered deed dated 2075/11/05 BS. The deed records the western boundary as a stream and the southern boundary as neighbour Ramu Thapa's land. Following monsoon flooding, the stream's course shifted westward, leaving a strip of newly dry land. Ramu Thapa fenced this strip, claiming it was always part of his southern plot. A neighbouring witness's sworn statement corroborates the original 2075 BS boundary as the stream, and confirms the recent shift."
+  },
+  {
+    id: "c5", code: "M5", title: "Sample case backlog (case-management exercise)",
+    html: table(["Case No.", "Type", "Filed (BS)", "Status", "Next step needed"], [
+      ["079-CI-2290", "Property/boundary dispute", "2079/02/14", "Oldest pending case", "Priority review"],
+      ["080-CI-1203", "Contract dispute", "2080/09/20", "Appeal pending", "Case file transfer to High Court"],
+      ["081-CI-0312", "Partition (Ansabanda)", "2081/03/02", "Awaiting defendant's reply", "Follow-up notice"],
+      ["081-CI-0456", "Property/boundary dispute", "2081/06/10", "Evidence stage", "Site inspection (muchulka)"],
+      ["081-CI-0501", "Tenancy (Mohi) rights", "2081/05/18", "Evidence stage", "Document verification"],
+      ["081-CR-0433", "Theft", "2081/07/02", "Charge-sheet filed", "Hearing date"],
+      ["081-CR-0890", "Cheque bounce", "2081/07/15", "Hearing scheduled", "Witness summons"],
+      ["081-FA-0077", "Divorce/alimony", "2081/08/01", "Mediation attempted", "Final hearing date"]
+    ]) + `<p>Group 4 can use this list to build a tracker and a prioritisation rule — for example, flagging 079-CI-2290 as the oldest pending case for priority review, or grouping cases by "next step needed" to plan a week's hearing calendar.</p>`,
+    copy: "Case No. | Type | Filed (BS) | Status | Next step needed\n079-CI-2290 | Property/boundary dispute | 2079/02/14 | Oldest pending case | Priority review\n080-CI-1203 | Contract dispute | 2080/09/20 | Appeal pending | Case file transfer to High Court\n081-CI-0312 | Partition (Ansabanda) | 2081/03/02 | Awaiting defendant's reply | Follow-up notice\n081-CI-0456 | Property/boundary dispute | 2081/06/10 | Evidence stage | Site inspection (muchulka)\n081-CI-0501 | Tenancy (Mohi) rights | 2081/05/18 | Evidence stage | Document verification\n081-CR-0433 | Theft | 2081/07/02 | Charge-sheet filed | Hearing date\n081-CR-0890 | Cheque bounce | 2081/07/15 | Hearing scheduled | Witness summons\n081-FA-0077 | Divorce/alimony | 2081/08/01 | Mediation attempted | Final hearing date"
+  }
+];
+
+/* ---------- Sessions (the 120-minute run-of-show) ---------- */
+const SESSIONS = [
+  {
+    id: "s1", n: 1, time: "11:00–11:05", mins: 5, title: "Welcome and the Supreme Court AI policy",
+    whatToDo: [
+      "Frame the session around Nepal's Supreme Court AI policy (3 July 2026): what is permitted, what is off-limits, and why.",
+      "Everything today sits inside the permitted zone: research, document analysis, translation, drafting support, case management."
+    ],
+    body: `<p>On 3 July 2026, Nepal's Supreme Court adopted a formal AI policy — the first of its kind for the judiciary. It <strong>permits</strong> AI use in legal research, document management and case organisation, drafting of non-decisional documents, and administrative support. It <strong>prohibits</strong> AI from writing judgments, drafting writ petitions, or performing any task requiring judicial discretion (<a href="${SC_POLICY}" target="_blank" rel="noopener">source</a>).</p>
+    <p>The Chief Registrar described AI as a tool to assist people rather than replace judicial decision-making, and warned that AI systems can cite incorrect or even non-existent laws.</p>
+    ${table(["Permitted (today's work)", "Off-limits"], [["Legal research · document analysis and summary · translation · drafting support for non-decisional documents · case management and administration", "Writing judgments · drafting writ petitions · any task requiring judicial discretion or legal reasoning"]])}`,
+    trainerNote: "Open with the policy: the participants' own court has already drawn the line, and this session works inside it. That pre-empts the natural caution of senior judicial officers."
+  },
+  {
+    id: "s2", n: 2, time: "11:05–11:25", mins: 20, title: "Foundations: Nepali voice typing and prompt vocabulary",
+    whatToDo: [
+      "Part 1 (10 min): enable Nepali voice typing with Gboard, then dictate 2–3 sentences from the sample Bayan (M2).",
+      "Part 2 (10 min): learn five words — prompt, context, follow-up, hallucination, grounding — and the Role/Task/Context/Format framework.",
+      "Compare a weak, vague prompt with the same question rebuilt with Role/Task/Context/Format."
+    ],
+    body: `<h2>Part 1 — Enable Nepali voice typing with Gboard</h2>
+    <p>Dictating Nepali is far faster than typing Devanagari, and it is the quickest way to get a Bayan or case note into an AI tool.</p>
+    <h3>Android (most common)</h3>${ol(GBOARD_ANDROID)}
+    <p><strong>iPhone:</strong> install Gboard from the App Store; once set as the keyboard it has its own microphone icon for voice typing, independent of Siri dictation.</p>
+    <div class="box"><p class="box-t">Try it</p><p>Dictate 2–3 sentences from the <a href="#c2">sample Bayan (M2)</a>. Check the accuracy, and fix punctuation (। , ?) by hand where needed.</p></div>
+    <h2>Part 2 — Prompt vocabulary</h2>
+    ${ul(VOCAB.map(([w, d]) => `<strong>${w}</strong> — ${d}`))}
+    <h3>A simple framework: Role, Task, Context, Format</h3>
+    <p>"You are [role]. [Task], using [context]. Answer in [format]."</p>
+    ${promptBox("Weak prompt (try first)", "Tell me about ex-parte decrees.")}
+    ${promptBox("Role / Task / Context / Format", RTCF_EXAMPLE)}`,
+    trainerNote: "Demo voice typing live on a phone mirrored to the screen, using the M2 Bayan excerpt, and let the room see where punctuation needs a manual fix. Then show the weak prompt and its weak answer, rebuild it with Role/Task/Context/Format, and compare the two answers side by side. Test Gboard on one Android phone and one iPhone before the session."
+  },
+  {
+    id: "s3", n: 3, time: "11:25–11:37", mins: 12, title: "Case study 1: legal research and Likhat analysis",
+    whatToDo: [
+      "See a real-world parallel: India's SUPACE (3 min).",
+      "Watch the live demo: a research question in Gemini or Perplexity, then a Likhat summary and timeline in NotebookLM (7 min).",
+      "Questions (2 min)."
+    ],
+    body: `<p><strong>Real-world parallel:</strong> India's Supreme Court runs SUPACE (Supreme Court Portal for Assistance in Court Efficiency), which surfaces relevant precedents and drafts research outlines for judges — cutting manual research time while leaving the final decision with the judge (<a href="${INDIA_REF}" target="_blank" rel="noopener">reference</a>).</p>
+    <h3>Live demo</h3>
+    ${ol([
+      "Open Gemini (or Perplexity) and ask a plain-language legal research question. With Perplexity, show the source links that back the answer.",
+      "Open NotebookLM, upload the sample Likhat (<a href=\"#c1\">M1</a>), and ask for a one-page summary and a timeline of key dates and events. Show that every answer traces back to the uploaded document.",
+      "Name the risk: a general chatbot can invent a citation that does not exist; a document-grounded tool like NotebookLM cannot invent facts outside the file you gave it."
+    ])}
+    ${promptBox("Research question (Gemini or Perplexity)", "What are the standard grounds for setting aside an ex-parte decree under Nepali civil procedure?")}
+    ${promptBox("Likhat summary (NotebookLM, M1 uploaded)", "Summarise this document in one page for a judge who has not read it. Then list the key dates and parties as a timeline.")}`,
+    trainerNote: "The single most important takeaway of this demo is the difference between a general chatbot (can invent citations) and a document-grounded tool (cannot go beyond the file). Say it explicitly."
+  },
+  {
+    id: "s4", n: 4, time: "11:37–11:49", mins: 12, title: "Case study 2: translation, drafting and case management",
+    whatToDo: [
+      "See a real-world parallel: India's SUVAS (3 min).",
+      "Watch the live demo: Google Translate vs DeepL on a Bayan excerpt, then a Bahas outline in Gemini or ChatGPT (7 min).",
+      "Questions (2 min)."
+    ],
+    body: `<p><strong>Real-world parallel:</strong> India's SUVAS (Supreme Court's Vidhik Anuvaad Software) has translated more than 36,000 Supreme Court judgments from English into Hindi and other Indian languages, widening access to justice for non-English speakers (<a href="${INDIA_REF}" target="_blank" rel="noopener">reference</a>).</p>
+    <h3>Live demo</h3>
+    ${ol([
+      "Take a short excerpt from the sample <a href=\"#c2\">Bayan (M2)</a> and run it through Google Translate, then DeepL. Compare the two outputs: which phrasing would an officer trust more, and why does human review still matter for legal terms of art?",
+      "Give Gemini or ChatGPT the facts of the <a href=\"#c4\">case summary (M4)</a> and ask for a structured Bahas outline or a first-draft Likhat clause. Show how the officer then edits, verifies and takes ownership of the substance.",
+      "Close with the Supreme Court AI policy: it permits AI for document management, case organisation and drafting of non-decisional documents — exactly what was just shown — and prohibits AI from writing judgments or writ petitions."
+    ])}
+    ${promptBox("Translation", "Translate the following into English, preserving legal terms of art as closely as possible: [paste excerpt]")}
+    ${promptBox("Bahas outline", "Based on these facts: [paste M4 facts], draft a structured outline of the main arguments a party could raise, organised by issue.")}`,
+    trainerNote: "Keep the translation comparison concrete: point at one legal term where the two tools differ. When showing the Bahas outline, edit it live so the room sees the officer owning the substance."
+  },
+  {
+    id: "s5", n: 5, time: "11:49–11:55", mins: 6, title: "Group assignment",
+    whatToDo: [
+      "Form 5 groups (pre-assigned by name on table cards), mixing district- and high-court officers.",
+      "Each group takes one exercise and one pre-logged-in device.",
+      "Open your group's exercise page from the list below."
+    ],
+    body: `${table(["Group", "Task", "Tool", "Exercise"], [
+      ["1", "a. Legal research", "Gemini or Perplexity", `<a href="#ex1">Exercise 1</a>`],
+      ["2", "b. Analysis &amp; summary of a Likhat", "NotebookLM", `<a href="#ex2">Exercise 2</a>`],
+      ["3", "c. Translation of a Likhat", "Google Translate / DeepL", `<a href="#ex3">Exercise 3</a>`],
+      ["4", "f. Case management", "Gemini (+ Google Sheets)", `<a href="#ex4">Exercise 4</a>`],
+      ["5", "d + e. Bayan/Bakapatra/Bahas preparation and drafting a Likhat", "Gemini or ChatGPT", `<a href="#ex5">Exercise 5</a>`]
+    ])}
+    <h3>Which free tool for which task</h3>
+    ${table(["Task", "Best free tool", "Why"], TOOLS)}
+    <p>One Google account covers Gemini, NotebookLM and Google Translate. ChatGPT, Perplexity and DeepL are "also worth knowing" tools.</p>`,
+    trainerNote: "Six tasks don't divide evenly across five groups, so Group 5 pairs Bayan/Bakapatra/Bahas preparation with drafting a Likhat — both are generative drafting with the same tool. Each group needs one shared pre-logged-in device, a printed copy of the sample case packet, and a one-page task card."
+  },
+  {
+    id: "s6", n: 6, time: "11:55–12:25", mins: 30, title: "Group work",
+    whatToDo: [
+      "Work hands-on with your group's task and tool on the shared sample case papers (M1–M5).",
+      "Use only the sample materials — never real case files.",
+      "Prepare one finding for the report-back: what you tried, what worked, and what you'd double-check before trusting it."
+    ],
+    body: `<div class="card-grid">
+      <a class="card" href="#ex1"><b>Exercise 1</b><br>AI in legal research</a>
+      <a class="card" href="#ex2"><b>Exercise 2</b><br>Analysis and summary of a Likhat</a>
+      <a class="card" href="#ex3"><b>Exercise 3</b><br>Translation of a Likhat</a>
+      <a class="card" href="#ex4"><b>Exercise 4</b><br>AI in case management</a>
+      <a class="card" href="#ex5"><b>Exercise 5</b><br>Bayan/Bakapatra/Bahas and drafting a Likhat</a>
+    </div>
+    <h3>Sample case papers (fictional)</h3>
+    ${ul(CASES.map(c => `<a href="#${c.id}">${esc(c.code)}: ${esc(c.title)}</a>`))}`,
+    trainerNote: "Circulate (with a co-facilitator or IT support person) during the 30 minutes. Account friction is the most common way this block overruns — every device should already be signed in."
+  },
+  {
+    id: "s7", n: 7, time: "12:25–12:40", mins: 15, title: "Report-back",
+    whatToDo: [
+      "Each group presents in about 3 minutes.",
+      "Say what you tried, what worked, and what you would double-check before trusting it."
+    ],
+    body: `${table(["Group", "Report back"], [
+      ["1 · Legal research", "One research question you tried, the answer you got, and one thing you'd verify before trusting it."],
+      ["2 · Likhat summary", "Your one-page summary, and what happened when you asked a question outside the document."],
+      ["3 · Translation", "The two translations side by side, and the one term you'd flag for human review."],
+      ["4 · Case management", "Your proposed tracker structure and one prioritisation rule you'd apply."],
+      ["5 · Drafting", "One outline or draft you produced, and the one thing a human still had to add or fix."]
+    ])}`,
+    trainerNote: "Keep each group to 3 minutes. After each report, ask the room one question: \"What would you check before relying on this?\""
+  },
+  {
+    id: "s8", n: 8, time: "12:40–13:00", mins: 20, title: "Synthesis, guardrails and close",
+    whatToDo: [
+      "Recap the free-tool matrix as a takeaway.",
+      "Restate the guardrails, then Q&amp;A.",
+      "Fill in the feedback form before you leave."
+    ],
+    body: `<h3>Guardrails</h3>${ul(GUARDRAILS)}
+    <h3>Take-home</h3><p>The <a href="#handout">printable handout</a> has the tool matrix, the prompt library and the privacy rule.</p>
+    <div class="actions"><a class="btn primary" href="#feedback">Feedback form →</a></div>`,
+    trainerNote: "State the guardrails out loud, more than once — being explicit about the boundary is what earns a cautious senior audience's trust to experiment at all. The last 5 minutes (12:55–13:00) are buffer: close on time regardless."
+  }
+];
+
+/* ---------- Group exercises (Participant Workbook) ---------- */
+const EXERCISES = [
+  {
+    id: "ex1", n: 1, group: 1, tool: "Gemini, or Perplexity", title: "AI in legal research",
+    steps: [
+      "Open Gemini or Perplexity on your group's device.",
+      "Ask a plain-language legal research question based on the sample fact pattern (<a href=\"#c4\">M4</a>).",
+      "Read the answer. If you're using Perplexity, open at least one of its cited sources and check whether it actually supports what the answer claims.",
+      "Ask a follow-up that narrows the question to the fact pattern (add a date, a party type, or a procedural stage).",
+      "Discuss: would you trust this answer on its own? What would you check before relying on it in your own work?"
+    ],
+    prompts: [["Research question", "What are the standard grounds for setting aside an ex-parte decree under Nepali civil procedure?"], ["Follow-up", "Does a natural shift in a stream boundary change a registered property boundary under Nepali land law? Cite the provisions you rely on, and say which ones I must verify."]],
+    report: "One research question you tried, the answer you got, and one thing you'd verify before trusting it."
+  },
+  {
+    id: "ex2", n: 2, group: 2, tool: "Google NotebookLM", title: "Analysis and summary of a Likhat",
+    steps: [
+      "Open NotebookLM on your group's device. A notebook with the sample Likhat (<a href=\"#c1\">M1</a>) as a source is ready for you (or add it: Add source → Copied text).",
+      "Ask for a one-page summary.",
+      "Ask for the key dates and events as a timeline.",
+      "Ask a question NotebookLM cannot answer from the document (for example about a law not mentioned in the Likhat) — it should say the document doesn't cover that, rather than guessing.",
+      "Discuss: how is this different from asking a general chatbot the same questions without uploading the document?"
+    ],
+    prompts: [["Summary", "Summarise this document in one page."], ["Timeline", "List the key dates and events in this document as a timeline."], ["Outside the document", "Which section of the Muluki Civil Code governs this sale?"]],
+    report: "Your one-page summary, and what happened when you asked a question outside the document."
+  },
+  {
+    id: "ex3", n: 3, group: 3, tool: "Google Translate (compare with DeepL)", title: "Translation of a Likhat",
+    steps: [
+      "Take the short excerpt from the sample <a href=\"#c2\">Bayan (M2)</a> or <a href=\"#c1\">Likhat (M1)</a>.",
+      "Paste it into Google Translate and translate it into English.",
+      "Paste the same excerpt into DeepL and translate it into English.",
+      "Compare the two outputs line by line. Where do they differ, and which phrasing better captures the legal meaning?",
+      "Identify at least one legal term of art where you would not trust either machine translation without a bilingual human review."
+    ],
+    prompts: [["Translation prompt (for Gemini/ChatGPT, as a third comparison)", "Translate the following into English, preserving legal terms of art as closely as possible: [paste excerpt]"]],
+    report: "The two translations side by side, and the one term you'd flag for human review."
+  },
+  {
+    id: "ex4", n: 4, group: 4, tool: "Gemini (especially with Google Sheets)", title: "AI in case management",
+    steps: [
+      "Open Gemini on your group's device.",
+      "Describe the sample case backlog (<a href=\"#c5\">M5</a>) in a sentence or two and ask Gemini to propose a simple tracker structure (columns and a prioritisation rule).",
+      "Ask Gemini to turn that structure into a short hearing-prep checklist for one of the sample cases.",
+      "If a Google Sheet is available on the device, ask Gemini (via the Sheets side panel, if present) to draft the tracker in a sheet; otherwise copy the structure in by hand.",
+      "Discuss: what would you still need to do by hand, and what could genuinely save time?"
+    ],
+    prompts: [["Tracker", "I have 8 pending cases of these types: property/boundary, contract, partition, tenancy, theft, cheque bounce, divorce/alimony; oldest filed 2079/02/14 BS. Propose a simple tracker structure and one prioritisation rule."], ["Hearing prep", "Turn that structure into a short hearing-prep checklist for Case No. 081-CI-0456 (boundary dispute, evidence stage, next step: site inspection)."]],
+    report: "Your proposed tracker structure and one prioritisation rule you'd apply."
+  },
+  {
+    id: "ex5", n: 5, group: 5, tool: "Gemini or ChatGPT", title: "Bayan/Bakapatra/Bahas preparation and drafting a Likhat",
+    steps: [
+      "<strong>Part A.</strong> Give the tool a short set of facts from the sample case (<a href=\"#c4\">M4</a>) and ask it to draft a structured outline for a Bahas (argument) covering the main points to raise.",
+      "Ask it to restructure the same facts into a draft Bayan (statement) format.",
+      "Review: what would you keep, what would you rewrite, and what legal substance did you have to supply yourself?",
+      "<strong>Part B.</strong> Give the tool a checklist of facts and required clauses for a simple Likhat and ask it to produce a first-draft structure.",
+      "Check the draft against what a real Likhat requires (compare with <a href=\"#c1\">M1</a>) — note anything missing or wrong."
+    ],
+    prompts: [["Bahas outline", "Based on these facts: [facts], draft a structured outline of the main arguments a party could raise, organised by issue."], ["Likhat draft", "Draft a first-draft structure for a land sale (rajinama) Likhat covering these facts and required clauses: [list]. Flag anything you are unsure belongs in this type of document."]],
+    report: "One outline or draft you produced, and the one thing a human still had to add or fix."
+  }
+];
+
+const S_MAP = Object.fromEntries(SESSIONS.map(m => [m.id, m]));
+const E_MAP = Object.fromEntries(EXERCISES.map(m => [m.id, m]));
+const C_MAP = Object.fromEntries(CASES.map(m => [m.id, m]));
+const FB_QS = [
+  "Overall, this session was useful for my work in the courts",
+  "The pace was right for a 2-hour session",
+  "The Foundations segment (Nepali voice typing, prompt vocabulary) was clear",
+  "There was enough hands-on practice in the group exercise",
+  "The sample case materials fitted real court work",
+  "The guardrails on what AI must not do were explained clearly"
+];
+
+let ORG = "", PLACE = "", DATES = "", EV_NAME = "", EV_CODE = "";
+let MATERIALS_OK = false;
+
+function isTrainer() { return !!(window.WS && WS.isTrainer && WS.isTrainer()); }
+
+function renderSide(cur) {
+  const on = id => cur === id ? 'aria-current="page"' : "";
+  let h = `<div class="nav-links">
+    <a data-home href="/ai-for-all" hidden>⌂ Home</a>
+    <a href="#home" ${on("home")}>Overview &amp; agenda</a>
+    <a href="#handout" ${on("handout")}>Printable handout</a>
+    <a href="#feedback" ${on("feedback")}>Feedback form</a>
+    ${isTrainer() ? `<a href="#prep" ${on("prep")}>Facilitator checklist</a>` : ""}
+  </div>`;
+  h += `<p class="day-h"><b>2-hour session</b><span>${esc(DATES || "11:00–13:00")}</span></p><ul class="tl">`;
+  SESSIONS.forEach(m => {
+    h += `<li><a href="#${m.id}" ${on(m.id)}><span class="t">${esc(m.time.split("–")[0])}</span><span>${m.n}. ${esc(m.title)}</span>${done.has(m.id) ? '<span class="chip done">Done</span>' : ""}</a></li>`;
+  });
+  h += `</ul><p class="day-h"><b>Group exercises</b><span>Groups 1–5</span></p><ul class="tl">`;
+  EXERCISES.forEach(x => { h += `<li><a href="#${x.id}" ${on(x.id)}><span class="t">Ex ${x.n}</span><span>${esc(x.title)}</span></a></li>`; });
+  h += `</ul><p class="day-h"><b>Sample case papers</b><span>Fictional</span></p><ul class="tl">`;
+  CASES.forEach(c => { h += `<li><a href="#${c.id}" ${on(c.id)}><span class="t">${c.code}</span><span>${esc(c.title.replace(/ \(.*\)$/, ""))}</span></a></li>`; });
+  h += `</ul>`;
+  $("#side").innerHTML = h;
+  if (HOME && window.EVI) EVI.mountHome(HOME);
+}
+
+function vHome() {
+  const meta = [ORG, PLACE, DATES].filter(Boolean).join(" · ");
+  const agendaRows = SESSIONS.map(m => `<tr><td>${esc(m.time)}</td><td>${m.mins}</td><td><a href="#${m.id}">${m.n}. ${esc(m.title)}</a></td></tr>`).join("");
+  return `<div class="wrap prose">
+    <p class="eyebrow">Short Training Packages · AI in Judiciary</p>
+    <h1>AI in Judiciary: Using Free AI Tools Inside the Supreme Court's AI Policy</h1>
+    <p class="meta">2-hour hands-on session for judges and senior officers of Nepal's district and high courts.${meta ? "<br>" + esc(meta) : ""}</p>
+    <div class="box"><p class="box-t">Session goal</p><p>Participants see two live case studies, practise one task in a small group on fictional case papers, and leave knowing which free tool fits which court task — and what AI must never do.</p></div>
+    <h2>The frame: Nepal's Supreme Court AI policy</h2>
+    <p>On 3 July 2026 the Supreme Court permitted AI for legal research, document management and case organisation, drafting of non-decisional documents and administrative support, and prohibited AI from writing judgments, drafting writ petitions, or any task requiring judicial discretion (<a href="${SC_POLICY}" target="_blank" rel="noopener">source</a>). Everything in this session stays inside the permitted zone.</p>
+    <h2>Learning outcomes</h2>
+    <ol>
+      <li>Type Nepali by voice with Gboard, and use five words of prompt vocabulary and the Role/Task/Context/Format framework.</li>
+      <li>Use a web-grounded tool (Gemini, Perplexity) for legal research, and verify its sources.</li>
+      <li>Summarise a Likhat with a document-grounded tool (NotebookLM) and explain why grounding matters.</li>
+      <li>Compare machine translations (Google Translate, DeepL) and flag legal terms for human review.</li>
+      <li>Draft a Bahas outline, a Bayan structure or a Likhat skeleton, and supply the legal substance yourself.</li>
+      <li>Organise a case backlog into a tracker with a prioritisation rule.</li>
+      <li>Apply the guardrails: AI assists, never decides; always verify; never paste real case material into free tools.</li>
+    </ol>
+    <h2>Agenda (11:00–13:00)</h2>
+    <div class="tbl"><table><thead><tr><th>Time</th><th>Min</th><th>Segment</th></tr></thead><tbody>${agendaRows}</tbody></table></div>
+    <h2>Tools</h2>
+    <p>Free tools only. One Google account covers <strong>Gemini</strong>, <strong>NotebookLM</strong> and <strong>Google Translate</strong>; ChatGPT, Perplexity and DeepL are demonstrated as "also worth knowing". Your table's device is already signed in — you don't need your own account today.</p>
+    <div class="box warn"><p class="box-t">All case papers are fictional</p><p>Every name, party, case number, date and figure in the sample case papers (M1–M5) is invented for this training. Never substitute real, under-adjudication case material.</p></div>
+    ${isTrainer() ? `<div class="box trainer"><p class="box-t">Facilitator notes (visible to trainer only)</p><p>Each segment page has a Facilitator note. The <a href="#prep">facilitator checklist</a> covers the two weeks before, the week before and the day itself.</p></div>` : ""}
+    <div class="actions">
+      <a class="btn primary" href="#s1">Start →</a>
+      <a class="btn" href="#handout">Printable handout</a>
+    </div>
+  </div>`;
+}
+
+function vSession(m) {
+  const prev = m.n > 1 ? SESSIONS[m.n - 2] : null;
+  const next = m.n < SESSIONS.length ? SESSIONS[m.n] : null;
+  return `<div class="wrap prose">
+    <p class="eyebrow">Segment ${m.n} of ${SESSIONS.length} · ${esc(m.time)} (${m.mins} min)</p>
+    <h1>${esc(m.title)}</h1>
+    <div class="actions">
+      <button type="button" class="btn toggle-done" data-sess="${m.id}" aria-pressed="${done.has(m.id)}">${done.has(m.id) ? "✓ Done" : "Mark as done"}</button>
+    </div>
+    <div class="box"><p class="box-t">What happens</p><ul>${m.whatToDo.map(x => `<li>${x}</li>`).join("")}</ul></div>
+    ${m.body}
+    ${isTrainer() ? `<div class="box trainer"><p class="box-t">Facilitator note (trainer only)</p><p>${esc(m.trainerNote)}</p></div>` : ""}
+    <div class="pager">
+      ${prev ? `<a href="#${prev.id}">← ${prev.n}. ${esc(prev.title)}</a>` : `<a href="#home">← Overview</a>`}
+      ${next ? `<a href="#${next.id}">${next.n}. ${esc(next.title)} →</a>` : `<a href="#feedback">Feedback form →</a>`}
+    </div>
+  </div>`;
+}
+
+function vExercise(x) {
+  const prev = x.n > 1 ? EXERCISES[x.n - 2] : null;
+  const next = x.n < EXERCISES.length ? EXERCISES[x.n] : null;
+  return `<div class="wrap prose">
+    <p class="eyebrow">Exercise ${x.n} · Group ${x.group} · Tool: ${esc(x.tool)}</p>
+    <h1>${esc(x.title)}</h1>
+    <h2>Steps</h2>${ol(x.steps)}
+    ${x.prompts.map(([l, t]) => promptBox(l, t)).join("")}
+    <div class="box"><p class="box-t">Report back (about 3 minutes)</p><p>${esc(x.report)}</p></div>
+    <p class="meta">Tip: always end with a follow-up like "What should I double-check before relying on this?"</p>
+    <div class="pager">
+      ${prev ? `<a href="#${prev.id}">← Exercise ${prev.n}</a>` : `<a href="#s6">← Group work</a>`}
+      ${next ? `<a href="#${next.id}">Exercise ${next.n} →</a>` : `<a href="#c1">Sample case papers →</a>`}
+    </div>
+  </div>`;
+}
+
+function vCase(c) {
+  const i = CASES.indexOf(c), prev = CASES[i - 1], next = CASES[i + 1];
+  return `<div class="wrap prose">
+    <p class="eyebrow">Sample case papers · ${c.code} · Fictional, for training only</p>
+    <h1>${esc(c.title)}</h1>
+    <p class="meta">Case No. 081-CI-0456, District Court, Kailashpur (fictional): boundary dispute over Kitta No. 142, Ward 3, Gaunthali Rural Municipality.</p>
+    ${c.text ? promptBox(c.code + " (Nepali)", c.text) + `<div class="box"><p class="box-t">English gloss</p><p>${esc(c.gloss)}</p></div>` : c.html + (c.copy ? promptBox(c.code + " (copy as text)", c.copy) : "")}
+    <div class="pager">
+      ${prev ? `<a href="#${prev.id}">← ${prev.code}</a>` : `<a href="#s6">← Group work</a>`}
+      ${next ? `<a href="#${next.id}">${next.code} →</a>` : `<a href="#handout">Printable handout →</a>`}
+    </div>
+  </div>`;
+}
+
+function vHandout() {
+  return `<div class="wrap prose">
+    <p class="eyebrow">Quick reference · Print / PDF</p>
+    <h1>AI in Judiciary: Take-home Handout</h1>
+    <div class="actions"><button type="button" class="btn primary" data-print>🖨 Print / Save as PDF</button></div>
+    <h2>1. Which free tool for which task</h2>
+    ${table(["Task", "Best free tool"], TOOLS.map(r => [r[0], r[1]]))}
+    <h2>2. Prompt vocabulary</h2>
+    ${ul(VOCAB.map(([w, d]) => `<strong>${w}</strong> — ${d}`))}
+    <p><strong>Role, Task, Context, Format:</strong> "You are [role]. [Task], using [context]. Answer in [format]."</p>
+    <p><em>Example:</em> "${esc(RTCF_EXAMPLE)}"</p>
+    <h2>3. Prompt library</h2>
+    ${table(["Task", "Prompt starter"], PROMPTS.map(([t, p]) => [`<strong>${t}</strong>`, "\"" + esc(p) + "\""]))}
+    <h2>4. Nepali voice typing (Gboard, Android)</h2>${ol(GBOARD_ANDROID)}
+    <h2>5. Guardrails</h2>${ul(GUARDRAILS)}
+    <div class="box warn"><p class="box-t">Data-privacy rule</p><p>Never paste a real, under-adjudication case file or a real litigant's personal data into a free/public AI tool. AI assists — research, summary, translation, drafting support, organisation — and never decides; nothing it produces belongs in a judgment, a writ petition, or anything requiring judicial discretion.</p></div>
+  </div>`;
+}
+
+function vPrep() {
+  if (!isTrainer()) return vHome();
+  return `<div class="wrap prose">
+    <p class="eyebrow">Facilitator only</p>
+    <h1>Facilitator preparation checklist</h1>
+    <h2>Two weeks before</h2>${ul([
+      "Confirm with the National Judiciary Academy and the venue on projector/screen and tested wifi; arrange a mobile-hotspot backup — the session depends on connectivity.",
+      "Print or load the sample case papers (M1–M5) onto each group's device.",
+      "Draft the one-page task cards for each of the 5 groups."
+    ])}
+    <h2>One week before</h2>${ul([
+      "Create and test one free account per tool (a Google account for Gemini/NotebookLM/Translate; separate ChatGPT, Perplexity and DeepL accounts) and run each sample document through each tool once.",
+      "Pre-log-in one device per group — account-creation friction is the most common way a hands-on segment overruns.",
+      "Prepare a backup: screenshots or a 1–2 minute screen recording of each demo's expected output, in case venue internet fails.",
+      "Print the free-tool matrix (the handout) for every participant.",
+      "Coordinate with the National Judiciary Academy on the final participant list and any opening remarks or protocol."
+    ])}
+    <div class="box warn"><p class="box-t">Data-privacy note — say this explicitly</p><p>Free consumer AI tools are not confidential by default. Every sample document in the demo and in group work must be constructed or fully anonymised — state this to the room as a standing rule.</p></div>
+    <h2>Day of</h2>${ul([
+      "Arrive early to re-test venue wifi and re-log-in every device.",
+      "Brief a co-facilitator or IT support person to circulate during the 30-minute group-work block.",
+      "Have the printed group-assignment list and table cards ready.",
+      "Share this page's QR code so participants can submit the feedback form."
+    ])}
+  </div>`;
+}
+
+function vFeedback() {
+  const code = EV_CODE || new URLSearchParams(location.search).get("event") || "";
+  return `<div class="wrap prose">
+    <p class="eyebrow">Closing</p>
+    <h1>Session Feedback</h1>
+    <p class="meta">Anonymous and takes 1 minute. Rate each statement from 1 (strongly disagree) to 5 (strongly agree).</p>
+    <form id="fbForm">
+      <label class="f">Event code<input id="fbCode" value="${esc(code)}" required placeholder="e.g. AIJUD001"></label>
+      ${FB_QS.map((q, i) => `<div class="fb-q"><div><strong>${i + 1}.</strong> ${esc(q)}</div><div class="fb-scale">${[1, 2, 3, 4, 5].map(n => `<label><input type="radio" name="r${i}" value="${n}" required>${n}</label>`).join("")}</div></div>`).join("")}
+      <label class="f">Which exercise was most useful to your day-to-day work?<input id="fbBest" placeholder="e.g. Exercise 2, Likhat summary"></label>
+      <label class="f">What would you want more time on, in a future session?<textarea id="fbImp" rows="2"></textarea></label>
+      <label class="f">Which free tool are you most likely to try again on your own?<textarea id="fbFirst" rows="2"></textarea></label>
+      <label style="display:flex;align-items:center;gap:8px;margin:12px 0"><input type="checkbox" id="fbRec" checked> I would recommend this session to colleagues.</label>
+      <button type="submit" class="btn primary" id="fbSend">Submit feedback</button>
+      <p id="fbMsg" class="meta" style="margin-top:10px"></p>
+    </form>
+  </div>`;
+}
+
+function gateView() {
+  const signedIn = !!(window.WS && WS.session);
+  const nextUrl = "../login.html?next=" + encodeURIComponent(location.pathname + location.search + location.hash);
+  return `<div class="wrap" style="padding-top:20px"><p class="eyebrow">Private materials</p><h1>${signedIn ? "You are not registered for this training" : "Sign in to see the materials"}</h1>
+  <p class="meta">${signedIn
+    ? "These materials are open only to participants registered for this training. If your registration is still waiting for approval, or you are in another training, contact the trainer."
+    : "These materials are private for now. Participants registered for this training can sign in to see them."}</p>
+  ${signedIn ? "" : `<p class="actions"><a class="btn primary" href="${nextUrl}">Sign in</a> <a class="btn" href="/workshop/login.html#signup">Register</a></p>`}</div>`;
+}
+
+function route() {
+  if (!MATERIALS_OK) { $("#view").innerHTML = gateView(); renderSide("home"); return; }
+  const id = (location.hash || "#home").slice(1) || "home";
+  let html, cur = id;
+  if (S_MAP[id]) html = vSession(S_MAP[id]);
+  else if (E_MAP[id]) html = vExercise(E_MAP[id]);
+  else if (C_MAP[id]) html = vCase(C_MAP[id]);
+  else if (id === "prep" && isTrainer()) html = vPrep();
+  else if (id === "handout") html = vHandout();
+  else if (id === "feedback") html = vFeedback();
+  else { html = vHome(); cur = "home"; }
+  $("#view").innerHTML = html;
+  renderSide(cur);
+  closeSide();
+  window.scrollTo({ top: 0 });
+  if (window.TeachBar && TeachBar.on) {
+    TeachBar.mount({
+      days: [{ label: "2-hour session", items: SESSIONS.map(m => ({ id: m.id, kind: "session", start: m.time.split("–")[0], title: m.title })) }],
+      titleOf: it => S_MAP[it.id].n + ". " + S_MAP[it.id].title,
+      num: it => S_MAP[it.id].n,
+      lead: [["home", "Overview"]],
+      tail: EXERCISES.map(x => [x.id, "Ex " + x.n]).concat(CASES.map(c => [c.id, c.code]), [["handout", "Handout"], ["feedback", "Feedback"]])
+    });
+    TeachBar.update(cur);
+  }
+}
+
+function toast(t) { const el = $("#toast"); el.textContent = t; el.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => el.hidden = true, 2200); }
+async function copyText(text) {
+  try { await navigator.clipboard.writeText(text); toast("Copied"); }
+  catch (e) { toast("Select and copy the text manually"); }
+}
+
+document.addEventListener("click", e => {
+  const c = e.target.closest(".copy");
+  if (c) { const pre = document.getElementById(c.dataset.copyId); if (pre) copyText(pre.textContent); return; }
+  const t = e.target.closest(".toggle-done");
+  if (t) { const id = t.dataset.sess; done.has(id) ? done.delete(id) : done.add(id); store.set("done", [...done]); const y = scrollY; route(); scrollTo(0, y); return; }
+  if (e.target.closest("[data-print]")) { window.print(); return; }
+  if (e.target.closest("[data-retry]")) { start(); return; }
+  if (!e.target.closest(".search")) $("#results").hidden = true;
+});
+
+document.addEventListener("submit", async e => {
+  if (e.target.id !== "fbForm") return;
+  e.preventDefault();
+  const msg = $("#fbMsg"), btn = $("#fbSend");
+  const code = $("#fbCode").value.trim().toUpperCase();
+  const ratings = FB_QS.map((_, i) => Number((document.querySelector('input[name="r' + i + '"]:checked') || {}).value || 0));
+  if (!code || ratings.some(x => x < 1)) { msg.textContent = "Please enter the event code and rate all 6 items."; return; }
+  btn.disabled = true; msg.textContent = "Submitting…";
+  const r = await WS.submitFeedback({
+    event_code: code, ratings: ratings,
+    best_session: $("#fbBest").value.trim(),
+    improve: $("#fbImp").value.trim(),
+    first_ai_use: $("#fbFirst").value.trim(),
+    recommend: $("#fbRec").checked
+  });
+  btn.disabled = false;
+  if (r.error) { msg.textContent = "Could not submit: " + r.error.message; return; }
+  msg.textContent = "Thank you! Your feedback has been recorded.";
+  e.target.reset(); $("#fbCode").value = code;
+});
+
+/* Search */
+const strip = s => String(s || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+const INDEX = SESSIONS.map(m => ({ id: m.id, title: m.n + ". " + m.title, text: strip(m.whatToDo.join(" ") + " " + m.body) }))
+  .concat(EXERCISES.map(x => ({ id: x.id, title: "Exercise " + x.n + ". " + x.title, text: strip(x.steps.join(" ") + " " + x.tool + " " + x.prompts.map(p => p[1]).join(" ")) })))
+  .concat(CASES.map(c => ({ id: c.id, title: c.code + ". " + c.title, text: strip((c.text || "") + " " + (c.gloss || "") + " " + (c.html || "")) })));
+INDEX.push({ id: "handout", title: "Printable handout", text: "tool matrix prompt library vocabulary Gboard voice typing guardrails privacy" });
+$("#q").addEventListener("input", e => {
+  const q = e.target.value.trim().toLowerCase(), box = $("#results");
+  if (q.length < 2) { box.hidden = true; return; }
+  const hits = INDEX.filter(it => it.title.toLowerCase().includes(q) || it.text.toLowerCase().includes(q));
+  box.innerHTML = hits.length ? hits.map(h => `<a href="#${h.id}"><b>${esc(h.title)}</b></a>`).join("") : '<p style="padding:8px 10px;margin:0;color:var(--muted)">Nothing found.</p>';
+  box.hidden = false;
+});
+$("#results").addEventListener("click", e => { if (e.target.closest("a")) { $("#results").hidden = true; $("#q").value = ""; } });
+
+function closeSide() { $("#side").classList.remove("open"); $("#menuBtn").setAttribute("aria-expanded", "false"); }
+$("#menuBtn").addEventListener("click", () => { const o = $("#side").classList.toggle("open"); $("#menuBtn").setAttribute("aria-expanded", String(o)); });
+window.addEventListener("hashchange", route);
+
+async function applyEvent() {
+  const ev = await EVI.resolve(COURSE);
+  if (!ev) return;
+  const info = EVI.info(ev);
+  ORG = info.org; PLACE = info.place; EV_NAME = info.name; EV_CODE = ev.code || "";
+  DATES = EVI.enRange((info.iso || []).map(d => String(d).slice(0, 10)));
+  $("#brandSub").textContent = "AI in Judiciary" + (ORG ? " · " + ORG : "") + (DATES ? " · " + DATES : "");
+  document.title = (EV_NAME || "AI in Judiciary") + " · AI for ALL";
+}
+
+const withTimeout = (pr, ms) => Promise.race([pr, new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), ms))]);
+let HOME = null;
+async function start() {
+  $("#view").innerHTML = '<div class="wrap"><p class="eyebrow" style="margin-top:20px">Loading…</p></div>';
+  let ok;
+  try {
+    await withTimeout(WS.init(), 7000);
+    ok = isTrainer() || (await withTimeout(WS.materialsAccess(new URLSearchParams(location.search).get("event")), 7000));
+  } catch (e) { ok = e && e.message === "timeout" ? null : false; }
+  if (ok === null) {
+    $("#view").innerHTML = '<div class="wrap" style="padding-top:20px"><p class="eyebrow">Slow connection</p><h1>The materials could not load</h1><p class="meta">Check the internet and try again.</p><p><button class="btn primary" data-retry>Try again</button></p></div>';
+    renderSide("home"); return;
+  }
+  MATERIALS_OK = ok;
+  route();
+  if (window.EVI && !HOME) EVI.home().then(h => { HOME = Object.assign({}, h, { label: /admin/.test(h.href) ? "Trainer console" : "Home" }); EVI.mountHome(HOME); }).catch(() => {});
+  try { await withTimeout(applyEvent(), 7000); const y = scrollY; route(); scrollTo(0, y); } catch (e) {}
+}
+start();
+})();
+</script>
+</body>
+</html>

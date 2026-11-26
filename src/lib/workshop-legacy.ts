@@ -31,7 +31,7 @@ export type Prepared = { blob: Blob; width: number; height: number };
 export type Evi = {
   COURSE_PAGE: Record<string, string>;
   LEVEL_LABEL: Record<string, string>;
-  courseOf: (key: string | null | undefined) => "employee" | "representative" | "cso" | "hied";
+  courseOf: (key: string | null | undefined) => "employee" | "representative" | "cso" | "hied" | "judiciary";
   levelOf: (key: string | null | undefined) => string;
   isShort: (key: string | null | undefined) => boolean;
   hasAssessment: (key: string | null | undefined) => boolean;
@@ -56,7 +56,7 @@ type W = Window & { EVI?: Evi; EventMedia?: EventMedia; qrcode?: unknown } & Par
 
 const SCRIPTS = [
   "/workshop/vendor/qrcode.js?v=1.4.4",
-  "/workshop/event-info.js?v=20261126a",
+  "/workshop/event-info.js?v=20261126c",
   "/workshop/media.js?v=20261114b",
   "/workshop/assessment/pool-employee.js?v=k2",
   "/workshop/assessment/pool-representative.js?v=k2",

@@ -246,6 +246,7 @@ const PACKAGES = [
 
 const SHORT_PACKAGES = [
   "AI for Higher Education",
+  "AI in Judiciary",
 ];
 
 /** The AI for ALL programme as the main attraction of the home page. */

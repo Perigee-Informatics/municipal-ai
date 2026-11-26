@@ -161,27 +161,30 @@
      representative-municipal = representatives, municipality */
   /* cso = AI for CSOs (civil society organisations): one level, English materials (cso/index.html). */
   /* hied = AI for Higher Education (short training package): one level, English materials (hied/index.html), no assessment. */
-  var BASE_LEVEL = { employee: "municipal", representative: "rural", cso: "cso", hied: "hied" };
+  /* judiciary = AI in Judiciary (short training package, National Judiciary Academy): English materials (judiciary/index.html), no assessment. */
+  var BASE_LEVEL = { employee: "municipal", representative: "rural", cso: "cso", hied: "hied", judiciary: "judiciary" };
   function courseOf(key) {
     key = String(key || "");
     if (key.indexOf("representative") === 0) return "representative";
     if (key.indexOf("cso") === 0) return "cso";
     if (key.indexOf("hied") === 0) return "hied";
+    if (key.indexOf("judiciary") === 0) return "judiciary";
     return "employee";
   }
   function levelOf(key) {
     key = String(key || "");
     if (courseOf(key) === "cso") return "cso";
     if (courseOf(key) === "hied") return "hied";
+    if (courseOf(key) === "judiciary") return "judiciary";
     if (/-rural$/.test(key)) return "rural";
     if (/-municipal$/.test(key)) return "municipal";
     return BASE_LEVEL[courseOf(key)];
   }
-  function isShort(key) { return courseOf(key) === "hied"; }
-  function hasAssessment(key) { return courseOf(key) !== "hied"; }
-  var LEVEL_LABEL = { municipal: "नगरपालिका", rural: "गाउँपालिका", cso: "CSO", hied: "Higher Ed" };
+  function isShort(key) { var c = courseOf(key); return c === "hied" || c === "judiciary"; }
+  function hasAssessment(key) { return !isShort(key); }
+  var LEVEL_LABEL = { municipal: "नगरपालिका", rural: "गाउँपालिका", cso: "CSO", hied: "Higher Ed", judiciary: "Judiciary" };
   /* The page of each course's materials. */
-  var COURSE_PAGE = { employee: "/workshop/index.html", representative: "/workshop/representative/index.html", cso: "/workshop/cso/index.html", hied: "/workshop/hied/index.html" };
+  var COURSE_PAGE = { employee: "/workshop/index.html", representative: "/workshop/representative/index.html", cso: "/workshop/cso/index.html", hied: "/workshop/hied/index.html", judiciary: "/workshop/judiciary/index.html" };
   /* Wording rules that turn text written for the other level into this level. Order matters
      (longer phrases first); no rule's output matches another rule, so applying them twice changes
      nothing. Staff titles (प्रमुख प्रशासकीय अधिकृत, शाखा प्रमुख) and वडाध्यक्ष are the same at both
@@ -326,7 +329,7 @@
       if (WS.session && !WS.profile) { homePromise = null; return fallback; }
       if (WS.isTrainer()) return { href: "/admin/trainings", label: "प्रशिक्षक गृहपृष्ठ" };
       var rep = { href: COURSE_PAGE.representative, label: "गृहपृष्ठ" };
-      var byCourse = function (key) { var c = courseOf(key); return c === "representative" ? rep : c === "cso" ? { href: COURSE_PAGE.cso, label: "Home" } : c === "hied" ? { href: COURSE_PAGE.hied, label: "Home" } : fallback; };
+      var byCourse = function (key) { var c = courseOf(key); return c === "representative" ? rep : c === "cso" ? { href: COURSE_PAGE.cso, label: "Home" } : c === "hied" ? { href: COURSE_PAGE.hied, label: "Home" } : c === "judiciary" ? { href: COURSE_PAGE.judiciary, label: "Home" } : fallback; };
       if (WS.session && WS.profile && WS.profile.event_id) {
         try {
           var ev = await WS.loadEventForProfile();

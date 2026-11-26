@@ -4,6 +4,7 @@ const EMPLOYEE = "/workshop/index.html";
 const REPRESENTATIVE = "/workshop/representative/index.html";
 const CSO = "/workshop/cso/index.html";
 const HIED = "/workshop/hied/index.html";
+const JUDICIARY = "/workshop/judiciary/index.html";
 
 /* The materials page of a package key (mirrors public/workshop/event-info.js courseOf). Both levels
  * of a municipal course, नगरपालिका and गाउँपालिका, share its page; AI for CSOs ("cso") has its own. */
@@ -12,6 +13,7 @@ export function coursePage(key: string | null | undefined): string {
   if (k.startsWith("representative")) return REPRESENTATIVE;
   if (k.startsWith("cso")) return CSO;
   if (k.startsWith("hied")) return HIED;
+  if (k.startsWith("judiciary")) return JUDICIARY;
   return EMPLOYEE;
 }
 

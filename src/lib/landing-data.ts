@@ -62,8 +62,8 @@ export type ActiveEvent = {
   organizedBy: string;
   place: string;
   dates: string;
-  course: "employee" | "representative" | "cso" | "hied";
-  level: "municipal" | "rural" | "cso" | "hied";
+  course: "employee" | "representative" | "cso" | "hied" | "judiciary";
+  level: "municipal" | "rural" | "cso" | "hied" | "judiciary";
 };
 
 export const DEFAULT_PROFILE: SiteProfile = {
@@ -120,12 +120,14 @@ export async function loadActiveEvent(): Promise<ActiveEvent | null> {
       ? "cso"
       : key.startsWith("hied")
         ? "hied"
-        : "employee";
+        : key.startsWith("judiciary")
+          ? "judiciary"
+          : "employee";
   const level =
     course === "cso"
       ? "cso"
-      : course === "hied"
-        ? "hied"
+      : course === "hied" || course === "judiciary"
+        ? course
         : key.endsWith("-rural")
           ? "rural"
           : key.endsWith("-municipal")
@@ -137,7 +139,7 @@ export async function loadActiveEvent(): Promise<ActiveEvent | null> {
     name: e.name,
     organizedBy: (e.organized_by ?? "").replace(/\s+/g, " ").trim(),
     place: (e.address ?? "").trim(),
-    dates: course === "cso" || course === "hied" ? enRange(e.event_dates) : bsRange(e.event_dates),
+    dates: course === "cso" || course === "hied" || course === "judiciary" ? enRange(e.event_dates) : bsRange(e.event_dates),
     course,
     level,
   };

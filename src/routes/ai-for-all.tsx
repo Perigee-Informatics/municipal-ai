@@ -208,6 +208,14 @@ function Landing() {
                       AI for Higher Education
                     </span>
                   )}
+                  {active.course === "judiciary" && (
+                    <span
+                      className="ml-2 rounded-full px-2 py-0.5 align-middle text-xs font-bold text-white"
+                      style={{ background: C.navy }}
+                    >
+                      AI in Judiciary
+                    </span>
+                  )}
                 </p>
                 <p className="mt-1 text-[15px]" style={{ color: C.muted }}>
                   {[active.organizedBy, active.place, active.dates].filter(Boolean).join(" · ")}
@@ -262,6 +270,21 @@ function Landing() {
                 <p className="mt-2 text-[15px]" style={{ color: C.muted }}>
                   Use Claude to develop postgraduate seminar outlines, article summaries and critical appraisals,
                   case-based assessments with rubrics, and presentation decks for Master&apos;s, MPhil and PhD courses.
+                </p>
+              </article>
+              <article
+                lang="en"
+                className="rounded-2xl border p-5 sm:col-span-2"
+                style={{ borderColor: C.navy, background: C.bg }}
+              >
+                <p className="text-sm font-bold" style={{ color: C.accent }}>
+                  2-hour hands-on session · Judges and court officers
+                </p>
+                <h4 className="mt-1 text-xl font-bold">AI in Judiciary</h4>
+                <p className="mt-2 text-[15px]" style={{ color: C.muted }}>
+                  Use free AI tools (Gemini, NotebookLM, Google Translate) for legal research, summarising and translating a
+                  Likhat, preparing a Bayan or Bahas, and case management, inside the limits of the Supreme Court of Nepal&apos;s
+                  AI policy. AI assists; it never decides.
                 </p>
               </article>
             </div>

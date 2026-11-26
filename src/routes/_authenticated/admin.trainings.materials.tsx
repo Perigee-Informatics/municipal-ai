@@ -13,6 +13,7 @@ const COURSES = [
   { key: "representative", title: "AI for Municipal Representatives", text: "जनप्रतिनिधिका लागि: कार्ययोजना, सामग्री १–१२, आयोजना छनौट क्याल्कुलेटर र पृष्ठपोषण फाराम।" },
   { key: "employee", title: "AI for Municipal Employees", text: "कर्मचारीका लागि तालिम सामग्री, प्रम्प्ट र अभ्यास।" },
   { key: "hied", title: "AI for Higher Education", text: "80-minute session (English) for postgraduate teachers: lesson outlines, summaries, quizzes and presentations with Claude.", short: true },
+  { key: "judiciary", title: "AI in Judiciary", text: "2-hour session (English) for judges and court officers: Nepali voice typing, prompt basics, two case-study demos, five group exercises on fictional case papers, guardrails.", short: true },
 ];
 
 function Materials() {

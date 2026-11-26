@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   COURSE_LABEL,
   courseOfKey,
+  isShortKey,
   eventsQuery,
   packagesQuery,
   POOL_SIZE,
@@ -28,7 +29,7 @@ function Packages() {
   const { data: packages = [], isLoading } = useQuery(packagesQuery);
   const { data: events = [] } = useQuery(eventsQuery);
   const [editing, setEditing] = useState<string | null>(null);
-  const isShort = (p: TrainingPackage) => p.is_short || courseOfKey(p.key) === "hied";
+  const isShort = (p: TrainingPackage) => p.is_short || isShortKey(p.key);
   const groups = [
     ["Training packages", packages.filter((p) => !isShort(p))],
     ["Short training packages", packages.filter(isShort)],
