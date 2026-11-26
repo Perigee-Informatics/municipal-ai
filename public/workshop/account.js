@@ -118,6 +118,15 @@
       return !!(WS.profile && WS.profile.role === "trainer" && WS.profile.status === "approved");
     },
 
+    /* Site administrator (Dr. Ghimire): user_roles 'admin', which may exist without a trainer profile. */
+    isAdmin: async function () {
+      if (!WS.session) return false;
+      try {
+        var r = await client.rpc("has_role", { _user_id: WS.session.user.id, _role: "admin" });
+        return !r.error && r.data === true;
+      } catch (e) { return false; }
+    },
+
     isApproved: function () {
       return !!(WS.profile && WS.profile.status === "approved");
     },

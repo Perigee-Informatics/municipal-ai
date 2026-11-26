@@ -41,9 +41,15 @@ function AccountButton({ compact = false, onClick }: { compact?: boolean; onClic
     );
   return (
     <Button asChild variant="outline" size={compact ? "icon" : "sm"} className="rounded-full" title={label}>
-      <Link to={isAdmin ? "/admin" : "/auth"} onClick={onClick} aria-label={label}>
-        <Icon />{!compact && <span>{label}</span>}
-      </Link>
+      {isAdmin ? (
+        <Link to="/admin" onClick={onClick} aria-label={label}>
+          <Icon />{!compact && <span>{label}</span>}
+        </Link>
+      ) : (
+        <a href="/workshop/login.html" onClick={onClick} aria-label={label}>
+          <Icon />{!compact && <span>{label}</span>}
+        </a>
+      )}
     </Button>
   );
 }
@@ -190,7 +196,7 @@ export function SiteFooter() {
       <div className="border-t border-navy-foreground/10">
         <div className="container-page flex flex-col gap-2 py-5 text-xs text-navy-foreground/55 sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} Dr. Bhoj Raj Ghimire. {t("footer.rights")}</p>
-          <Link to="/auth" className="hover:text-navy-foreground">{t("nav.signin")}</Link>
+          <a href="/workshop/login.html" className="hover:text-navy-foreground">{t("nav.signin")}</a>
         </div>
       </div>
     </footer>

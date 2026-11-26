@@ -120,7 +120,7 @@ a{color:var(--accent)}
 
 <p class="site-foot"><a href="/">मुख्य पृष्ठमा फर्कनुहोस्</a> · <a href="/ai-for-all">AI for ALL</a> · <a href="/gallery">ग्यालरी</a></p>
 
-<script src="account.js?v=20261116c"></script>
+<script src="account.js?v=20261126b"></script>
 <script src="event-info.js?v=20261124a"></script>
 <script>EVI.home().then(EVI.mountHome).catch(function () {});</script>
 <script>
@@ -148,7 +148,7 @@ EVI.resolve().then(function (ev) { var i = EVI.info(ev); if (i && i.org) documen
   });
 
   WS.init().then(function () {
-    if (WS.session && WS.profile) routeSignedIn();
+    if (WS.session) routeSignedIn();
   }).catch(function () {
     show($("inMsg"), "जडानमा समस्या। इन्टरनेट जाँचेर फेरि प्रयास गर्नुहोस्।", "bad");
     $("inMsg").classList.remove("hide");
@@ -204,8 +204,12 @@ EVI.resolve().then(function (ev) { var i = EVI.info(ev); if (i && i.org) documen
   }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
 
-  function routeSignedIn() {
-    if (WS.isTrainer()) { location.href = "/admin/trainings"; return; }
+  /* Admin pages send people here with ?next=/admin/...; staff go back there, otherwise to their home. */
+  function adminDestination(home) { return explicitNext && /^\/admin(\/|$|\?)/.test(next) ? next : home; }
+  async function routeSignedIn() {
+    if (await WS.isAdmin()) { location.href = adminDestination("/admin"); return; }
+    if (WS.isTrainer()) { location.href = adminDestination("/admin/trainings"); return; }
+    if (!WS.profile) return;   // signed in but no participant profile: stay on the form
     if (WS.isApproved() && !(WS.profile && WS.profile.full_name)) {
       location.href = "profile.html?next=" + encodeURIComponent(next); return;
     }

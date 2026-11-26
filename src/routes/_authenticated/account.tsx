@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { brandLine, useEventBrand } from "@/hooks/use-event-brand";
@@ -40,7 +40,6 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 function AccountPage() {
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data, isPending, error } = useQuery(profileQuery);
   const brand = useEventBrand("मेरो खाता · AI for ALL");
@@ -49,7 +48,7 @@ function AccountPage() {
     await queryClient.cancelQueries();
     queryClient.clear();
     await supabase.auth.signOut();
-    navigate({ to: "/auth", replace: true });
+    window.location.replace("/workshop/login.html");
   }
 
   return (
