@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { OrganizerInput, rememberOrganizer } from "@/components/admin/OrganizerInput";
 import { pushEngagement } from "@/lib/admin.functions";
 import { formatBs } from "@/lib/nepali-date";
 import { supabase } from "@/integrations/supabase/client";
@@ -98,6 +99,7 @@ export function AddEventDialog({ open, onOpenChange, date, onCreated }: { open: 
         .single();
       if (error) throw new Error(error.message);
       const r = await push({ data: { id: row.id } }).catch(() => ({ synced: false as boolean | null }));
+      void rememberOrganizer(parsed.data.organizer);
       toast.success(`Engagement added${isPublic ? " · public" : " · private"}${r.synced ? " · in Google Calendar" : ""}`);
       qc.invalidateQueries({ queryKey: ["admin", "stories"] });
       qc.invalidateQueries({ queryKey: ["stories"] });
@@ -140,7 +142,7 @@ export function AddEventDialog({ open, onOpenChange, date, onCreated }: { open: 
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5 sm:col-span-2"><Label htmlFor="ae-title">Title *</Label><Input id="ae-title" name="title" required maxLength={200} /></div>
-            <div className="space-y-1.5 sm:col-span-2"><Label htmlFor="ae-org">Organizer</Label><Input id="ae-org" name="organizer" maxLength={200} /></div>
+            <div className="space-y-1.5 sm:col-span-2"><Label htmlFor="ae-org">Organizer</Label><OrganizerInput id="ae-org" name="organizer" maxLength={200} /></div>
             <div className="space-y-1.5">
               <Label htmlFor="ae-type">Event type</Label>
               <select id="ae-type" name="event_type_id" className={sel} defaultValue="">

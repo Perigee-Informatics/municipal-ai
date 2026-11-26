@@ -58,6 +58,14 @@ export const submitRequest = createServerFn({ method: "POST" })
     // Spam protection: honeypot + minimum fill time silently accepted-but-dropped
     if (data.website || Date.now() - data.started_at < 4000) return { ok: true };
     const sb = publicClient();
+    // Admin → Invitation settings: closed for new invitations, or too little notice
+    const { data: cfg } = await sb.from("invitation_settings").select("accepting, min_notice_days").eq("id", 1).maybeSingle();
+    if (cfg && !cfg.accepting) return { ok: false, error: "New invitations are not being accepted at the moment." };
+    if (cfg?.min_notice_days) {
+      const earliest = new Date(Date.now() + cfg.min_notice_days * 864e5).toISOString().slice(0, 10);
+      if (data.sessions.some((x) => x.session_date < earliest))
+        return { ok: false, error: `Please allow at least ${cfg.min_notice_days} days' notice (from ${earliest}).` };
+    }
     const { data: count } = await sb.rpc("recent_request_count", { _email: data.requester_email });
     if ((count ?? 0) >= 3) return { ok: false, error: "Too many requests from this email. Please try again in an hour." };
 

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { OrganizerInput, rememberOrganizer } from "@/components/admin/OrganizerInput";
 import { adminStoriesQuery } from "@/lib/stories";
 import { importMediaFromUrl, pushEngagement, removeEngagementFromGoogle } from "@/lib/admin.functions";
 import { formatBs } from "@/lib/nepali-date";
@@ -62,6 +63,7 @@ function StoryEditor() {
     // Sync bookkeeping is owned by the server; never overwrite it from the form.
     const { id: _id, created_at: _c, updated_at: _u, google_event_id: _g, google_synced_at: _gs, source: _s, source_request_id: _r, ...patch } = f;
     const { error } = await supabase.from("stories").update({ ...patch, end_date: patch.end_date && patch.end_date > f.event_date ? patch.end_date : null }).eq("id", id);
+    if (!error) void rememberOrganizer(f.organizer);
     if (error) { toast.error(error.message); return; }
     const g = await push({ data: { id } }).catch(() => ({ synced: false as boolean | null }));
     toast.success(g.synced ? "Saved · Google Calendar updated" : "Saved");
@@ -119,10 +121,10 @@ function StoryEditor() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto w-full max-w-6xl space-y-6">
       <Link to="/admin/stories" className="text-sm text-muted-foreground hover:underline">← All engagements</Link>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold">{story.title}</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-5">
+        <h1 className="text-2xl font-semibold md:text-3xl">{story.title}</h1>
         <div className="flex gap-2"><Button variant="destructive" size="sm" onClick={remove}><Trash2 />Delete</Button><Button onClick={save}>Save</Button></div>
       </div>
 
@@ -133,7 +135,7 @@ function StoryEditor() {
         <L label="End date"><Input type="date" value={f.end_date ?? ""} onChange={(e) => set("end_date", e.target.value)} /></L>
         <L label="Event type"><select className={sel} value={f.event_type_id ?? ""} onChange={(e) => set("event_type_id", e.target.value)}><option value="">—</option>{lookups?.types.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}</select></L>
         <L label="Role"><select className={sel} value={f.role_id ?? ""} onChange={(e) => set("role_id", e.target.value)}><option value="">—</option>{lookups?.roles.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}</select></L>
-        <L label="Organizer"><Input value={f.organizer ?? ""} onChange={(e) => set("organizer", e.target.value)} /></L>
+        <L label="Organizer"><OrganizerInput value={f.organizer ?? ""} onChange={(e) => set("organizer", e.target.value)} /></L>
         <L label="Facebook post URL"><Input value={f.facebook_post_url ?? ""} onChange={(e) => set("facebook_post_url", e.target.value)} /></L>
         <L label="Description" wide><Textarea rows={4} value={f.description ?? ""} onChange={(e) => set("description", e.target.value)} /></L>
         <L label="Description (नेपाली)" wide><Textarea rows={3} value={f.description_ne ?? ""} onChange={(e) => set("description_ne", e.target.value)} /></L>

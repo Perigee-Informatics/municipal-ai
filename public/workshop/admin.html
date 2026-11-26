@@ -2,6 +2,17 @@
 <html lang="ne">
 <head>
 <meta charset="utf-8">
+<script>
+/* The trainer console now lives in the site admin (/admin → AI for ALL), with the same data.
+   Old links and bookmarks land on the matching screen there. ?legacy=1 keeps this page. */
+(function () {
+  if (/[?&]legacy=1/.test(location.search)) return;
+  var map = { overview: "/admin/trainings", events: "/admin/trainings/events", newevent: "/admin/trainings/events?new=1",
+    packages: "/admin/masters/packages", users: "/admin/trainings/participants", materials: "/admin/trainings/materials",
+    results: "/admin/trainings/results", landing: "/admin/trainings/landing" };
+  location.replace(map[location.hash.slice(1)] || "/admin/trainings");
+})();
+</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>प्रशिक्षक नियन्त्रण · AI तालिम</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;700;800&display=swap">
@@ -67,6 +78,7 @@ a.pri-link{background:var(--accent);color:#fff;border-color:var(--accent)}
 #evFormBox>summary{font-weight:700;cursor:pointer}
 .badge-on{display:inline-block;border-radius:999px;padding:0 8px;font-size:13px;font-weight:700;background:var(--ok);color:#fff}
 </style>
+<link rel="stylesheet" href="/workshop/site-theme.css?v=20261126a">
 </head>
 <body>
 <div class="wrap">

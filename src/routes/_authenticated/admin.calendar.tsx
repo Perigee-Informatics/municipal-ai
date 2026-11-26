@@ -66,9 +66,9 @@ function CalendarPage() {
   const weekStart = startOfWeek(cursor);
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div><h1 className="text-3xl font-semibold">My Calendar</h1><p className="text-sm text-muted-foreground">Every engagement, the same list as the Story Map. Click one to edit it.</p></div>
+    <div className="mx-auto w-full max-w-[1400px] space-y-6">
+      <div className="flex flex-wrap items-end justify-between gap-3 border-b border-border pb-5">
+        <div><h1 className="text-2xl font-semibold md:text-3xl">Calendar & schedule</h1><p className="mt-1.5 text-sm text-muted-foreground">Every engagement, the same list as the Story Map. Click one to edit it.</p></div>
         <div className="flex flex-wrap items-center gap-3">
           <Button onClick={() => setAdding({})}><Plus />Add engagement</Button>
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={showTentative} onChange={(e) => setShowTentative(e.target.checked)} />Show open requests</label>

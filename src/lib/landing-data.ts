@@ -152,6 +152,6 @@ export async function destinationAfterSignIn(userId: string): Promise<string> {
     .select("role, status")
     .eq("id", userId)
     .maybeSingle();
-  if (data?.role === "trainer" && data.status === "approved") return "/workshop/admin.html";
+  if (data?.role === "trainer" && data.status === "approved") return "/admin/trainings";
   return "/workshop/login.html";
 }

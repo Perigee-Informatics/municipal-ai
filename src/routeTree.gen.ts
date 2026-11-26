@@ -27,12 +27,22 @@ import { Route as AuthenticatedAdminCatalogRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminPortfolioRouteImport } from './routes/_authenticated/admin.portfolio'
 import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin.settings'
 import { Route as ApiPublicImportStoryMediaRouteImport } from './routes/api/public/import-story-media'
+import { Route as AuthenticatedAdminMastersInvitationsRouteImport } from './routes/_authenticated/admin.masters.invitations'
+import { Route as AuthenticatedAdminMastersOrganizersRouteImport } from './routes/_authenticated/admin.masters.organizers'
+import { Route as AuthenticatedAdminMastersPackagesRouteImport } from './routes/_authenticated/admin.masters.packages'
 import { Route as AuthenticatedAdminRequestsIndexRouteImport } from './routes/_authenticated/admin.requests.index'
 import { Route as AuthenticatedAdminRequestsIdRouteImport } from './routes/_authenticated/admin.requests.$id'
 import { Route as AuthenticatedAdminStoriesIndexRouteImport } from './routes/_authenticated/admin.stories.index'
 import { Route as AuthenticatedAdminStoriesIdRouteImport } from './routes/_authenticated/admin.stories.$id'
+import { Route as AuthenticatedAdminTrainingsIndexRouteImport } from './routes/_authenticated/admin.trainings.index'
+import { Route as AuthenticatedAdminTrainingsEventsRouteImport } from './routes/_authenticated/admin.trainings.events'
+import { Route as AuthenticatedAdminTrainingsLandingRouteImport } from './routes/_authenticated/admin.trainings.landing'
+import { Route as AuthenticatedAdminTrainingsMaterialsRouteImport } from './routes/_authenticated/admin.trainings.materials'
+import { Route as AuthenticatedAdminTrainingsParticipantsRouteImport } from './routes/_authenticated/admin.trainings.participants'
+import { Route as AuthenticatedAdminTrainingsResultsRouteImport } from './routes/_authenticated/admin.trainings.results'
 import { Route as ApiPublicGoogleCallbackRouteImport } from './routes/api/public/google/callback'
 import { Route as ApiPublicGoogleWebhookRouteImport } from './routes/api/public/google/webhook'
+import { Route as AuthenticatedAdminTrainingsEventCodeRouteImport } from './routes/_authenticated/admin.trainings.event.$code'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -128,6 +138,24 @@ const ApiPublicImportStoryMediaRoute =
     path: '/api/public/import-story-media',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AuthenticatedAdminMastersInvitationsRoute =
+  AuthenticatedAdminMastersInvitationsRouteImport.update({
+    id: '/masters/invitations',
+    path: '/masters/invitations',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminMastersOrganizersRoute =
+  AuthenticatedAdminMastersOrganizersRouteImport.update({
+    id: '/masters/organizers',
+    path: '/masters/organizers',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminMastersPackagesRoute =
+  AuthenticatedAdminMastersPackagesRouteImport.update({
+    id: '/masters/packages',
+    path: '/masters/packages',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminRequestsIndexRoute =
   AuthenticatedAdminRequestsIndexRouteImport.update({
     id: '/requests/',
@@ -152,6 +180,42 @@ const AuthenticatedAdminStoriesIdRoute =
     path: '/stories/$id',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminTrainingsIndexRoute =
+  AuthenticatedAdminTrainingsIndexRouteImport.update({
+    id: '/trainings/',
+    path: '/trainings/',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminTrainingsEventsRoute =
+  AuthenticatedAdminTrainingsEventsRouteImport.update({
+    id: '/trainings/events',
+    path: '/trainings/events',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminTrainingsLandingRoute =
+  AuthenticatedAdminTrainingsLandingRouteImport.update({
+    id: '/trainings/landing',
+    path: '/trainings/landing',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminTrainingsMaterialsRoute =
+  AuthenticatedAdminTrainingsMaterialsRouteImport.update({
+    id: '/trainings/materials',
+    path: '/trainings/materials',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminTrainingsParticipantsRoute =
+  AuthenticatedAdminTrainingsParticipantsRouteImport.update({
+    id: '/trainings/participants',
+    path: '/trainings/participants',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminTrainingsResultsRoute =
+  AuthenticatedAdminTrainingsResultsRouteImport.update({
+    id: '/trainings/results',
+    path: '/trainings/results',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const ApiPublicGoogleCallbackRoute = ApiPublicGoogleCallbackRouteImport.update({
   id: '/api/public/google/callback',
   path: '/api/public/google/callback',
@@ -162,6 +226,12 @@ const ApiPublicGoogleWebhookRoute = ApiPublicGoogleWebhookRouteImport.update({
   path: '/api/public/google/webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminTrainingsEventCodeRoute =
+  AuthenticatedAdminTrainingsEventCodeRouteImport.update({
+    id: '/trainings/event/$code',
+    path: '/trainings/event/$code',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -181,12 +251,22 @@ export interface FileRoutesByFullPath {
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/api/public/import-story-media': typeof ApiPublicImportStoryMediaRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/admin/masters/invitations': typeof AuthenticatedAdminMastersInvitationsRoute
+  '/admin/masters/organizers': typeof AuthenticatedAdminMastersOrganizersRoute
+  '/admin/masters/packages': typeof AuthenticatedAdminMastersPackagesRoute
   '/admin/requests/$id': typeof AuthenticatedAdminRequestsIdRoute
   '/admin/stories/$id': typeof AuthenticatedAdminStoriesIdRoute
+  '/admin/trainings/events': typeof AuthenticatedAdminTrainingsEventsRoute
+  '/admin/trainings/landing': typeof AuthenticatedAdminTrainingsLandingRoute
+  '/admin/trainings/materials': typeof AuthenticatedAdminTrainingsMaterialsRoute
+  '/admin/trainings/participants': typeof AuthenticatedAdminTrainingsParticipantsRoute
+  '/admin/trainings/results': typeof AuthenticatedAdminTrainingsResultsRoute
   '/api/public/google/callback': typeof ApiPublicGoogleCallbackRoute
   '/api/public/google/webhook': typeof ApiPublicGoogleWebhookRoute
   '/admin/requests/': typeof AuthenticatedAdminRequestsIndexRoute
   '/admin/stories/': typeof AuthenticatedAdminStoriesIndexRoute
+  '/admin/trainings/': typeof AuthenticatedAdminTrainingsIndexRoute
+  '/admin/trainings/event/$code': typeof AuthenticatedAdminTrainingsEventCodeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -205,12 +285,22 @@ export interface FileRoutesByTo {
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/api/public/import-story-media': typeof ApiPublicImportStoryMediaRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
+  '/admin/masters/invitations': typeof AuthenticatedAdminMastersInvitationsRoute
+  '/admin/masters/organizers': typeof AuthenticatedAdminMastersOrganizersRoute
+  '/admin/masters/packages': typeof AuthenticatedAdminMastersPackagesRoute
   '/admin/requests/$id': typeof AuthenticatedAdminRequestsIdRoute
   '/admin/stories/$id': typeof AuthenticatedAdminStoriesIdRoute
+  '/admin/trainings/events': typeof AuthenticatedAdminTrainingsEventsRoute
+  '/admin/trainings/landing': typeof AuthenticatedAdminTrainingsLandingRoute
+  '/admin/trainings/materials': typeof AuthenticatedAdminTrainingsMaterialsRoute
+  '/admin/trainings/participants': typeof AuthenticatedAdminTrainingsParticipantsRoute
+  '/admin/trainings/results': typeof AuthenticatedAdminTrainingsResultsRoute
   '/api/public/google/callback': typeof ApiPublicGoogleCallbackRoute
   '/api/public/google/webhook': typeof ApiPublicGoogleWebhookRoute
   '/admin/requests': typeof AuthenticatedAdminRequestsIndexRoute
   '/admin/stories': typeof AuthenticatedAdminStoriesIndexRoute
+  '/admin/trainings': typeof AuthenticatedAdminTrainingsIndexRoute
+  '/admin/trainings/event/$code': typeof AuthenticatedAdminTrainingsEventCodeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -232,12 +322,22 @@ export interface FileRoutesById {
   '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/api/public/import-story-media': typeof ApiPublicImportStoryMediaRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/admin/masters/invitations': typeof AuthenticatedAdminMastersInvitationsRoute
+  '/_authenticated/admin/masters/organizers': typeof AuthenticatedAdminMastersOrganizersRoute
+  '/_authenticated/admin/masters/packages': typeof AuthenticatedAdminMastersPackagesRoute
   '/_authenticated/admin/requests/$id': typeof AuthenticatedAdminRequestsIdRoute
   '/_authenticated/admin/stories/$id': typeof AuthenticatedAdminStoriesIdRoute
+  '/_authenticated/admin/trainings/events': typeof AuthenticatedAdminTrainingsEventsRoute
+  '/_authenticated/admin/trainings/landing': typeof AuthenticatedAdminTrainingsLandingRoute
+  '/_authenticated/admin/trainings/materials': typeof AuthenticatedAdminTrainingsMaterialsRoute
+  '/_authenticated/admin/trainings/participants': typeof AuthenticatedAdminTrainingsParticipantsRoute
+  '/_authenticated/admin/trainings/results': typeof AuthenticatedAdminTrainingsResultsRoute
   '/api/public/google/callback': typeof ApiPublicGoogleCallbackRoute
   '/api/public/google/webhook': typeof ApiPublicGoogleWebhookRoute
   '/_authenticated/admin/requests/': typeof AuthenticatedAdminRequestsIndexRoute
   '/_authenticated/admin/stories/': typeof AuthenticatedAdminStoriesIndexRoute
+  '/_authenticated/admin/trainings/': typeof AuthenticatedAdminTrainingsIndexRoute
+  '/_authenticated/admin/trainings/event/$code': typeof AuthenticatedAdminTrainingsEventCodeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -259,12 +359,22 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/api/public/import-story-media'
     | '/admin/'
+    | '/admin/masters/invitations'
+    | '/admin/masters/organizers'
+    | '/admin/masters/packages'
     | '/admin/requests/$id'
     | '/admin/stories/$id'
+    | '/admin/trainings/events'
+    | '/admin/trainings/landing'
+    | '/admin/trainings/materials'
+    | '/admin/trainings/participants'
+    | '/admin/trainings/results'
     | '/api/public/google/callback'
     | '/api/public/google/webhook'
     | '/admin/requests/'
     | '/admin/stories/'
+    | '/admin/trainings/'
+    | '/admin/trainings/event/$code'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -283,12 +393,22 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/api/public/import-story-media'
     | '/admin'
+    | '/admin/masters/invitations'
+    | '/admin/masters/organizers'
+    | '/admin/masters/packages'
     | '/admin/requests/$id'
     | '/admin/stories/$id'
+    | '/admin/trainings/events'
+    | '/admin/trainings/landing'
+    | '/admin/trainings/materials'
+    | '/admin/trainings/participants'
+    | '/admin/trainings/results'
     | '/api/public/google/callback'
     | '/api/public/google/webhook'
     | '/admin/requests'
     | '/admin/stories'
+    | '/admin/trainings'
+    | '/admin/trainings/event/$code'
   id:
     | '__root__'
     | '/'
@@ -309,12 +429,22 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/settings'
     | '/api/public/import-story-media'
     | '/_authenticated/admin/'
+    | '/_authenticated/admin/masters/invitations'
+    | '/_authenticated/admin/masters/organizers'
+    | '/_authenticated/admin/masters/packages'
     | '/_authenticated/admin/requests/$id'
     | '/_authenticated/admin/stories/$id'
+    | '/_authenticated/admin/trainings/events'
+    | '/_authenticated/admin/trainings/landing'
+    | '/_authenticated/admin/trainings/materials'
+    | '/_authenticated/admin/trainings/participants'
+    | '/_authenticated/admin/trainings/results'
     | '/api/public/google/callback'
     | '/api/public/google/webhook'
     | '/_authenticated/admin/requests/'
     | '/_authenticated/admin/stories/'
+    | '/_authenticated/admin/trainings/'
+    | '/_authenticated/admin/trainings/event/$code'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -461,6 +591,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicImportStoryMediaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin/masters/invitations': {
+      id: '/_authenticated/admin/masters/invitations'
+      path: '/masters/invitations'
+      fullPath: '/admin/masters/invitations'
+      preLoaderRoute: typeof AuthenticatedAdminMastersInvitationsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/masters/organizers': {
+      id: '/_authenticated/admin/masters/organizers'
+      path: '/masters/organizers'
+      fullPath: '/admin/masters/organizers'
+      preLoaderRoute: typeof AuthenticatedAdminMastersOrganizersRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/masters/packages': {
+      id: '/_authenticated/admin/masters/packages'
+      path: '/masters/packages'
+      fullPath: '/admin/masters/packages'
+      preLoaderRoute: typeof AuthenticatedAdminMastersPackagesRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/requests/': {
       id: '/_authenticated/admin/requests/'
       path: '/requests'
@@ -489,6 +640,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminStoriesIdRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/trainings/': {
+      id: '/_authenticated/admin/trainings/'
+      path: '/trainings'
+      fullPath: '/admin/trainings/'
+      preLoaderRoute: typeof AuthenticatedAdminTrainingsIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/trainings/events': {
+      id: '/_authenticated/admin/trainings/events'
+      path: '/trainings/events'
+      fullPath: '/admin/trainings/events'
+      preLoaderRoute: typeof AuthenticatedAdminTrainingsEventsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/trainings/landing': {
+      id: '/_authenticated/admin/trainings/landing'
+      path: '/trainings/landing'
+      fullPath: '/admin/trainings/landing'
+      preLoaderRoute: typeof AuthenticatedAdminTrainingsLandingRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/trainings/materials': {
+      id: '/_authenticated/admin/trainings/materials'
+      path: '/trainings/materials'
+      fullPath: '/admin/trainings/materials'
+      preLoaderRoute: typeof AuthenticatedAdminTrainingsMaterialsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/trainings/participants': {
+      id: '/_authenticated/admin/trainings/participants'
+      path: '/trainings/participants'
+      fullPath: '/admin/trainings/participants'
+      preLoaderRoute: typeof AuthenticatedAdminTrainingsParticipantsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/trainings/results': {
+      id: '/_authenticated/admin/trainings/results'
+      path: '/trainings/results'
+      fullPath: '/admin/trainings/results'
+      preLoaderRoute: typeof AuthenticatedAdminTrainingsResultsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/api/public/google/callback': {
       id: '/api/public/google/callback'
       path: '/api/public/google/callback'
@@ -503,6 +696,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicGoogleWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin/trainings/event/$code': {
+      id: '/_authenticated/admin/trainings/event/$code'
+      path: '/trainings/event/$code'
+      fullPath: '/admin/trainings/event/$code'
+      preLoaderRoute: typeof AuthenticatedAdminTrainingsEventCodeRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
   }
 }
 
@@ -512,10 +712,20 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminPortfolioRoute: typeof AuthenticatedAdminPortfolioRoute
   AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+  AuthenticatedAdminMastersInvitationsRoute: typeof AuthenticatedAdminMastersInvitationsRoute
+  AuthenticatedAdminMastersOrganizersRoute: typeof AuthenticatedAdminMastersOrganizersRoute
+  AuthenticatedAdminMastersPackagesRoute: typeof AuthenticatedAdminMastersPackagesRoute
   AuthenticatedAdminRequestsIdRoute: typeof AuthenticatedAdminRequestsIdRoute
   AuthenticatedAdminStoriesIdRoute: typeof AuthenticatedAdminStoriesIdRoute
+  AuthenticatedAdminTrainingsEventsRoute: typeof AuthenticatedAdminTrainingsEventsRoute
+  AuthenticatedAdminTrainingsLandingRoute: typeof AuthenticatedAdminTrainingsLandingRoute
+  AuthenticatedAdminTrainingsMaterialsRoute: typeof AuthenticatedAdminTrainingsMaterialsRoute
+  AuthenticatedAdminTrainingsParticipantsRoute: typeof AuthenticatedAdminTrainingsParticipantsRoute
+  AuthenticatedAdminTrainingsResultsRoute: typeof AuthenticatedAdminTrainingsResultsRoute
   AuthenticatedAdminRequestsIndexRoute: typeof AuthenticatedAdminRequestsIndexRoute
   AuthenticatedAdminStoriesIndexRoute: typeof AuthenticatedAdminStoriesIndexRoute
+  AuthenticatedAdminTrainingsIndexRoute: typeof AuthenticatedAdminTrainingsIndexRoute
+  AuthenticatedAdminTrainingsEventCodeRoute: typeof AuthenticatedAdminTrainingsEventCodeRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
@@ -524,10 +734,29 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminPortfolioRoute: AuthenticatedAdminPortfolioRoute,
   AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+  AuthenticatedAdminMastersInvitationsRoute:
+    AuthenticatedAdminMastersInvitationsRoute,
+  AuthenticatedAdminMastersOrganizersRoute:
+    AuthenticatedAdminMastersOrganizersRoute,
+  AuthenticatedAdminMastersPackagesRoute:
+    AuthenticatedAdminMastersPackagesRoute,
   AuthenticatedAdminRequestsIdRoute: AuthenticatedAdminRequestsIdRoute,
   AuthenticatedAdminStoriesIdRoute: AuthenticatedAdminStoriesIdRoute,
+  AuthenticatedAdminTrainingsEventsRoute:
+    AuthenticatedAdminTrainingsEventsRoute,
+  AuthenticatedAdminTrainingsLandingRoute:
+    AuthenticatedAdminTrainingsLandingRoute,
+  AuthenticatedAdminTrainingsMaterialsRoute:
+    AuthenticatedAdminTrainingsMaterialsRoute,
+  AuthenticatedAdminTrainingsParticipantsRoute:
+    AuthenticatedAdminTrainingsParticipantsRoute,
+  AuthenticatedAdminTrainingsResultsRoute:
+    AuthenticatedAdminTrainingsResultsRoute,
   AuthenticatedAdminRequestsIndexRoute: AuthenticatedAdminRequestsIndexRoute,
   AuthenticatedAdminStoriesIndexRoute: AuthenticatedAdminStoriesIndexRoute,
+  AuthenticatedAdminTrainingsIndexRoute: AuthenticatedAdminTrainingsIndexRoute,
+  AuthenticatedAdminTrainingsEventCodeRoute:
+    AuthenticatedAdminTrainingsEventCodeRoute,
 }
 
 const AuthenticatedAdminRouteWithChildren =

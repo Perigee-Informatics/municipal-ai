@@ -26,30 +26,23 @@ export const Route = createFileRoute("/ai-for-all")({
       },
       { property: "og:title", content: "AI for ALL · सबैका लागि व्यावहारिक AI तालिम" },
     ],
-    links: [
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;700;800&family=Rozha+One&display=swap",
-      },
-    ],
   }),
   component: Landing,
 });
 
 /* Colours of the workshop materials, so the site reads as one place. */
+/* The site's own colours and fonts (src/styles.css), so this page matches every other page. */
 const C = {
-  ink: "#142440",
-  muted: "#556275",
-  accent: "#B3123A",
-  navy: "#1C3A66",
-  soft: "#E6ECF4",
-  bg: "#F4F6F9",
-  line: "#D6DDE6",
+  ink: "var(--foreground)",
+  muted: "var(--muted-foreground)",
+  accent: "var(--primary)",
+  navy: "var(--primary)",
+  soft: "var(--secondary)",
+  bg: "var(--secondary)",
+  line: "var(--border)",
 };
-const body = { fontFamily: "'Mukta', 'Nirmala UI', 'Noto Sans Devanagari', system-ui, sans-serif" };
-const display = { fontFamily: "'Rozha One', 'Mukta', 'Noto Serif Devanagari', Georgia, serif" };
+const body = { fontFamily: "var(--font-sans)" };
+const display = { fontFamily: "var(--font-display)" };
 
 type Course = { course: string; level: string; text: string; lang?: "en" };
 

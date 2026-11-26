@@ -65,8 +65,8 @@ function Settings() {
   const copy = (s: string) => { navigator.clipboard.writeText(s); toast.success("Copied"); };
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-semibold">Settings</h1>
+    <div className="mx-auto w-full max-w-6xl space-y-6">
+      <div className="border-b border-border pb-5"><h1 className="text-2xl font-semibold md:text-3xl">Site & integrations</h1><p className="mt-1.5 text-sm text-muted-foreground">Profile photo, CV, social numbers, Google Calendar and photo import.</p></div>
       <div className="grid gap-6 lg:grid-cols-2">
         <Card title="Profile photo">
           <div className="flex items-center gap-4">

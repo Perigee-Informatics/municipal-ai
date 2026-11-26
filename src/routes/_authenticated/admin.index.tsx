@@ -5,6 +5,8 @@ import { allRequestsQuery, findConflicts, statusTone } from "@/lib/admin-data";
 import { timeRange } from "@/components/site/MonthCalendar";
 import { GoogleSyncBar } from "@/components/admin/GoogleSyncBar";
 import { adminStoriesQuery } from "@/lib/stories";
+import { Pill } from "@/components/admin/AdminPage";
+import { enDates, eventsQuery, peopleQuery, phase, sortEvents } from "@/lib/training-data";
 
 export const Route = createFileRoute("/_authenticated/admin/")({ component: Dashboard });
 
@@ -20,8 +22,8 @@ function Dashboard() {
     .slice(0, 6);
 
   return (
-    <div className="space-y-10">
-      <h1 className="text-3xl font-semibold">Dashboard</h1>
+    <div className="mx-auto w-full max-w-6xl space-y-8">
+      <div className="border-b border-border pb-5"><h1 className="text-2xl font-semibold md:text-3xl">Dashboard</h1><p className="mt-1.5 text-sm text-muted-foreground">Your invitations, upcoming engagements and the AI for ALL programme at a glance.</p></div>
       <GoogleSyncBar />
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {(["pending", "tentative", "accepted", "declined"] as const).map((s) => (
@@ -31,6 +33,7 @@ function Dashboard() {
           </Link>
         ))}
       </div>
+      <TrainingStrip />
       <div className="grid gap-8 lg:grid-cols-2">
         <section>
           <h2 className="mb-4 text-xl font-semibold">Upcoming engagements</h2>
@@ -65,5 +68,37 @@ function Dashboard() {
         </section>
       </div>
     </div>
+  );
+}
+
+/** AI for ALL at a glance: the active or next training and registrations waiting. */
+function TrainingStrip() {
+  const { data: events = [] } = useQuery(eventsQuery);
+  const { data: people = [] } = useQuery(peopleQuery);
+  const pending = people.filter((p) => p.status === "pending").length;
+  const next = sortEvents(events).find((e) => e.is_active) ?? sortEvents(events).find((e) => phase(e) === "upcoming");
+  return (
+    <section className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-border bg-card p-5 shadow-sm">
+      <div className="min-w-0">
+        <div className="text-xs font-semibold uppercase tracking-wider text-accent">AI for ALL</div>
+        {next ? (
+          <Link to="/admin/trainings/event/$code" params={{ code: next.code }} className="mt-1 block hover:text-accent">
+            <span className="font-medium">{next.organized_by || next.name}</span>{" "}
+            <span className="text-sm text-muted-foreground">· {next.name} · {enDates(next.event_dates)}</span>{" "}
+            {next.is_active && <Pill tone="ok">Active</Pill>}
+          </Link>
+        ) : (
+          <p className="mt-1 text-sm text-muted-foreground">No active or upcoming training.</p>
+        )}
+      </div>
+      <div className="flex flex-wrap gap-2 text-sm">
+        <Link to="/admin/trainings/participants" className="rounded-lg border border-border px-3 py-1.5 hover:border-accent">
+          {pending} registration{pending === 1 ? "" : "s"} waiting
+        </Link>
+        <Link to="/admin/trainings" className="rounded-lg border border-border px-3 py-1.5 hover:border-accent">
+          Programme overview →
+        </Link>
+      </div>
+    </section>
   );
 }

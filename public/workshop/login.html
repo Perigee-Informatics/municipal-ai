@@ -39,6 +39,7 @@ a{color:var(--accent)}
 .site-top nav a:hover{background:var(--soft)}
 .site-foot{text-align:center;font-size:14px;color:var(--muted);padding:0 16px 32px}
 </style>
+<link rel="stylesheet" href="/workshop/site-theme.css?v=20261126a">
 </head>
 <body>
 <header class="site-top">
@@ -204,7 +205,7 @@ EVI.resolve().then(function (ev) { var i = EVI.info(ev); if (i && i.org) documen
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
 
   function routeSignedIn() {
-    if (WS.isTrainer()) { location.href = "admin.html"; return; }
+    if (WS.isTrainer()) { location.href = "/admin/trainings"; return; }
     if (WS.isApproved() && !(WS.profile && WS.profile.full_name)) {
       location.href = "profile.html?next=" + encodeURIComponent(next); return;
     }

@@ -2,6 +2,15 @@
 <html lang="ne">
 <head>
 <meta charset="utf-8">
+<script>
+/* The event page now lives in the site admin: /admin/trainings/event/CODE. ?legacy=1 keeps this page. */
+(function () {
+  if (/[?&]legacy=1/.test(location.search)) return;
+  var code = (new URLSearchParams(location.search).get("event") || "").trim().toUpperCase();
+  var tab = { details: "details", contents: "class", schedule: "class", results: "results", people: "people", feedback: "feedback", gallery: "gallery" }[location.hash.slice(1)] || "details";
+  location.replace(code ? "/admin/trainings/event/" + encodeURIComponent(code) + "?tab=" + tab : "/admin/trainings/events");
+})();
+</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>इभेन्ट · AI तालिम</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;700;800&display=swap">
@@ -102,6 +111,7 @@ code{background:var(--soft);border-radius:5px;padding:1px 6px;overflow-wrap:anyw
 .qr-side{flex:1 1 240px;min-width:0}.qr-side a{overflow-wrap:anywhere}
 @media print{body *{visibility:hidden}#qrCard,#qrCard *{visibility:visible}#qrCard{position:absolute;left:0;top:0;width:100%;border:0;box-shadow:none}.qr-kinds,#qrCard .row button,#qrDl{display:none!important}.qr-img svg{width:9cm;height:9cm}}
 </style>
+<link rel="stylesheet" href="/workshop/site-theme.css?v=20261126a">
 </head>
 <body>
 <div class="wrap">

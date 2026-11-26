@@ -22,8 +22,8 @@ function Inbox() {
     (r) => (status === "all" || r.status === status) && `${r.event_title} ${r.organization} ${r.requester_name} ${r.requester_email}`.toLowerCase().includes(q.toLowerCase()),
   );
   return (
-    <div className="space-y-6">
-      <div><h1 className="text-3xl font-semibold">Requests</h1><p className="text-sm text-muted-foreground">Invitations from the request form. Accepting one adds it to your engagements and Google Calendar.</p></div>
+    <div className="mx-auto w-full max-w-6xl space-y-6">
+      <div className="border-b border-border pb-5"><h1 className="text-2xl font-semibold md:text-3xl">Invitations & appointments</h1><p className="mt-1.5 text-sm text-muted-foreground">Invitations from the request form. Accepting one adds it to your engagements and Google Calendar.</p></div>
       <div className="flex flex-wrap items-center gap-3">
         <div className="inline-flex flex-wrap rounded-md border border-border p-0.5 text-sm">
           {(["all", "pending", "tentative", "accepted", "declined"] as const).map((s) => (

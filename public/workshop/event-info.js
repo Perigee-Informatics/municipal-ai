@@ -324,7 +324,7 @@
       // Signed in but the profile is not here yet: load it before deciding (and do not keep a guess).
       if (WS.session && !WS.profile) { try { await WS.loadProfile(); } catch (e) {} }
       if (WS.session && !WS.profile) { homePromise = null; return fallback; }
-      if (WS.isTrainer()) return { href: "/workshop/admin.html", label: "प्रशिक्षक गृहपृष्ठ" };
+      if (WS.isTrainer()) return { href: "/admin/trainings", label: "प्रशिक्षक गृहपृष्ठ" };
       var rep = { href: COURSE_PAGE.representative, label: "गृहपृष्ठ" };
       var byCourse = function (key) { var c = courseOf(key); return c === "representative" ? rep : c === "cso" ? { href: COURSE_PAGE.cso, label: "Home" } : c === "hied" ? { href: COURSE_PAGE.hied, label: "Home" } : fallback; };
       if (WS.session && WS.profile && WS.profile.event_id) {

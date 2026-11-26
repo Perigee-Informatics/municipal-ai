@@ -570,6 +570,90 @@ export type Database = {
         }
         Relationships: []
       }
+      invitation_settings: {
+        Row: {
+          accepting: boolean
+          closed_message: string | null
+          closed_message_ne: string | null
+          currencies: string[]
+          default_currency: string
+          id: number
+          min_notice_days: number
+          updated_at: string
+        }
+        Insert: {
+          accepting?: boolean
+          closed_message?: string | null
+          closed_message_ne?: string | null
+          currencies?: string[]
+          default_currency?: string
+          id?: number
+          min_notice_days?: number
+          updated_at?: string
+        }
+        Update: {
+          accepting?: boolean
+          closed_message?: string | null
+          closed_message_ne?: string | null
+          currencies?: string[]
+          default_currency?: string
+          id?: number
+          min_notice_days?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      organizers: {
+        Row: {
+          active: boolean
+          city: string | null
+          contact_person: string | null
+          country: string | null
+          created_at: string
+          email: string | null
+          id: string
+          kind: string
+          name: string
+          name_ne: string | null
+          notes: string | null
+          phone: string | null
+          sort_order: number
+          website: string | null
+        }
+        Insert: {
+          active?: boolean
+          city?: string | null
+          contact_person?: string | null
+          country?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          kind?: string
+          name: string
+          name_ne?: string | null
+          notes?: string | null
+          phone?: string | null
+          sort_order?: number
+          website?: string | null
+        }
+        Update: {
+          active?: boolean
+          city?: string | null
+          contact_person?: string | null
+          country?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          kind?: string
+          name?: string
+          name_ne?: string | null
+          notes?: string | null
+          phone?: string | null
+          sort_order?: number
+          website?: string | null
+        }
+        Relationships: []
+      }
       participant_events: {
         Row: {
           added_at: string
@@ -1064,25 +1148,37 @@ export type Database = {
       }
       training_packages: {
         Row: {
+          audience: string | null
           created_at: string
+          description: string | null
+          duration: string | null
           id: string
           is_short: boolean
           key: string
           name: string
+          sort_order: number
         }
         Insert: {
+          audience?: string | null
           created_at?: string
+          description?: string | null
+          duration?: string | null
           id?: string
           is_short?: boolean
           key: string
           name: string
+          sort_order?: number
         }
         Update: {
+          audience?: string | null
           created_at?: string
+          description?: string | null
+          duration?: string | null
           id?: string
           is_short?: boolean
           key?: string
           name?: string
+          sort_order?: number
         }
         Relationships: []
       }
@@ -1213,6 +1309,7 @@ export type Database = {
         Returns: boolean
       }
       is_approved: { Args: never; Returns: boolean }
+      is_staff: { Args: never; Returns: boolean }
       is_trainer: { Args: never; Returns: boolean }
       landing_gallery: {
         Args: { p_limit?: number }

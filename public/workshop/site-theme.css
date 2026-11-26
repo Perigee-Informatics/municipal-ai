@@ -1,0 +1,38 @@
+/* One look for the whole site: the colours and fonts of the main site (src/styles.css) applied to
+ * every workshop page (course materials, tests, sign-in, profile). Linked LAST in each page's
+ * <head>, so at equal specificity it wins over the page's own palette; dark mode is kept, in the
+ * site's navy tones. Hex values approximate the site's oklch colours (older phones lack oklch). */
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Serif+Devanagari:wght@500;700&display=swap");
+
+:root {
+  --bg: #FBFAF6;
+  --surface: #FFFFFF;
+  --ink: #1A2133;
+  --muted: #5D6577;
+  --line: #E5E1D8;
+  --accent: #1C2844;      /* buttons, links, current item: the site's navy */
+  --accent-ink: #FFFFFF;
+  --navy: #1C2844;
+  --soft: #F1EEE6;
+  --gold: #C98A35;        /* the site's orange accent */
+  --ok: #2F8F5B;
+  --bad: #C0392B;
+  --warn: #9A6B12;
+  --f-body: "IBM Plex Sans", "Noto Sans Devanagari", "Nirmala UI", system-ui, sans-serif;
+  --f-display: "Fraunces", "Noto Serif Devanagari", Georgia, serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0F1626; --surface: #172038; --ink: #E6EBF3; --muted: #9DA9BC; --line: #27324A;
+    --accent: #E7A55A; --accent-ink: #141B2D; --navy: #A9C2EA; --soft: #1D2842;
+    --gold: #E7A55A; --ok: #6FC497; --bad: #F08070; --warn: #E7B45C;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0F1626; --surface: #172038; --ink: #E6EBF3; --muted: #9DA9BC; --line: #27324A;
+  --accent: #E7A55A; --accent-ink: #141B2D; --navy: #A9C2EA; --soft: #1D2842;
+  --gold: #E7A55A; --ok: #6FC497; --bad: #F08070; --warn: #E7B45C;
+}
+
+body { font-family: var(--f-body); }
+h1, h2, h3 { font-family: var(--f-display); letter-spacing: -0.01em; }

@@ -39,9 +39,9 @@ function StoriesList() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div><h1 className="text-3xl font-semibold">Engagements</h1><p className="text-sm text-muted-foreground">One list for the Events calendar and the Story Map. Public ones show on both.</p></div>
+    <div className="mx-auto w-full max-w-[1400px] space-y-6">
+      <div className="flex flex-wrap items-end justify-between gap-3 border-b border-border pb-5">
+        <div><h1 className="text-2xl font-semibold md:text-3xl">All engagements</h1><p className="mt-1.5 text-sm text-muted-foreground">One list for the Events calendar and the Story Map. Public ones show on both.</p></div>
         <div className="flex flex-wrap gap-2">
           <Button onClick={() => setAdding(true)}><Plus />Add engagement</Button>
         </div>

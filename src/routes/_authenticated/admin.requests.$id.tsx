@@ -69,11 +69,11 @@ function Detail() {
   }
 
   return (
-    <div className="space-y-6">
-      <Link to="/admin/requests" className="text-sm text-muted-foreground hover:underline">← All requests</Link>
-      <div className="flex flex-wrap items-start justify-between gap-4">
+    <div className="mx-auto w-full max-w-6xl space-y-6">
+      <Link to="/admin/requests" className="text-sm text-muted-foreground hover:underline">← All invitations</Link>
+      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-border pb-5">
         <div>
-          <h1 className="text-3xl font-semibold">{r.event_title}</h1>
+          <h1 className="text-2xl font-semibold md:text-3xl">{r.event_title}</h1>
           <p className="text-muted-foreground">{r.organization} · received {format(parseISO(r.created_at), "d MMM yyyy, HH:mm")}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">

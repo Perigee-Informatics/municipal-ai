@@ -61,4 +61,24 @@ export const lookupsQuery = queryOptions({
   },
 });
 
+/** Whether new invitations are accepted, and the request form's options (Admin → Invitation settings). */
+export const invitationSettingsQuery = queryOptions({
+  queryKey: ["invitation-settings"],
+  queryFn: async () => {
+    const { data } = await supabase.from("invitation_settings").select("*").eq("id", 1).maybeSingle();
+    return (
+      data ?? {
+        id: 1,
+        accepting: true,
+        closed_message: null,
+        closed_message_ne: null,
+        min_notice_days: 0,
+        currencies: ["NPR", "USD", "EUR", "INR", "GBP", "THB", "JPY", "AUD"],
+        default_currency: "NPR",
+        updated_at: "",
+      }
+    );
+  },
+});
+
 export type PublicEvent = Awaited<ReturnType<typeof publicEventsQuery.queryFn & {}>>[number];

@@ -102,7 +102,7 @@ function AccountPage() {
 
         <p className="mt-4 text-center text-sm text-muted-foreground">
           {data?.profile?.role === "trainer" && data.profile.status === "approved" ? (
-            <a href="/workshop/admin.html" className="underline hover:text-foreground">
+            <a href="/admin/trainings" className="underline hover:text-foreground">
               ⌂ प्रशिक्षक गृहपृष्ठ
             </a>
           ) : (

@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useI18n } from "@/lib/i18n";
-import { lookupsQuery } from "@/lib/queries";
+import { invitationSettingsQuery, lookupsQuery } from "@/lib/queries";
 import { requestSchema, submitRequest } from "@/lib/requests.functions";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -24,7 +24,8 @@ export const Route = createFileRoute("/request")({
       { property: "og:description", content: "Invite Dr. Ghimire to speak, train or advise." },
     ],
   }),
-  loader: ({ context }) => context.queryClient.ensureQueryData(lookupsQuery),
+  loader: ({ context }) =>
+    Promise.all([context.queryClient.ensureQueryData(lookupsQuery), context.queryClient.ensureQueryData(invitationSettingsQuery)]),
   component: RequestPage,
 });
 
@@ -62,6 +63,8 @@ function Card({ n, title, children }: { n: number; title: string; children: Reac
 function RequestPage() {
   const { t, pick } = useI18n();
   const { data: lookups } = useSuspenseQuery(lookupsQuery);
+  const { data: inv } = useSuspenseQuery(invitationSettingsQuery);
+  const earliest = inv.min_notice_days ? new Date(Date.now() + inv.min_notice_days * 864e5).toISOString().slice(0, 10) : undefined;
   const submit = useServerFn(submitRequest);
   const startedAt = useRef(Date.now());
   const [done, setDone] = useState(false);
@@ -146,6 +149,12 @@ function RequestPage() {
           </div>
         </aside>
 
+        {!inv.accepting ? (
+          <div className="min-w-0 rounded-2xl border border-border bg-card p-8 shadow-soft">
+            <p className="font-display text-xl font-semibold">{t("req.closedTitle")}</p>
+            <p className="mt-3 whitespace-pre-line text-muted-foreground">{pick(inv.closed_message, inv.closed_message_ne) || t("req.closedBody")}</p>
+          </div>
+        ) : (
         <form onSubmit={onSubmit} className="min-w-0 space-y-8" noValidate>
           <input type="text" name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
           <Card n={1} title={t("form.event")}>
@@ -172,7 +181,7 @@ function RequestPage() {
             <div className="space-y-3">
               {sessions.map((s, i) => (
                 <div key={i} className="grid grid-cols-[1fr_auto] items-end gap-3 sm:grid-cols-[1.4fr_1fr_1fr_auto]">
-                  <div className="col-span-2 sm:col-span-1"><Field label={t("form.date")}><Input type="date" value={s.session_date} onChange={(e) => updateSession(i, "session_date", e.target.value)} required /></Field></div>
+                  <div className="col-span-2 sm:col-span-1"><Field label={t("form.date")}><Input type="date" min={earliest} value={s.session_date} onChange={(e) => updateSession(i, "session_date", e.target.value)} required /></Field></div>
                   <Field label={t("form.start")}><Input type="time" value={s.start_time} onChange={(e) => updateSession(i, "start_time", e.target.value)} /></Field>
                   <Field label={t("form.end")}><Input type="time" value={s.end_time} onChange={(e) => updateSession(i, "end_time", e.target.value)} /></Field>
                   <Button type="button" variant="ghost" size="icon" disabled={sessions.length === 1} onClick={() => setSessions((x) => x.filter((_, j) => j !== i))} aria-label="Remove"><Trash2 /></Button>
@@ -194,7 +203,7 @@ function RequestPage() {
             {basis === "paid" && (
               <>
                 <Field label={t("form.honorarium")}><Input name="honorarium" type="number" min={0} step="any" /></Field>
-                <Field label={t("form.currency")}><select name="currency" className={sel} defaultValue="NPR">{["NPR", "USD", "EUR", "INR", "GBP", "THB", "JPY", "AUD"].map((c) => <option key={c}>{c}</option>)}</select></Field>
+                <Field label={t("form.currency")}><select name="currency" className={sel} defaultValue={inv.default_currency}>{inv.currencies.map((c) => <option key={c}>{c}</option>)}</select></Field>
               </>
             )}
           </Card>
@@ -226,6 +235,7 @@ function RequestPage() {
 
           <Button type="submit" size="lg" variant="accent" disabled={busy} className="w-full rounded-full md:w-auto">{busy ? t("form.submitting") : t("form.submit")}</Button>
         </form>
+        )}
       </div>
     </PublicShell>
   );

@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { PublicShell } from "@/components/site/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
-import { portfolioQuery, publicEventsQuery } from "@/lib/queries";
+import { invitationSettingsQuery, portfolioQuery, publicEventsQuery } from "@/lib/queries";
 import { publicStoriesQuery, trainingsCountQuery } from "@/lib/stories";
 import { timeRange } from "@/components/site/MonthCalendar";
 import { galleryQuery } from "@/lib/gallery";
@@ -50,6 +50,7 @@ function Home() {
   const { data: events } = useSuspenseQuery(publicEventsQuery);
   const { data: stories } = useQuery(publicStoriesQuery);
   const { data: trainings } = useQuery(trainingsCountQuery);
+  const { data: invitations } = useQuery(invitationSettingsQuery);
   const p = data.profile;
   const today = format(new Date(), "yyyy-MM-dd");
   const upcoming = events.filter((e) => e.session_date >= today).slice(0, 4);
@@ -67,10 +68,17 @@ function Home() {
         <div className="bg-grid pointer-events-none absolute inset-0" />
         <div className="container-page relative grid items-center gap-12 pb-28 pt-14 md:grid-cols-[1.3fr_1fr] md:pb-36 md:pt-20">
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <span className="inline-flex items-center gap-2 rounded-full border border-navy-foreground/15 bg-navy-foreground/5 px-3 py-1 text-xs">
-              <span className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-60" /><span className="relative inline-flex h-2 w-2 rounded-full bg-success" /></span>
-              {t("hero.available")}
-            </span>
+            {invitations?.accepting === false ? (
+              <span className="inline-flex items-center gap-2 rounded-full border border-navy-foreground/15 bg-navy-foreground/5 px-3 py-1 text-xs">
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-warning" />
+                {t("hero.unavailable")}
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-2 rounded-full border border-navy-foreground/15 bg-navy-foreground/5 px-3 py-1 text-xs">
+                <span className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-60" /><span className="relative inline-flex h-2 w-2 rounded-full bg-success" /></span>
+                {t("hero.available")}
+              </span>
+            )}
             <p className="eyebrow mt-6">PhD · PMP · ISO 27001 Lead Auditor</p>
             <h1 className="mt-3 text-4xl font-semibold leading-[1.05] text-balance md:text-6xl">{pick(p?.full_name, p?.full_name_ne)}</h1>
             <p className="mt-5 text-xl text-navy-foreground/85 text-balance md:text-2xl">{pick(p?.headline, p?.headline_ne)}</p>

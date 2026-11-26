@@ -16,8 +16,8 @@ const s = (v: unknown) => (v ? String(v) : "");
 
 function Portfolio() {
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-semibold">Portfolio content</h1>
+    <div className="mx-auto w-full max-w-6xl space-y-6">
+      <div className="border-b border-border pb-5"><h1 className="text-2xl font-semibold md:text-3xl">Portfolio content</h1><p className="mt-1.5 text-sm text-muted-foreground">Your profile, highlights, expertise, education, career and certifications shown on the home, About and Portfolio pages.</p></div>
       <Tabs defaultValue="profile">
         <TabsList className="flex h-auto flex-wrap">
           {["profile", "highlights", "expertise", "education", "experience", "publications", "certifications"].map((t) => <TabsTrigger key={t} value={t} className="capitalize">{t}</TabsTrigger>)}
