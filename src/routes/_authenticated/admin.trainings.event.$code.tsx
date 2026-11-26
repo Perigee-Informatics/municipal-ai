@@ -254,7 +254,8 @@ function ClassView({ ev, course }: { ev: TrainingEvent; course: string }) {
   const src = `${page}?event=${encodeURIComponent(ev.code)}&teach=1&embed=1&fresh=${fresh}`;
   const full = () => {
     const f = frame.current as (HTMLIFrameElement & { webkitRequestFullscreen?: () => void }) | null;
-    (f?.requestFullscreen ?? f?.webkitRequestFullscreen)?.call(f);
+    if (f?.requestFullscreen) f.requestFullscreen();
+    else f?.webkitRequestFullscreen?.();
   };
   return (
     <div className="space-y-2">

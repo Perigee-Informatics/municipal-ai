@@ -1399,6 +1399,7 @@ export type Database = {
         Returns: undefined
       }
       set_active_event: { Args: { p_code: string }; Returns: undefined }
+      site_file_is_public: { Args: { _path: string }; Returns: boolean }
       story_is_public: { Args: { _id: string }; Returns: boolean }
       story_media_path_is_public: { Args: { _path: string }; Returns: boolean }
       submit_assessment: { Args: { p: Json }; Returns: Json }
