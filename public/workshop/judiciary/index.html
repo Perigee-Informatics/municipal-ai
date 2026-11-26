@@ -81,6 +81,7 @@ td { padding: 8px 10px; border-top: 1px solid var(--line); vertical-align: top }
 .box { border-radius: var(--r); padding: 12px 16px; margin: 14px 0; border-left: 4px solid var(--navy); background: var(--soft) }
 .box.warn { background: var(--warn-bg); border-left-color: var(--warn-line) }
 .box.trainer { background: var(--ok-bg); border-left-color: var(--ok) }
+.box.download { border-left-color: var(--ok); background: var(--ok-bg) }
 .box-t { font-weight: 700; margin: 0 0 4px }
 .prompt { margin: 14px 0; border-radius: var(--r); background: var(--prompt-bg); border: 1px solid var(--prompt-line); overflow: hidden }
 .prompt figcaption { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 12px; font-weight: 700; color: var(--prompt-ink); border-bottom: 1px dashed var(--prompt-line) }
@@ -162,6 +163,15 @@ const ol = items => `<ol>${items.map(x => `<li>${x}</li>`).join("")}</ol>`;
 const table = (head, rows) => `<div class="tbl"><table><thead><tr>${head.map(h => `<th>${h}</th>`).join("")}</tr></thead><tbody>${rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
 
 const SC_POLICY = "https://kathmandupost.com/national/2026/07/03/nepal-s-courts-embrace-ai-keep-judgment-writing-human";
+/* The policy itself, on the Supreme Court's website (Nepali PDF), and the page that lists it. */
+const POLICY_PDF = "https://supremecourt.gov.np/court/public/media/2026_07/6be1c3d55afda34eb3b18eebd6bb0d08.pdf";
+const POLICY_LIST = "https://supremecourt.gov.np/web/legalmaterials";
+const POLICY_NAME = "न्यायपालिकाको सूचना तथा सञ्चार प्रविधि नीति, २०८३";
+const policyBox = () => `<div class="box download"><p class="box-t">Download: the policy itself</p>
+  <p><strong lang="ne">${POLICY_NAME}</strong><br>Judiciary Information and Communication Technology Policy, 2083 · approved by the Supreme Court Full Court on 2083/03/10 BS · Nepali · PDF</p>
+  <p class="actions"><a class="btn primary" href="${POLICY_PDF}" target="_blank" rel="noopener" download>⬇ Download the policy (PDF)</a>
+  <a class="btn" href="${POLICY_LIST}" target="_blank" rel="noopener">Supreme Court: legal materials</a></p>
+  <p class="meta" style="margin:0">Opens the official copy on the Supreme Court of Nepal's website. Section 5.2 is the AI provision.</p></div>`;
 const INDIA_REF = "https://www.ictworks.org/how-5-judicial-ai-solutions-are-proving-skeptics-wrong-in-india/";
 
 /* ---------- Shared content ---------- */
@@ -181,7 +191,7 @@ const VOCAB = [
   ["Grounding / source", "an answer tied to a specific document or a cited source, as opposed to the model's general training. Grounded answers (like NotebookLM's) are safer for factual work."]
 ];
 const GUARDRAILS = [
-  "<strong>AI drafts, summarises, translates and organises — it never decides.</strong> Nothing produced today should go into a judgment, a writ petition, or any output requiring judicial discretion or legal reasoning. This mirrors Nepal's own Supreme Court AI policy adopted 3 July 2026.",
+  "<strong>AI drafts, summarises, translates and organises — it never decides.</strong> Nothing produced today should go into a judgment, a writ petition, or any output requiring judicial discretion or legal reasoning. This mirrors the judiciary's own ICT Policy, 2083.",
   "<strong>Always verify.</strong> A general AI chatbot can state a law or precedent that does not exist, with full confidence. Every AI-assisted research or drafting output must be checked against a verified source before it is relied on.",
   "<strong>Prefer grounded tools for facts.</strong> Document-grounded tools (like NotebookLM) are safer for factual summary work than general chatbots, because they can only draw on the document you gave them.",
   "<strong>Never input real case material.</strong> Never put real, confidential or under-adjudication case material into a free/public AI tool. Treat every free tool as if its inputs could be seen by someone else — with a free consumer account, they might be.",
@@ -288,10 +298,11 @@ const SESSIONS = [
   {
     id: "s1", n: 1, time: "11:00–11:05", mins: 5, title: "Welcome and the Supreme Court AI policy",
     whatToDo: [
-      "Frame the session around Nepal's Supreme Court AI policy (3 July 2026): what is permitted, what is off-limits, and why.",
+      "Frame the session around the judiciary's own AI policy — the Judiciary ICT Policy, 2083: what is permitted, what is off-limits, and why.",
+      "Download the policy (PDF) below and keep it open for the session.",
       "Everything today sits inside the permitted zone: research, document analysis, translation, drafting support, case management."
     ],
-    body: `<p>On 3 July 2026, Nepal's Supreme Court adopted a formal AI policy — the first of its kind for the judiciary. It <strong>permits</strong> AI use in legal research, document management and case organisation, drafting of non-decisional documents, and administrative support. It <strong>prohibits</strong> AI from writing judgments, drafting writ petitions, or performing any task requiring judicial discretion (<a href="${SC_POLICY}" target="_blank" rel="noopener">source</a>).</p>
+    body: `${policyBox()}<p>The Supreme Court Full Court approved the <strong>Judiciary Information and Communication Technology Policy, 2083</strong> on 2083/03/10 BS; it was reported in early July 2026. Its section 5.2 opens the way for AI in judicial processes. As reported, the policy <strong>permits</strong> AI use in legal research, document management and case organisation, drafting of non-decisional documents, and administrative support, and <strong>prohibits</strong> AI from writing judgments, drafting writ petitions, or performing any task requiring judicial discretion (<a href="${SC_POLICY}" target="_blank" rel="noopener">source</a>).</p>
     <p>The Chief Registrar described AI as a tool to assist people rather than replace judicial decision-making, and warned that AI systems can cite incorrect or even non-existent laws.</p>
     ${table(["Permitted (today's work)", "Off-limits"], [["Legal research · document analysis and summary · translation · drafting support for non-decisional documents · case management and administration", "Writing judgments · drafting writ petitions · any task requiring judicial discretion or legal reasoning"]])}`,
     trainerNote: "Open with the policy: the participants' own court has already drawn the line, and this session works inside it. That pre-empts the natural caution of senior judicial officers."
@@ -346,7 +357,7 @@ const SESSIONS = [
     ${ol([
       "Take a short excerpt from the sample <a href=\"#c2\">Bayan (M2)</a> and run it through Google Translate, then DeepL. Compare the two outputs: which phrasing would an officer trust more, and why does human review still matter for legal terms of art?",
       "Give Gemini or ChatGPT the facts of the <a href=\"#c4\">case summary (M4)</a> and ask for a structured Bahas outline or a first-draft Likhat clause. Show how the officer then edits, verifies and takes ownership of the substance.",
-      "Close with the Supreme Court AI policy: it permits AI for document management, case organisation and drafting of non-decisional documents — exactly what was just shown — and prohibits AI from writing judgments or writ petitions."
+      "Close with the Judiciary ICT Policy, 2083: it permits AI for document management, case organisation and drafting of non-decisional documents — exactly what was just shown — and prohibits AI from writing judgments or writ petitions."
     ])}
     ${promptBox("Translation", "Translate the following into English, preserving legal terms of art as closely as possible: [paste excerpt]")}
     ${promptBox("Bahas outline", "Based on these facts: [paste M4 facts], draft a structured outline of the main arguments a party could raise, organised by issue.")}`,
@@ -530,7 +541,8 @@ function vHome() {
     <p class="meta">2-hour hands-on session for judges and senior officers of Nepal's district and high courts.${meta ? "<br>" + esc(meta) : ""}</p>
     <div class="box"><p class="box-t">Session goal</p><p>Participants see two live case studies, practise one task in a small group on fictional case papers, and leave knowing which free tool fits which court task — and what AI must never do.</p></div>
     <h2>The frame: Nepal's Supreme Court AI policy</h2>
-    <p>On 3 July 2026 the Supreme Court permitted AI for legal research, document management and case organisation, drafting of non-decisional documents and administrative support, and prohibited AI from writing judgments, drafting writ petitions, or any task requiring judicial discretion (<a href="${SC_POLICY}" target="_blank" rel="noopener">source</a>). Everything in this session stays inside the permitted zone.</p>
+    <p>The Supreme Court Full Court approved the Judiciary ICT Policy, 2083 on 2083/03/10 BS. As reported, it permits AI for legal research, document management and case organisation, drafting of non-decisional documents and administrative support, and prohibits AI from writing judgments, drafting writ petitions, or any task requiring judicial discretion (<a href="${SC_POLICY}" target="_blank" rel="noopener">report</a>). Everything in this session stays inside the permitted zone.</p>
+    ${policyBox()}
     <h2>Learning outcomes</h2>
     <ol>
       <li>Type Nepali by voice with Gboard, and use five words of prompt vocabulary and the Role/Task/Context/Format framework.</li>
@@ -619,6 +631,7 @@ function vHandout() {
     ${table(["Task", "Prompt starter"], PROMPTS.map(([t, p]) => [`<strong>${t}</strong>`, "\"" + esc(p) + "\""]))}
     <h2>4. Nepali voice typing (Gboard, Android)</h2>${ol(GBOARD_ANDROID)}
     <h2>5. Guardrails</h2>${ul(GUARDRAILS)}
+    <h2>6. The policy</h2><p><span lang="ne">${POLICY_NAME}</span> (Judiciary ICT Policy, 2083): <a href="${POLICY_PDF}">${POLICY_PDF}</a></p>
     <div class="box warn"><p class="box-t">Data-privacy rule</p><p>Never paste a real, under-adjudication case file or a real litigant's personal data into a free/public AI tool. AI assists — research, summary, translation, drafting support, organisation — and never decides; nothing it produces belongs in a judgment, a writ petition, or anything requiring judicial discretion.</p></div>
   </div>`;
 }
