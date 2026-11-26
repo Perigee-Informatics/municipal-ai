@@ -1,9 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
 import { format, parseISO } from "date-fns";
 import { z } from "zod";
-import { Input } from "@/components/ui/input";
+import { FilterBar, inPeriod, monthOptions, textMatch, useFilters, valueOptions, yearOptions } from "@/components/admin/FilterBar";
 import { allRequestsQuery, findConflicts, statusTone } from "@/lib/admin-data";
 import { adminStoriesQuery } from "@/lib/stories";
 
@@ -15,11 +14,16 @@ export const Route = createFileRoute("/_authenticated/admin/requests/")({
 function Inbox() {
   const { status = "all" } = Route.useSearch();
   const navigate = Route.useNavigate();
-  const [q, setQ] = useState("");
+  const { q, setQ, values: f, set } = useFilters();
   const { data = [], isLoading } = useQuery(allRequestsQuery);
   const { data: stories = [] } = useQuery(adminStoriesQuery);
   const rows = data.filter(
-    (r) => (status === "all" || r.status === status) && `${r.event_title} ${r.organization} ${r.requester_name} ${r.requester_email}`.toLowerCase().includes(q.toLowerCase()),
+    (r) =>
+      (status === "all" || r.status === status) &&
+      textMatch(q, r.event_title, r.organization, r.requester_name, r.requester_email) &&
+      (!f["type"] || r.event_types?.name === f["type"]) &&
+      (!f["role"] || r.roles?.name === f["role"]) &&
+      inPeriod(r.request_sessions.map((x) => x.session_date), f["year"], f["month"]),
   );
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6">
@@ -30,8 +34,22 @@ function Inbox() {
             <button key={s} onClick={() => navigate({ search: { status: s } })} className={`rounded px-3 py-1.5 capitalize ${status === s ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>{s}</button>
           ))}
         </div>
-        <Input placeholder="Search…" value={q} onChange={(e) => setQ(e.target.value)} className="max-w-xs" />
       </div>
+      <FilterBar
+        q={q}
+        onQ={setQ}
+        placeholder="Event, organization or requester"
+        values={f}
+        onChange={set}
+        shown={rows.length}
+        total={data.length}
+        filters={[
+          { key: "type", label: "Any type", options: valueOptions(data, (r) => r.event_types?.name) },
+          { key: "role", label: "Any role", options: valueOptions(data, (r) => r.roles?.name) },
+          { key: "year", label: "Any year", width: "w-28", options: yearOptions(data.flatMap((r) => r.request_sessions.map((x) => x.session_date))) },
+          { key: "month", label: "Any month", width: "w-32", options: monthOptions() },
+        ]}
+      />
       {isLoading ? <p className="text-muted-foreground">Loading…</p> : (
         <div className="overflow-x-auto rounded-xl border border-border bg-card">
           <table className="w-full text-sm">

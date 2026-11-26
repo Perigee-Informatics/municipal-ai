@@ -4,6 +4,7 @@ import { useState } from "react";
 import { FileText, Pencil, Plus, QrCode, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { FilterBar, inPeriod, monthOptions, textMatch, useFilters, yearOptions, type FilterDef } from "@/components/admin/FilterBar";
 import { AdminPage, Empty, Panel, Pill, Stat } from "@/components/admin/AdminPage";
 import { TrainingEventForm } from "@/components/admin/TrainingEventForm";
 import { TrainingQr } from "@/components/admin/TrainingQr";
@@ -56,6 +57,30 @@ function TrainingEvents() {
   const pkg = (id: string | null) => packages.find((p) => p.id === id);
   const closeForm = () => navigate({ search: {} });
   const pending = people.filter((p) => p.status === "pending").length;
+  const { q, setQ, values: f, set } = useFilters();
+  const shown = sortEvents(events).filter(
+    (e) =>
+      textMatch(q, e.name, e.organized_by, e.code, e.address) &&
+      (!f["pkg"] || e.package_id === f["pkg"]) &&
+      inPeriod(e.event_dates ?? [], f["year"], f["month"]) &&
+      (!f["status"] || (f["status"] === "active" ? e.is_active : phase(e) === f["status"])),
+  );
+  const filters: FilterDef[] = [
+    { key: "pkg", label: "All packages", width: "w-56", options: packages.map((k) => ({ value: k.id, label: k.name, count: events.filter((e) => e.package_id === k.id).length })) },
+    { key: "year", label: "Any year", width: "w-28", options: yearOptions(events.flatMap((e) => e.event_dates ?? [])) },
+    { key: "month", label: "Any month", width: "w-32", options: monthOptions() },
+    {
+      key: "status",
+      label: "Any status",
+      width: "w-36",
+      options: [
+        { value: "active", label: "Active" },
+        { value: "upcoming", label: "Upcoming" },
+        { value: "today", label: "Today" },
+        { value: "past", label: "Completed" },
+      ],
+    },
+  ];
   const approved = people.filter((p) => p.status === "approved").length;
 
   const counts = (e: TrainingEvent) => {
@@ -105,13 +130,17 @@ function TrainingEvents() {
         </Panel>
       )}
 
+      <FilterBar q={q} onQ={setQ} placeholder="Name, organizer, code or place" filters={filters} values={f} onChange={set} shown={shown.length} total={events.length} />
+
       {isLoading ? (
         <p className="text-muted-foreground">Loading…</p>
+      ) : shown.length === 0 && events.length > 0 ? (
+        <Empty>No training event matches the filters.</Empty>
       ) : events.length === 0 ? (
         <Empty>No training event yet.</Empty>
       ) : (
         <div className="space-y-3">
-          {sortEvents(events).map((e) => (
+          {shown.map((e) => (
             <EventRow
               key={e.id}
               ev={e}

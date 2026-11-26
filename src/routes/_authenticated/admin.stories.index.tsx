@@ -5,12 +5,12 @@ import { Plus, MapPinOff, ImageIcon, CalendarCheck, Globe, Lock } from "lucide-r
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { AddEventDialog } from "@/components/admin/AddEventDialog";
 import { GoogleSyncBar } from "@/components/admin/GoogleSyncBar";
 import { adminStoriesQuery } from "@/lib/stories";
 import { storyDate } from "@/components/story/StoryCard";
+import { FilterBar, inPeriod, monthOptions, textMatch, useFilters, valueOptions, yearOptions, type FilterDef } from "@/components/admin/FilterBar";
 import { Pill } from "@/components/admin/AdminPage";
 import { isOver, nepalNow, splitByTime } from "@/lib/when";
 import { z } from "zod";
@@ -31,7 +31,7 @@ function StoriesList() {
   const split = splitByTime(data, now);
   const ordered = when === "upcoming" ? split.upcoming : when === "completed" ? split.completed : [...split.upcoming, ...split.completed];
   const count: Record<When, number> = { upcoming: split.upcoming.length, completed: split.completed.length, all: data.length };
-  const [q, setQ] = useState("");
+  const { q, setQ, values: f, set } = useFilters();
   const [onlyReview, setOnlyReview] = useState(false);
   const [vis, setVis] = useState<"all" | "public" | "private">("all");
   const [adding, setAdding] = useState(false);
@@ -40,7 +40,11 @@ function StoriesList() {
     (s) =>
       (!onlyReview || s.location_needs_review) &&
       (vis === "all" || (vis === "public") === s.is_public) &&
-      `${s.title} ${s.organizer ?? ""} ${s.city ?? ""}`.toLowerCase().includes(q.toLowerCase()),
+      textMatch(q, s.title, s.organizer, s.city, s.country, s.venue_name) &&
+      (!f["type"] || s.event_types?.name === f["type"]) &&
+      (!f["role"] || s.roles?.name === f["role"]) &&
+      (!f["org"] || s.organizer === f["org"]) &&
+      inPeriod([s.event_date, s.end_date], f["year"], f["month"]),
   );
 
   /** Public/private is enforced by RLS on `stories` and the story-media storage policy. */
@@ -61,20 +65,36 @@ function StoriesList() {
         </div>
       </div>
       <GoogleSyncBar />
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="inline-flex rounded-md border border-border p-0.5 text-sm">
-          {(["upcoming", "completed", "all"] as const).map((w) => (
-            <button key={w} onClick={() => setWhen(w)} className={`rounded px-3 py-1.5 capitalize ${when === w ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>{w} <span className="opacity-70">{count[w]}</span></button>
-          ))}
+      <div className="space-y-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="inline-flex rounded-md border border-border p-0.5 text-sm">
+            {(["upcoming", "completed", "all"] as const).map((w) => (
+              <button key={w} onClick={() => setWhen(w)} className={`rounded px-3 py-1.5 capitalize ${when === w ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>{w} <span className="opacity-70">{count[w]}</span></button>
+            ))}
+          </div>
+          <div className="inline-flex rounded-md border border-border p-0.5 text-sm">
+            {(["all", "public", "private"] as const).map((v) => (
+              <button key={v} onClick={() => setVis(v)} className={`rounded px-3 py-1.5 capitalize ${vis === v ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>{v}</button>
+            ))}
+          </div>
+          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={onlyReview} onChange={(e) => setOnlyReview(e.target.checked)} />Location needs review only</label>
         </div>
-        <Input placeholder="Search…" value={q} onChange={(e) => setQ(e.target.value)} className="max-w-xs" />
-        <div className="inline-flex rounded-md border border-border p-0.5 text-sm">
-          {(["all", "public", "private"] as const).map((v) => (
-            <button key={v} onClick={() => setVis(v)} className={`rounded px-3 py-1.5 capitalize ${vis === v ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>{v}</button>
-          ))}
-        </div>
-        <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={onlyReview} onChange={(e) => setOnlyReview(e.target.checked)} />Location needs review only</label>
-        <span className="text-sm text-muted-foreground">{rows.length} of {data.length}</span>
+        <FilterBar
+          q={q}
+          onQ={setQ}
+          placeholder="Title, organizer or place"
+          values={f}
+          onChange={set}
+          shown={rows.length}
+          total={data.length}
+          filters={[
+            { key: "type", label: "Any type", options: valueOptions(data, (s) => s.event_types?.name) },
+            { key: "role", label: "Any role", options: valueOptions(data, (s) => s.roles?.name) },
+            { key: "org", label: "Any organizer", width: "w-52", options: valueOptions(data, (s) => s.organizer) },
+            { key: "year", label: "Any year", width: "w-28", options: yearOptions(data.map((s) => s.event_date)) },
+            { key: "month", label: "Any month", width: "w-32", options: monthOptions() },
+          ]}
+        />
       </div>
       {isLoading ? <p className="text-muted-foreground">Loading…</p> : (
         <ul className="divide-y divide-border rounded-xl border border-border bg-card">

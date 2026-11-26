@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { Check, Copy, Search, UserPlus, X } from "lucide-react";
+import { Check, Copy, UserPlus, X } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { FilterBar, inPeriod, monthOptions, textMatch, useFilters, valueOptions, yearOptions, type FilterDef } from "@/components/admin/FilterBar";
 import { AdminPage, Empty, Field, Panel, Pill, selectCls } from "@/components/admin/AdminPage";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +14,7 @@ import {
   eventsQuery,
   eventTitle,
   membershipsQuery,
+  packagesQuery,
   peopleQuery,
   sortEvents,
   tk,
@@ -27,8 +29,8 @@ function Participants() {
   const { data: people = [], isLoading } = useQuery(peopleQuery);
   const { data: events = [] } = useQuery(eventsQuery);
   const { data: mem = [] } = useQuery(membershipsQuery);
-  const [q, setQ] = useState("");
-  const [evFilter, setEvFilter] = useState("");
+  const { data: packages = [] } = useQuery(packagesQuery);
+  const { q, setQ, values: f, set } = useFilters();
   const sorted = useMemo(() => sortEvents(events), [events]);
   const evName = (id: string | null) => {
     const e = events.find((x) => x.id === id);
@@ -39,11 +41,45 @@ function Participants() {
     qc.invalidateQueries({ queryKey: tk.people });
     qc.invalidateQueries({ queryKey: tk.memberships });
   };
-  const match = (p: Participant) =>
-    (!q || [p.full_name, p.office, p.education].join(" ").toLowerCase().includes(q.toLowerCase())) &&
-    (!evFilter || p.event_id === evFilter || memOf(p.id).includes(evFilter));
-  const pending = people.filter((p) => p.status === "pending");
-  const approved = people.filter((p) => p.status === "approved").filter(match);
+  /* A participant's events: every event they belong to, plus the one they registered for. */
+  const eventsOf = (p: Participant) =>
+    [...new Set([...(p.event_id ? [p.event_id] : []), ...memOf(p.id)])]
+      .map((id) => events.find((e) => e.id === id))
+      .filter((e): e is TrainingEvent => !!e);
+  const eventFiltersSet = !!(f["pkg"] || f["year"] || f["month"] || f["event"]);
+  const match = (p: Participant) => {
+    if (!textMatch(q, p.full_name, p.office, p.education)) return false;
+    if (f["gender"] && p.gender !== f["gender"]) return false;
+    if (f["age"] && p.age_group !== f["age"]) return false;
+    if (f["edu"] && p.education !== f["edu"]) return false;
+    if (!eventFiltersSet) return true;
+    return eventsOf(p).some(
+      (e) =>
+        (!f["event"] || e.id === f["event"]) &&
+        (!f["pkg"] || e.package_id === f["pkg"]) &&
+        inPeriod(e.event_dates ?? [], f["year"], f["month"]),
+    );
+  };
+  const allPending = people.filter((p) => p.status === "pending");
+  const allApproved = people.filter((p) => p.status === "approved");
+  const pending = allPending.filter(match);
+  const approved = allApproved.filter(match);
+  const filters: FilterDef[] = [
+    { key: "pkg", label: "All packages", width: "w-52", options: packages.map((k) => ({ value: k.id, label: k.name })) },
+    { key: "year", label: "Any year", width: "w-28", options: yearOptions(events.flatMap((e) => e.event_dates ?? [])) },
+    { key: "month", label: "Any month", width: "w-32", options: monthOptions() },
+    {
+      key: "event",
+      label: "All events",
+      width: "w-56",
+      options: sorted
+        .filter((e) => (!f["pkg"] || e.package_id === f["pkg"]) && inPeriod(e.event_dates ?? [], f["year"], f["month"]))
+        .map((e) => ({ value: e.id, label: `${eventTitle(e)} (${e.code})` })),
+    },
+    { key: "gender", label: "Any gender", width: "w-32", options: valueOptions(people, (p) => p.gender) },
+    { key: "age", label: "Any age group", width: "w-36", options: valueOptions(people, (p) => p.age_group) },
+    { key: "edu", label: "Any education", width: "w-40", options: valueOptions(people, (p) => p.education) },
+  ];
 
   async function setStatus(id: string, status: "approved" | "rejected" | "pending", eventId: string | null) {
     const patch: Partial<Participant> = { status };
@@ -68,6 +104,16 @@ function Participants() {
       description="Approve new registrations into a training event, move people between events, and create accounts yourself when confirmation e-mails do not arrive."
       wide
     >
+      <FilterBar
+        q={q}
+        onQ={setQ}
+        placeholder="Name, office or education"
+        filters={filters}
+        values={f}
+        onChange={set}
+        shown={pending.length + approved.length}
+        total={allPending.length + allApproved.length}
+      />
       <Panel
         title={
           <span className="flex items-center gap-2">
@@ -80,7 +126,7 @@ function Participants() {
           <p className="p-5 text-muted-foreground">Loading…</p>
         ) : pending.length === 0 ? (
           <div className="p-5">
-            <Empty>No new registrations.</Empty>
+            <Empty>{allPending.length ? "No waiting registration matches the filters." : "No new registrations."}</Empty>
           </div>
         ) : (
           <ul className="divide-y divide-border">
@@ -93,27 +139,11 @@ function Participants() {
 
       <Panel
         title={`Approved participants (${approved.length})`}
-        actions={
-          <div className="flex flex-wrap gap-2">
-            <div className="relative">
-              <Search className="pointer-events-none absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name or office" className="h-9 w-56 pl-8" />
-            </div>
-            <select className={cn(selectCls, "w-60")} value={evFilter} onChange={(e) => setEvFilter(e.target.value)} aria-label="Filter by event">
-              <option value="">All events</option>
-              {sorted.map((e) => (
-                <option key={e.id} value={e.id}>
-                  {eventTitle(e)} ({e.code})
-                </option>
-              ))}
-            </select>
-          </div>
-        }
         bodyClassName="p-0"
       >
         {approved.length === 0 ? (
           <div className="p-5">
-            <Empty>No approved participant{q || evFilter ? " matches" : " yet"}.</Empty>
+            <Empty>{allApproved.length ? "No approved participant matches the filters." : "No approved participant yet."}</Empty>
           </div>
         ) : (
           <ul className="divide-y divide-border">

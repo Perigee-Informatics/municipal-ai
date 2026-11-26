@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { FilterBar, textMatch, useFilters, valueOptions } from "@/components/admin/FilterBar";
 import { AdminPage, Empty, Field, Panel, Pill, selectCls } from "@/components/admin/AdminPage";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,8 +31,7 @@ function Organizers() {
   const { data: orgs = [], isLoading } = useQuery(organizersQuery);
   const { data: events = [] } = useQuery(eventsQuery);
   const { data: stories = [] } = useQuery(adminStoriesQuery);
-  const [q, setQ] = useState("");
-  const [kind, setKind] = useState("");
+  const { q, setQ, values: f, set } = useFilters();
   const [editing, setEditing] = useState<Partial<Organizer> | null>(null);
   const uses = useMemo(() => {
     const m = new Map<string, { trainings: number; engagements: number }>();
@@ -48,9 +47,18 @@ function Organizers() {
     stories.filter((s) => !s.training_event_id).forEach((s) => bump(s.organizer ?? "", "engagements"));
     return m;
   }, [events, stories]);
-  const list = orgs.filter(
-    (o) => (!kind || o.kind === kind) && (!q || [o.name, o.name_ne, o.city, o.contact_person].join(" ").toLowerCase().includes(q.toLowerCase())),
-  );
+  const usageOf = (o: Organizer) => uses.get(norm(o.name)) ?? { trainings: 0, engagements: 0 };
+  const list = orgs.filter((o) => {
+    const u = usageOf(o);
+    return (
+      textMatch(q, o.name, o.name_ne, o.city, o.contact_person, o.email) &&
+      (!f["kind"] || o.kind === f["kind"]) &&
+      (!f["city"] || o.city === f["city"]) &&
+      (!f["use"] ||
+        (f["use"] === "trainings" ? u.trainings > 0 : f["use"] === "engagements" ? u.engagements > 0 : u.trainings + u.engagements === 0)) &&
+      (!f["active"] || (f["active"] === "yes") === o.active)
+    );
+  });
 
   return (
     <AdminPage
@@ -69,24 +77,32 @@ function Organizers() {
           <OrganizerForm o={editing} usage={uses.get(norm(editing.name)) ?? { trainings: 0, engagements: 0 }} onDone={() => setEditing(null)} />
         </Panel>
       )}
+      <FilterBar
+        q={q}
+        onQ={setQ}
+        placeholder="Name, city, contact or e-mail"
+        values={f}
+        onChange={set}
+        shown={list.length}
+        total={orgs.length}
+        filters={[
+          { key: "kind", label: "All types", width: "w-52", options: Object.entries(ORG_KINDS).map(([k, v]) => ({ value: k, label: v, count: orgs.filter((o) => o.kind === k).length })) },
+          { key: "city", label: "Any city", options: valueOptions(orgs, (o) => o.city) },
+          {
+            key: "use",
+            label: "Any use",
+            width: "w-44",
+            options: [
+              { value: "trainings", label: "Has trainings" },
+              { value: "engagements", label: "Has engagements" },
+              { value: "unused", label: "Not used yet" },
+            ],
+          },
+          { key: "active", label: "Active or not", width: "w-36", options: [{ value: "yes", label: "Active" }, { value: "no", label: "Inactive" }] },
+        ]}
+      />
       <Panel
         title={`${list.length} organizer${list.length === 1 ? "" : "s"}`}
-        actions={
-          <div className="flex flex-wrap gap-2">
-            <div className="relative">
-              <Search className="pointer-events-none absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search" className="h-9 w-56 pl-8" />
-            </div>
-            <select className={cn(selectCls, "w-56")} value={kind} onChange={(e) => setKind(e.target.value)} aria-label="Type">
-              <option value="">All types</option>
-              {Object.entries(ORG_KINDS).map(([k, v]) => (
-                <option key={k} value={k}>
-                  {v} ({orgs.filter((o) => o.kind === k).length})
-                </option>
-              ))}
-            </select>
-          </div>
-        }
         bodyClassName="p-0"
       >
         {isLoading ? (
