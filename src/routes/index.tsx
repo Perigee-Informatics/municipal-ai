@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { isOver, nepalNow } from "@/lib/when";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
 import { ArrowRight, ArrowUpRight, BookOpen, CalendarDays, GraduationCap, Images, Mail, MapPin, MapPinned, Sparkles } from "lucide-react";
@@ -53,7 +54,8 @@ function Home() {
   const { data: invitations } = useQuery(invitationSettingsQuery);
   const p = data.profile;
   const today = format(new Date(), "yyyy-MM-dd");
-  const upcoming = events.filter((e) => e.session_date >= today).slice(0, 4);
+  const now = nepalNow();
+  const upcoming = events.filter((e) => !isOver({ event_date: e.session_date, end_time: e.end_time }, now)).slice(0, 4);
   const career = data.experience.filter((e) => e.category !== "consulting").slice(0, 4);
   const recent = (stories ?? []).filter((s) => s.cover?.url && s.cover.media_type === "image").slice(0, 3);
   const topDegree = data.education[0];

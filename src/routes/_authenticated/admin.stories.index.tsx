@@ -11,18 +11,32 @@ import { AddEventDialog } from "@/components/admin/AddEventDialog";
 import { GoogleSyncBar } from "@/components/admin/GoogleSyncBar";
 import { adminStoriesQuery } from "@/lib/stories";
 import { storyDate } from "@/components/story/StoryCard";
+import { Pill } from "@/components/admin/AdminPage";
+import { isOver, nepalNow, splitByTime } from "@/lib/when";
+import { z } from "zod";
 
-export const Route = createFileRoute("/_authenticated/admin/stories/")({ component: StoriesList });
+type When = "upcoming" | "completed" | "all";
+
+export const Route = createFileRoute("/_authenticated/admin/stories/")({
+  validateSearch: z.object({ when: z.enum(["upcoming", "completed", "all"]).optional() }),
+  component: StoriesList,
+});
 
 function StoriesList() {
   const navigate = useNavigate();
+  const { when = "all" } = Route.useSearch();
+  const setWhen = (w: When) => navigate({ to: "/admin/stories", search: w === "all" ? {} : { when: w }, replace: true });
   const { data = [], isLoading } = useQuery(adminStoriesQuery);
+  const now = nepalNow();
+  const split = splitByTime(data, now);
+  const ordered = when === "upcoming" ? split.upcoming : when === "completed" ? split.completed : [...split.upcoming, ...split.completed];
+  const count: Record<When, number> = { upcoming: split.upcoming.length, completed: split.completed.length, all: data.length };
   const [q, setQ] = useState("");
   const [onlyReview, setOnlyReview] = useState(false);
   const [vis, setVis] = useState<"all" | "public" | "private">("all");
   const [adding, setAdding] = useState(false);
   const qc = useQueryClient();
-  const rows = data.filter(
+  const rows = ordered.filter(
     (s) =>
       (!onlyReview || s.location_needs_review) &&
       (vis === "all" || (vis === "public") === s.is_public) &&
@@ -48,6 +62,11 @@ function StoriesList() {
       </div>
       <GoogleSyncBar />
       <div className="flex flex-wrap items-center gap-3">
+        <div className="inline-flex rounded-md border border-border p-0.5 text-sm">
+          {(["upcoming", "completed", "all"] as const).map((w) => (
+            <button key={w} onClick={() => setWhen(w)} className={`rounded px-3 py-1.5 capitalize ${when === w ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>{w} <span className="opacity-70">{count[w]}</span></button>
+          ))}
+        </div>
         <Input placeholder="Search…" value={q} onChange={(e) => setQ(e.target.value)} className="max-w-xs" />
         <div className="inline-flex rounded-md border border-border p-0.5 text-sm">
           {(["all", "public", "private"] as const).map((v) => (
@@ -66,7 +85,12 @@ function StoriesList() {
                   {s.cover?.url && s.cover.media_type === "image" ? <img src={s.cover.url} alt="" className="h-full w-full object-cover" loading="lazy" /> : <ImageIcon className="h-5 w-5 text-muted-foreground" />}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="truncate font-medium">{s.title}</div>
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span className="truncate font-medium">{s.title}</span>
+                    {isOver(s, now)
+                      ? <Pill>Completed</Pill>
+                      : s.event_date <= now.date ? <Pill tone="info">Today</Pill> : <Pill tone="ok">Upcoming</Pill>}
+                  </div>
                   <div className="truncate text-sm text-muted-foreground">{storyDate(s)} · {s.event_types?.name} · {s.roles?.name} · {[s.city, s.country].filter(Boolean).join(", ")}</div>
                 </div>
                 <div className="flex shrink-0 items-center gap-2 text-xs">

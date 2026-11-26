@@ -6,20 +6,52 @@ import { timeRange } from "@/components/site/MonthCalendar";
 import { GoogleSyncBar } from "@/components/admin/GoogleSyncBar";
 import { adminStoriesQuery } from "@/lib/stories";
 import { Pill } from "@/components/admin/AdminPage";
+import { nepalNow, splitByTime } from "@/lib/when";
 import { enDates, eventsQuery, peopleQuery, phase, sortEvents } from "@/lib/training-data";
 
 export const Route = createFileRoute("/_authenticated/admin/")({ component: Dashboard });
+
+type StoryRow = Awaited<ReturnType<typeof adminStoriesQuery.queryFn & {}>>[number];
+
+function EngagementList({ title, empty, rows, today, more, when, muted }: {
+  title: string; empty: string; rows: StoryRow[]; today: string; more: number;
+  when: "upcoming" | "completed"; muted?: boolean;
+}) {
+  return (
+    <section>
+      <div className="mb-4 flex items-baseline justify-between gap-3">
+        <h2 className="text-xl font-semibold">{title}</h2>
+        {more > 0 && <Link to="/admin/stories" search={{ when }} className="text-sm text-accent hover:underline">All {more} →</Link>}
+      </div>
+      <ul className="divide-y divide-border rounded-xl border border-border bg-card">
+        {rows.length === 0 && <li className="p-5 text-sm text-muted-foreground">{empty}</li>}
+        {rows.map((s) => {
+          const isToday = s.event_date <= today && (s.end_date ?? s.event_date) >= today;
+          return (
+            <li key={s.id}><Link to="/admin/stories/$id" params={{ id: s.id }} className="block p-4 hover:bg-muted/50">
+              <div className={`flex items-center gap-2 text-xs font-medium ${muted ? "text-muted-foreground" : "text-accent"}`}>
+                {format(parseISO(s.event_date), "EEE d MMM")}{s.end_date && s.end_date > s.event_date ? `–${format(parseISO(s.end_date), "d MMM")}` : ""} · {timeRange(s.start_time, s.end_time)}
+                {isToday && <Pill tone={muted ? "neutral" : "info"}>{muted ? "Done today" : "Today"}</Pill>}
+              </div>
+              <div className={`font-medium ${muted ? "text-muted-foreground" : ""}`}>{s.title}</div>
+              <div className="text-sm text-muted-foreground">{s.organizer}{s.is_public ? " · public" : " · private"}</div>
+            </Link></li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
 
 function Dashboard() {
   const { data = [], isLoading } = useQuery(allRequestsQuery);
   const { data: stories = [] } = useQuery(adminStoriesQuery);
   if (isLoading) return <p className="text-muted-foreground">Loading…</p>;
   const count = (s: string) => data.filter((r) => r.status === s).length;
-  const today = format(new Date(), "yyyy-MM-dd");
-  const upcoming = stories
-    .filter((s) => (s.end_date ?? s.event_date) >= today)
-    .sort((a, b) => (a.event_date + (a.start_time ?? "")).localeCompare(b.event_date + (b.start_time ?? "")))
-    .slice(0, 6);
+  const now = nepalNow();
+  const split = splitByTime(stories, now);
+  const upcoming = split.upcoming.slice(0, 6);
+  const completed = split.completed.slice(0, 6);
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-8">
@@ -35,19 +67,23 @@ function Dashboard() {
       </div>
       <TrainingStrip />
       <div className="grid gap-8 lg:grid-cols-2">
-        <section>
-          <h2 className="mb-4 text-xl font-semibold">Upcoming engagements</h2>
-          <ul className="divide-y divide-border rounded-xl border border-border bg-card">
-            {upcoming.length === 0 && <li className="p-5 text-sm text-muted-foreground">Nothing scheduled.</li>}
-            {upcoming.map((s) => (
-              <li key={s.id}><Link to="/admin/stories/$id" params={{ id: s.id }} className="block p-4 hover:bg-muted/50">
-                <div className="text-xs font-medium text-accent">{format(parseISO(s.event_date), "EEE d MMM")}{s.end_date && s.end_date > s.event_date ? `–${format(parseISO(s.end_date), "d MMM")}` : ""} · {timeRange(s.start_time, s.end_time)}</div>
-                <div className="font-medium">{s.title}</div>
-                <div className="text-sm text-muted-foreground">{s.organizer}{s.is_public ? " · public" : " · private"}</div>
-              </Link></li>
-            ))}
-          </ul>
-        </section>
+        <EngagementList
+          title="Upcoming engagements"
+          empty="Nothing scheduled."
+          rows={upcoming}
+          today={now.date}
+          more={split.upcoming.length > upcoming.length ? split.upcoming.length : 0}
+          when="upcoming"
+        />
+        <EngagementList
+          title="Recently completed"
+          empty="Nothing completed yet."
+          rows={completed}
+          today={now.date}
+          more={split.completed.length > completed.length ? split.completed.length : 0}
+          when="completed"
+          muted
+        />
         <section>
           <h2 className="mb-4 text-xl font-semibold">Recent requests</h2>
           <ul className="divide-y divide-border rounded-xl border border-border bg-card">

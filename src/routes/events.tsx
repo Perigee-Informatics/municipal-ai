@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { isOver, nepalNow } from "@/lib/when";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { useRef, useState } from "react";
 import { addDays, format, parseISO } from "date-fns";
@@ -55,9 +56,10 @@ function Events() {
   const ne = lang === "ne";
   const { data } = useSuspenseQuery(publicEventsQuery);
   const today = format(new Date(), "yyyy-MM-dd");
+  const now = nepalNow();
   const [month, setMonth] = useState(new Date());
   const [selected, setSelected] = useState<string>(today);
-  const upcoming = data.filter((e) => e.session_date >= today);
+  const upcoming = data.filter((e) => !isOver({ event_date: e.session_date, end_time: e.end_time }, now));
   const onDay = data.filter((e) => e.session_date === selected);
   const { data: yearHolidays = [] } = useQuery(holidaysQuery(Number(selected.slice(0, 4))));
   const dayHolidays = yearHolidays.filter((h) => h.date === selected);
