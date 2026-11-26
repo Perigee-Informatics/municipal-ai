@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
-import { ExternalLink, FileText, Globe, Lock, Maximize, Pencil, Power } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowLeft, ExternalLink, FileText, Globe, Lock, Pencil, Power } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminPage, Empty, Panel, Pill, Stat } from "@/components/admin/AdminPage";
@@ -162,7 +162,9 @@ function TrainingEventPage() {
       </nav>
 
       {tab === "details" && <Details ev={ev} pkgKey={pkg?.key} pkgName={pkg?.name} course={course} test={test} />}
-      {tab === "class" && <ClassView ev={ev} course={course} />}
+      {tab === "class" && (
+        <ClassView ev={ev} course={course} onBack={() => navigate({ search: { tab: "details" } })} />
+      )}
       {tab === "results" && test && (
         <Framed src={`/workshop/assessment/index.html?dash=${encodeURIComponent(ev.code)}`} title="Test results" note="Pre- and post-test analysis for this event." />
       )}
@@ -247,41 +249,39 @@ function Row({ label, on, onChange }: { label: string; on: boolean; onChange: (v
 }
 
 /** The course page in teaching mode: the session bar, full screen, larger text. */
-function ClassView({ ev, course }: { ev: TrainingEvent; course: string }) {
-  const frame = useRef<HTMLIFrameElement>(null);
+/* Teaching view: takes the whole browser window (above the admin menu and header) so the
+ * course page is as large as possible on a projector. The course page's own "पूरा स्क्रिन"
+ * button goes one step further and hides the browser's bars too. */
+function ClassView({ ev, course, onBack }: { ev: TrainingEvent; course: string; onBack: () => void }) {
   const [fresh] = useState(() => Date.now().toString(36));
   const page = COURSE_PAGE[course];
   const src = `${page}?event=${encodeURIComponent(ev.code)}&teach=1&embed=1&fresh=${fresh}`;
-  const full = () => {
-    const f = frame.current as (HTMLIFrameElement & { webkitRequestFullscreen?: () => void }) | null;
-    if (f?.requestFullscreen) f.requestFullscreen();
-    else f?.webkitRequestFullscreen?.();
-  };
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, []);
   return (
-    <div className="space-y-2">
-      <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-muted-foreground">
-        <span>Teach from here: pick any session in the bar; type a session number to jump to it.</span>
-        <span className="flex gap-2">
-          <Button size="sm" variant="outline" onClick={full}>
-            <Maximize />
-            Full screen
-          </Button>
-          <Button asChild size="sm" variant="ghost">
-            <a href={`${page}?event=${encodeURIComponent(ev.code)}&teach=1`} target="_blank" rel="noopener">
-              <ExternalLink />
-              New tab
-            </a>
-          </Button>
+    <div className="fixed inset-0 z-50 flex flex-col bg-background">
+      <div className="flex items-center gap-2 border-b border-border bg-card px-3 py-1.5 text-sm">
+        <Button size="sm" variant="ghost" onClick={onBack}>
+          <ArrowLeft />
+          Back to event
+        </Button>
+        <span className="min-w-0 flex-1 truncate text-muted-foreground">
+          <span className="font-medium text-foreground">{ev.organized_by || ev.name}</span>
+          <span className="ml-2 font-mono text-xs">[{ev.code}]</span>
         </span>
+        <Button asChild size="sm" variant="ghost">
+          <a href={`${page}?event=${encodeURIComponent(ev.code)}&teach=1`} target="_blank" rel="noopener">
+            <ExternalLink />
+            New tab
+          </a>
+        </Button>
       </div>
-      <iframe
-        ref={frame}
-        src={src}
-        title="Class view"
-        allow="fullscreen"
-        allowFullScreen
-        className="h-[78vh] w-full rounded-xl border border-border bg-white"
-      />
+      <iframe src={src} title="Class view" allow="fullscreen" allowFullScreen className="min-h-0 w-full flex-1 bg-white" />
     </div>
   );
 }
