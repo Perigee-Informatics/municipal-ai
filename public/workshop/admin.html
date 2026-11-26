@@ -7,7 +7,7 @@
    Old links and bookmarks land on the matching screen there. ?legacy=1 keeps this page. */
 (function () {
   if (/[?&]legacy=1/.test(location.search)) return;
-  var map = { overview: "/admin/trainings", events: "/admin/trainings/events", newevent: "/admin/trainings/events?new=1",
+  var map = { overview: "/admin/trainings", events: "/admin/trainings", newevent: "/admin/trainings?new=1",
     packages: "/admin/masters/packages", users: "/admin/trainings/participants", materials: "/admin/trainings/materials",
     results: "/admin/trainings/results", landing: "/admin/trainings/landing" };
   location.replace(map[location.hash.slice(1)] || "/admin/trainings");

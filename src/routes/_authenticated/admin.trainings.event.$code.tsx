@@ -65,7 +65,7 @@ function TrainingEventPage() {
     return (
       <AdminPage title="Event not found">
         <Empty>
-          No training event has the code {code}. <Link to="/admin/trainings/events" className="underline">See all training events</Link>.
+          No training event has the code {code}. <Link to="/admin/trainings" className="underline">See all training events</Link>.
         </Empty>
       </AdminPage>
     );

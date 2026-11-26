@@ -9,7 +9,6 @@ import {
   ChevronDown,
   ChevronRight,
   ExternalLink,
-  GraduationCap,
   Images,
   Inbox,
   LayoutDashboard,
@@ -72,8 +71,7 @@ const GROUPS: Group[] = [
     id: "aiforall",
     label: "AI for ALL",
     items: [
-      { to: "/admin/trainings", label: "Programme overview", icon: GraduationCap, exact: true },
-      { to: "/admin/trainings/events", label: "Training events", icon: Presentation, also: ["/admin/trainings/event/"] },
+      { to: "/admin/trainings", label: "Training events", icon: Presentation, exact: true, also: ["/admin/trainings/event/", "/admin/trainings/events"] },
       { to: "/admin/trainings/participants", label: "Participants", icon: Users, badge: "registrations" },
       { to: "/admin/trainings/results", label: "Results & feedback", icon: BarChart3 },
       { to: "/admin/trainings/materials", label: "Training materials", icon: BookOpen },
@@ -98,8 +96,9 @@ const OPEN_KEY = "admin-nav-open";
 
 function isActive(path: string, item: Item) {
   if (item.external) return false;
+  if (item.also?.some((p) => path.startsWith(p))) return true;
   if (item.exact) return path === item.to || path === item.to + "/";
-  return path === item.to || path.startsWith(item.to + "/") || !!item.also?.some((p) => path.startsWith(p));
+  return path === item.to || path.startsWith(item.to + "/");
 }
 
 function AdminLayout() {
