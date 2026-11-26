@@ -167,16 +167,16 @@ const MODULES = [
     trainerNote: "Welcome participants and keep the opening brisk (8 minutes max). Ask 2–3 faculty members to name the postgraduate course and topic they brought. Reassure beginners that we will use one tool only (Claude) and copy-paste prompts first before customising."
   },
   {
-    id: "m2", n: 2, time: "0:08–0:18", mins: 10, title: "Prompting basics, RTCF",
+    id: "m2", n: 2, time: "0:08–0:18", mins: 10, title: "Prompting basics, RTCFC",
     whatToDo: [
       "Run the weak prompt in Claude and look at how generic the output is.",
-      "Run the strong RTCF prompt in a new chat and compare the depth, postgraduate level, and local relevance.",
-      "Note the four parts of RTCF: Role, Task, Context, Format."
+      "Run the strong RTCFC prompt in a new chat and compare the depth, postgraduate level, and local relevance.",
+      "Note the five parts of RTCFC: Role, Task, Context, Format, Constraints."
     ],
-    body: `<p>Better prompts produce postgraduate-level material instead of generic undergraduate summaries. Use <strong>RTCF</strong>: <strong>Role</strong> (who Claude acts as), <strong>Task</strong> (what to produce), <strong>Context</strong> (level, class size, readings, Nepal/South Asian setting), and <strong>Format</strong> (table, sections, length).</p>` +
+    body: `<p>Better prompts produce postgraduate-level material instead of generic undergraduate summaries. Use <strong>RTCFC</strong>: <strong>Role</strong> (who Claude acts as), <strong>Task</strong> (what to produce), <strong>Context</strong> (level, class size, readings, Nepal/South Asian setting), <strong>Format</strong> (table, sections, length), and <strong>Constraints</strong> (what to avoid or keep: word limits, sources to use only, no invented references, things to leave out).</p>` +
       promptBox("Weak prompt (try first)", "Make a lesson on climate change.") +
-      promptBox("Strong prompt (RTCF)", "Role: You are an experienced university professor in environmental science who teaches Master's students.\nTask: Create a seminar outline on \"Climate change and food security\".\nContext: MSc first-semester students, 2-hour seminar, 25 students who have read two assigned journal articles. Course is in Nepal, so use South Asian evidence and policy examples.\nFormat: A table with columns Time, Activity, Teacher does, Students do, Bloom's level."),
-    trainerNote: "Demo both prompts live if time is tight, or let participants run both in 4 minutes. Point out two things: the weak prompt produces a school-level lecture; the strong prompt produces a timed postgraduate seminar with South Asian policy context and Bloom's levels."
+      promptBox("Strong prompt (RTCFC)", "Role: You are an experienced university professor in environmental science who teaches Master's students.\nTask: Create a seminar outline on \"Climate change and food security\".\nContext: MSc first-semester students, 2-hour seminar, 25 students who have read two assigned journal articles. Course is in Nepal, so use South Asian evidence and policy examples.\nFormat: A table with columns Time, Activity, Teacher does, Students do, Bloom's level.\nConstraints: Use only peer-reviewed or official sources and name each one; do not invent statistics or references; keep the input part under 20 minutes."),
+    trainerNote: "Demo both prompts live if time is tight, or let participants run both in 4 minutes. Point out two things: the weak prompt produces a school-level lecture; the strong prompt produces a timed postgraduate seminar with South Asian policy context and Bloom's levels. Then point at the Constraints line: it is what stops Claude from inventing sources and keeps the seminar inside the time you have."
   },
   {
     id: "m3", n: 3, time: "0:18–0:33", mins: 15, title: "Lesson outline",
@@ -238,7 +238,7 @@ const MODULES = [
     whatToDo: [
       "Review the six risks below and agree on a practical habit for each.",
       "Copy the disclosure line to use on AI-assisted teaching materials.",
-      "Open the printable Handout to keep the RTCF formula, starter prompts, checklist and this week's challenge."
+      "Open the printable Handout to keep the RTCFC formula, starter prompts, checklist and this week's challenge."
     ],
     body: `<div class="tbl"><table><thead><tr><th>Risk</th><th>What to do</th></tr></thead><tbody>
       <tr><td><strong>Wrong facts or invented references</strong></td><td>Check against your own sources; never cite a reference you have not opened.</td></tr>
@@ -295,7 +295,7 @@ function vHome() {
     <div class="box"><p class="box-t">Session goal</p><p>Each participant leaves with a lesson outline, an article summary and critical appraisal, an assessment and a slide outline, all for one postgraduate topic they teach.</p></div>
     <h2>Learning outcomes</h2>
     <ol>
-      <li>Write a clear prompt using RTCF (Role, Task, Context, Format).</li>
+      <li>Write a clear prompt using RTCFC (Role, Task, Context, Format, Constraints).</li>
       <li>Generate a seminar outline aligned to programme outcomes and higher Bloom's levels (analyse, evaluate, create).</li>
       <li>Summarize and critically appraise a journal article, and synthesize several papers.</li>
       <li>Build assessments that test analysis, evaluation and application to cases, with answer keys and rubrics.</li>
@@ -341,12 +341,13 @@ function vHandout() {
     <p class="eyebrow">Quick reference · Print / PDF</p>
     <h1>Postgraduate Faculty AI Handout</h1>
     <div class="actions"><button type="button" class="btn primary" data-print>🖨 Print / Save as PDF</button></div>
-    <h2>1. The RTCF prompt formula</h2>
+    <h2>1. The RTCFC prompt formula</h2>
     <div class="tbl"><table><thead><tr><th>Letter</th><th>Meaning</th><th>Example</th></tr></thead><tbody>
       <tr><td><strong>R</strong></td><td>Role</td><td>You are an experienced university professor in [discipline] who teaches Master's students.</td></tr>
       <tr><td><strong>T</strong></td><td>Task</td><td>Create a seminar outline / critically appraise this article / draft an assessment.</td></tr>
       <tr><td><strong>C</strong></td><td>Context</td><td>MSc/MPhil/PhD level, class length, class size, assigned readings, Nepal/South Asian examples.</td></tr>
       <tr><td><strong>F</strong></td><td>Format</td><td>Timed table with Bloom's levels, 4×4 rubric, 10-slide outline with speaker notes.</td></tr>
+      <tr><td><strong>C</strong></td><td>Constraints</td><td>Use only the attached paper; no invented references; under 300 words; no student names or marks.</td></tr>
     </tbody></table></div>
     <h2>2. Starter prompts</h2>
     <div class="tbl"><table><thead><tr><th>Goal</th><th>Starter prompt</th></tr></thead><tbody>
@@ -460,7 +461,7 @@ document.addEventListener("submit", async e => {
 
 /* Search */
 const INDEX = MODULES.map(m => ({ id: m.id, title: "M" + m.n + ". " + m.title, text: (m.whatToDo.join(" ") + " " + m.body.replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ") }));
-INDEX.push({ id: "handout", title: "Printable handout", text: "RTCF starter prompts checklist challenge" });
+INDEX.push({ id: "handout", title: "Printable handout", text: "RTCFC RTCF constraints starter prompts checklist challenge" });
 $("#q").addEventListener("input", e => {
   const q = e.target.value.trim().toLowerCase(), box = $("#results");
   if (q.length < 2) { box.hidden = true; return; }

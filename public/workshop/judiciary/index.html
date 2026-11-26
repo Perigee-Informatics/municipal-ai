@@ -205,7 +205,14 @@ const PROMPTS = [
   ["Likhat drafting", "Draft a first-draft structure for a [type] Likhat covering these facts and required clauses: [list]. Flag anything you are unsure belongs in this type of document."],
   ["Case management", "I have [N] pending cases of these types: [types], oldest filed [date]. Propose a simple tracker structure and one prioritisation rule."]
 ];
-const RTCF_EXAMPLE = "You are assisting a court researching Nepali civil procedure. Summarise the standard grounds for setting aside an ex-parte decree, using the attached Likhat as context. Answer in three short bullet points.";
+const RTCF_EXAMPLE = "You are assisting a court researching Nepali civil procedure. Summarise the standard grounds for setting aside an ex-parte decree, using the attached Likhat as context. Answer in three short bullet points. Use only the attached Likhat and laws you can name a source for; do not invent citations; write \"not in the document\" where the Likhat is silent.";
+const RTCF_PARTS = [
+  ["Role", "who the AI should act as", "You are assisting a court researching Nepali civil procedure."],
+  ["Task", "what exactly it should do", "Summarise the standard grounds for setting aside an ex-parte decree."],
+  ["Context", "the facts or document it should use", "Using the attached Likhat as context."],
+  ["Format", "length, structure, language", "Answer in three short bullet points."],
+  ["Constraints", "what to avoid or keep", "Use only the attached Likhat and laws you can name a source for; do not invent citations; say \"not in the document\" where it is silent."]
+];
 
 const GBOARD_ANDROID = [
   "Settings &gt; System &gt; Languages &amp; input &gt; On-screen keyboard &gt; Manage keyboards &gt; turn on <strong>Gboard</strong> (pre-installed on most Android phones).",
@@ -311,8 +318,8 @@ const SESSIONS = [
     id: "s2", n: 2, time: "11:05–11:25", mins: 20, title: "Foundations: Nepali voice typing and prompt vocabulary",
     whatToDo: [
       "Part 1 (10 min): enable Nepali voice typing with Gboard, then dictate 2–3 sentences from the sample Bayan (M2).",
-      "Part 2 (10 min): learn five words — prompt, context, follow-up, hallucination, grounding — and the Role/Task/Context/Format framework.",
-      "Compare a weak, vague prompt with the same question rebuilt with Role/Task/Context/Format."
+      "Part 2 (10 min): learn five words — prompt, context, follow-up, hallucination, grounding — and the Role/Task/Context/Format/Constraints framework.",
+      "Compare a weak, vague prompt with the same question rebuilt with Role/Task/Context/Format/Constraints."
     ],
     body: `<h2>Part 1 — Enable Nepali voice typing with Gboard</h2>
     <p>Dictating Nepali is far faster than typing Devanagari, and it is the quickest way to get a Bayan or case note into an AI tool.</p>
@@ -321,11 +328,13 @@ const SESSIONS = [
     <div class="box"><p class="box-t">Try it</p><p>Dictate 2–3 sentences from the <a href="#c2">sample Bayan (M2)</a>. Check the accuracy, and fix punctuation (। , ?) by hand where needed.</p></div>
     <h2>Part 2 — Prompt vocabulary</h2>
     ${ul(VOCAB.map(([w, d]) => `<strong>${w}</strong> — ${d}`))}
-    <h3>A simple framework: Role, Task, Context, Format</h3>
-    <p>"You are [role]. [Task], using [context]. Answer in [format]."</p>
+    <h3>A simple framework: Role, Task, Context, Format, Constraints</h3>
+    <p>"You are [role]. [Task], using [context]. Answer in [format]. [Constraints: what to avoid or keep]."</p>
+    ${table(["Part", "Ask yourself", "Example"], RTCF_PARTS.map(([p, q, e]) => [`<strong>${p}</strong>`, q, esc(e)]))}
+    <p><strong>Constraints</strong> matter most in court work: they tell the tool to stay inside your document, not to invent citations, and to say when it does not know.</p>
     ${promptBox("Weak prompt (try first)", "Tell me about ex-parte decrees.")}
-    ${promptBox("Role / Task / Context / Format", RTCF_EXAMPLE)}`,
-    trainerNote: "Demo voice typing live on a phone mirrored to the screen, using the M2 Bayan excerpt, and let the room see where punctuation needs a manual fix. Then show the weak prompt and its weak answer, rebuild it with Role/Task/Context/Format, and compare the two answers side by side. Test Gboard on one Android phone and one iPhone before the session."
+    ${promptBox("Role / Task / Context / Format / Constraints", RTCF_EXAMPLE)}`,
+    trainerNote: "Demo voice typing live on a phone mirrored to the screen, using the M2 Bayan excerpt, and let the room see where punctuation needs a manual fix. Then show the weak prompt and its weak answer, rebuild it with Role/Task/Context/Format/Constraints, and compare the two answers side by side. Test Gboard on one Android phone and one iPhone before the session."
   },
   {
     id: "s3", n: 3, time: "11:25–11:37", mins: 12, title: "Case study 1: legal research and Likhat analysis",
@@ -545,7 +554,7 @@ function vHome() {
     ${policyBox()}
     <h2>Learning outcomes</h2>
     <ol>
-      <li>Type Nepali by voice with Gboard, and use five words of prompt vocabulary and the Role/Task/Context/Format framework.</li>
+      <li>Type Nepali by voice with Gboard, and use five words of prompt vocabulary and the Role/Task/Context/Format/Constraints framework.</li>
       <li>Use a web-grounded tool (Gemini, Perplexity) for legal research, and verify its sources.</li>
       <li>Summarise a Likhat with a document-grounded tool (NotebookLM) and explain why grounding matters.</li>
       <li>Compare machine translations (Google Translate, DeepL) and flag legal terms for human review.</li>
@@ -625,7 +634,7 @@ function vHandout() {
     ${table(["Task", "Best free tool"], TOOLS.map(r => [r[0], r[1]]))}
     <h2>2. Prompt vocabulary</h2>
     ${ul(VOCAB.map(([w, d]) => `<strong>${w}</strong> — ${d}`))}
-    <p><strong>Role, Task, Context, Format:</strong> "You are [role]. [Task], using [context]. Answer in [format]."</p>
+    <p><strong>Role, Task, Context, Format, Constraints:</strong> "You are [role]. [Task], using [context]. Answer in [format]. [Constraints: what to avoid or keep]."</p>
     <p><em>Example:</em> "${esc(RTCF_EXAMPLE)}"</p>
     <h2>3. Prompt library</h2>
     ${table(["Task", "Prompt starter"], PROMPTS.map(([t, p]) => [`<strong>${t}</strong>`, "\"" + esc(p) + "\""]))}
